@@ -27,7 +27,7 @@ if(WIN32)
   foreach(warning 4251)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd${warning}")
   endforeach(warning)
-endif()
+endif(WIN32)
 
 # define public header files
 SET(HEADER_FILES
@@ -58,9 +58,9 @@ ENDIF (WIN32)
 
 if (KARTO_STATIC)
   ADD_DEFINITIONS(-DKARTO_STATIC)
-else ()
+else (KARTO_STATIC)
   ADD_DEFINITIONS(-DKARTO_DYNAMIC)
-endif ()
+endif (KARTO_STATIC)
 
 # setup kt target
 ADD_LIBRARY(${LIB_NAME}
