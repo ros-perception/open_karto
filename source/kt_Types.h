@@ -33,6 +33,7 @@
 #include <float.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 /**
  * Karto defs for windows dynamic build 
