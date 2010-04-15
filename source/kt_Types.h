@@ -2957,10 +2957,23 @@ namespace karto
      * @param rWorld world coordinate
      * @return grid coordinate
      */
-    inline Point2<kt_int32s> WorldToGrid(const Point2<kt_double>& rWorld) const
+    inline Point2<kt_int32s> WorldToGrid(const Point2<kt_double>& rWorld, kt_bool flipY = false) const
     {
-      Point2<kt_double> scaledPoint = (rWorld - m_Offset) * m_Scale;
-      return Point2<kt_int32s>(static_cast<kt_int32s>(Math::Round(scaledPoint.GetX())), static_cast<kt_int32s>(Math::Round(scaledPoint.GetY())));
+      kt_double gridX = 0.0;
+      kt_double gridY = 0.0;
+
+      gridX = (rWorld.GetX() - m_Offset.GetX()) * m_Scale;
+
+      if(flipY == false)
+      {
+        gridY = (rWorld.GetY() - m_Offset.GetY()) * m_Scale;
+      }
+      else
+      {
+        gridY = (m_Size.GetHeight() / m_Scale - rWorld.GetY() + m_Offset.GetY()) * m_Scale;
+      }
+
+      return Point2<kt_int32s>(static_cast<kt_int32s>(Math::Round(gridX)), static_cast<kt_int32s>(Math::Round(gridY)));
     }
 
     /**
@@ -2968,10 +2981,19 @@ namespace karto
      * @param rGrid world coordinate
      * @return world coordinate
      */
-    inline Point2<kt_double> GridToWorld(const Point2<kt_int32s>& rGrid) const
+    inline Point2<kt_double> GridToWorld(const Point2<kt_int32s>& rGrid, kt_bool flipY = false) const
     {
       kt_double worldX = m_Offset.GetX() + rGrid.GetX() / m_Scale;
-      kt_double worldY = m_Offset.GetY() + rGrid.GetY() / m_Scale;
+      kt_double worldY = 0.0;
+      
+      if(flipY == false)
+      {
+        worldY = m_Offset.GetY() + rGrid.GetY() / m_Scale;
+      }
+      else
+      {
+        worldY = m_Offset.GetY() + (m_Size.GetHeight() - rGrid.GetY()) / m_Scale;
+      }
 
       return Point2<kt_double>(worldX, worldY);
     }
@@ -3005,13 +3027,27 @@ namespace karto
 
     /**
      * Sets the offset
-     * @param offset
+     * @param rOffset
      */
     inline void SetOffset(const Point2<kt_double>& rOffset)
     {
       m_Offset = rOffset;
     }
     
+    /**
+     * Sets the size
+     * @param rSize
+     */
+    inline void SetSize(const Size2<kt_int32s>& rSize)
+    {
+      m_Size = rSize;
+    }
+
+    inline Size2<kt_int32s>& GetSize()
+    {
+      return m_Size;
+    }
+
     /**
      * Gets the resolution
      * @return resolution
@@ -3031,6 +3067,7 @@ namespace karto
     }
     
   private:
+    Size2<kt_int32s> m_Size;
     kt_double m_Scale;
 
     Point2<kt_double> m_Offset;
@@ -3312,6 +3349,8 @@ namespace karto
       m_WidthStep = Math::AlignValue<kt_int32s>(width, 8);
       m_pData = new T[GetDataSize()];
       
+      m_pCoordinateConverter->SetSize(Size2<kt_int32s>(width, height));
+
       Clear();
     }
     
@@ -3373,22 +3412,40 @@ namespace karto
   public:
     /**
      * Gets device state id
-     * @return id
+     * @return device id
      */
-    inline kt_int32s GetId() const
+    inline kt_int32s GetStateId() const
     {
-      return m_Id;
+      return m_StateId;
     }
 
     /**
      * Sets device state id
-     * @param id
+     * @param device id
      */
-    inline void SetId(kt_int32s id)
+    inline void SetStateId(kt_int32s id)
     {
-      m_Id = id;
+      m_StateId = id;
     }
 
+    /**
+     * Gets device unique id
+     * @return unique id
+     */
+    inline kt_int32s GetUniqueId()
+    {
+      return m_UniqueId;
+    }
+
+    /**
+     * Sets device unique id
+     * @param unique id
+     */
+    inline void SetUniqueId(kt_int32u id)
+    {
+      m_UniqueId = id;
+    }
+    
     /**
      * Gets device state time
      * @return time
@@ -3443,7 +3500,8 @@ namespace karto
   protected:
     DeviceState(Device* pDevice)
       : DatasetObject()
-      , m_Id(-1)
+      , m_StateId(-1)
+      , m_UniqueId(-1)
       , m_pDevice(pDevice)
     {
     }
@@ -3461,10 +3519,15 @@ namespace karto
 
   private:
     /**
-     * Device state id
+     * ID unique to individual device
      */
-    kt_int32s m_Id;
+    kt_int32s m_StateId;
 
+    /**
+     * ID unique across all devices
+     */
+    kt_int32s m_UniqueId;
+    
     /**
      * Device that created this device state
      */
@@ -3799,47 +3862,52 @@ namespace karto
      * Get point readings (potentially scale readings if given coordinate converter is not null)
      * @param pCoordinateConverter
      */
-    inline const PointVectorDouble GetPointReadings(CoordinateConverter* pCoordinateConverter, kt_bool ignoreThresholdPoints = true) const
+    inline const PointVectorDouble GetPointReadings(CoordinateConverter* pCoordinateConverter, kt_bool ignoreThresholdPoints = true, kt_bool flipY = false) const
     {
       PointVectorDouble pointReadings;
 
       LaserRangeFinder* pLaserRangeFinder = GetLaserRangeFinder();
-
-      kt_double rangeThreshold = pLaserRangeFinder->GetRangeThreshold();
-      kt_double minimumAngle = pLaserRangeFinder->GetMinimumAngle();
-      kt_double angularResolution = pLaserRangeFinder->GetAngularResolution();
-      Pose2 scanPose = GetScannerPose();
-
-      // compute point readings
-      kt_int32u beamNum = 0;
-      for (kt_int32u i = 0; i < pLaserRangeFinder->GetNumberOfRangeReadings(); i++, beamNum++)
+      if(pLaserRangeFinder != NULL)
       {
-        kt_double rangeReading = GetRangeReadings()[i];
+        kt_double rangeThreshold = pLaserRangeFinder->GetRangeThreshold();
+        kt_double minimumAngle = pLaserRangeFinder->GetMinimumAngle();
+        kt_double angularResolution = pLaserRangeFinder->GetAngularResolution();
+        Pose2 scanPose = GetScannerPose();
 
-        if (ignoreThresholdPoints)
+        // compute point readings
+        kt_int32u beamNum = 0;
+        for (kt_int32u i = 0; i < pLaserRangeFinder->GetNumberOfRangeReadings(); i++, beamNum++)
         {
-          if (!Math::InRange(rangeReading, pLaserRangeFinder->GetMinimumRange(), rangeThreshold))
+          kt_double rangeReading = GetRangeReadings()[i];
+
+          if (ignoreThresholdPoints)
           {
-            continue;
+            if (!Math::InRange(rangeReading, pLaserRangeFinder->GetMinimumRange(), rangeThreshold))
+            {
+              continue;
+            }
           }
+          else
+          {
+            rangeReading = Math::Clip(rangeReading, pLaserRangeFinder->GetMinimumRange(), rangeThreshold);
+          }
+
+          kt_double angle = scanPose.GetHeading() + minimumAngle + beamNum * angularResolution;
+
+          Point2<kt_double> point;
+
+          point.SetX(scanPose.GetX() + (rangeReading * cos(angle)));
+          point.SetY(scanPose.GetY() + (rangeReading * sin(angle)));
+
+          if (pCoordinateConverter != NULL)
+          {
+            Point2<kt_int32s> gridPoint = pCoordinateConverter->WorldToGrid(point, flipY);
+            point.SetX(gridPoint.GetX());
+            point.SetY(gridPoint.GetY());
+          }
+
+          pointReadings.push_back(point);
         }
-        else
-        {
-          rangeReading = Math::Clip(rangeReading, pLaserRangeFinder->GetMinimumRange(), rangeThreshold);
-        }
-
-        if (pCoordinateConverter != NULL)
-        {
-          pCoordinateConverter->Transform(rangeReading);
-        }
-
-        kt_double angle = scanPose.GetHeading() + minimumAngle + beamNum * angularResolution;
-
-        Point2<kt_double> point;
-        point.SetX(scanPose.GetX() + (rangeReading * cos(angle)));
-        point.SetY(scanPose.GetY() + (rangeReading * sin(angle)));
-
-        pointReadings.push_back(point);
       }
 
       return pointReadings;
@@ -3876,53 +3944,56 @@ namespace karto
     {
       LaserRangeFinder* pLaserRangeFinder = GetLaserRangeFinder();
 
-      m_PointReadings.clear();
-
-      kt_double rangeThreshold = pLaserRangeFinder->GetRangeThreshold();
-      kt_double minimumAngle = pLaserRangeFinder->GetMinimumAngle();
-      kt_double angularResolution = pLaserRangeFinder->GetAngularResolution();
-      Pose2 scanPose = GetScannerPose();
-
-      // compute point readings
-      Point2<kt_double> pointSum;
-      kt_int32u beamNum = 0;
-      for (kt_int32u i = 0; i < pLaserRangeFinder->GetNumberOfRangeReadings(); i++, beamNum++)
+      if(pLaserRangeFinder != NULL)
       {
-        kt_double rangeReading = GetRangeReadings()[i];
+        m_PointReadings.clear();
 
-        if (!Math::InRange(rangeReading, pLaserRangeFinder->GetMinimumRange(), rangeThreshold))
+        kt_double rangeThreshold = pLaserRangeFinder->GetRangeThreshold();
+        kt_double minimumAngle = pLaserRangeFinder->GetMinimumAngle();
+        kt_double angularResolution = pLaserRangeFinder->GetAngularResolution();
+        Pose2 scanPose = GetScannerPose();
+
+        // compute point readings
+        Point2<kt_double> pointSum;
+        kt_int32u beamNum = 0;
+        for (kt_int32u i = 0; i < pLaserRangeFinder->GetNumberOfRangeReadings(); i++, beamNum++)
         {
-          continue;
+          kt_double rangeReading = GetRangeReadings()[i];
+
+          if (!Math::InRange(rangeReading, pLaserRangeFinder->GetMinimumRange(), rangeThreshold))
+          {
+            continue;
+          }
+
+          kt_double angle = scanPose.GetHeading() + minimumAngle + beamNum * angularResolution;
+
+          Point2<kt_double> point;
+          point.SetX(scanPose.GetX() + (rangeReading * cos(angle)));
+          point.SetY(scanPose.GetY() + (rangeReading * sin(angle)));
+
+          m_PointReadings.push_back(point);
+          pointSum += point;
         }
 
-        kt_double angle = scanPose.GetHeading() + minimumAngle + beamNum * angularResolution;
+        // compute barycenter
+        kt_double nPoints = static_cast<kt_double>(m_PointReadings.size());
+        if (nPoints != 0.0)
+        {
+          m_BarycenterPose = Pose2(pointSum / nPoints, 0.0);
+        }
+        else
+        {
+          m_BarycenterPose = scanPose;
+        }
 
-        Point2<kt_double> point;
-        point.SetX(scanPose.GetX() + (rangeReading * cos(angle)));
-        point.SetY(scanPose.GetY() + (rangeReading * sin(angle)));
-
-        m_PointReadings.push_back(point);
-        pointSum += point;
+        // calculate bounding box of scan
+        m_BoundingBox = BoundingBox2();
+        m_BoundingBox.Add(Point2<kt_double>(scanPose.GetPosition()));
+        forEach(PointVectorDouble, &m_PointReadings)
+        {
+          m_BoundingBox.Add(*iter);
+        }    
       }
-
-      // compute barycenter
-      kt_double nPoints = static_cast<kt_double>(m_PointReadings.size());
-      if (nPoints != 0.0)
-      {
-        m_BarycenterPose = Pose2(pointSum / nPoints, 0.0);
-      }
-      else
-      {
-        m_BarycenterPose = scanPose;
-      }
-
-      // calculate bounding box of scan
-      m_BoundingBox = BoundingBox2();
-      m_BoundingBox.Add(Point2<kt_double>(scanPose.GetPosition()));
-      forEach(PointVectorDouble, &m_PointReadings)
-      {
-        m_BoundingBox.Add(*iter);
-      }    
 
       // only clear dirty flag if ignoreThresholdPoints == true. ignoreThresholdPoints = false is only used
       // in creating occupancy grid
@@ -4017,8 +4088,23 @@ namespace karto
 
       pOccupancyGrid->GetCoordinateConverter()->SetScale(GetCoordinateConverter()->GetScale());
       pOccupancyGrid->GetCoordinateConverter()->SetOffset(GetCoordinateConverter()->GetOffset());
+      pOccupancyGrid->GetCoordinateConverter()->SetSize(GetCoordinateConverter()->GetSize());
 
       return pOccupancyGrid;
+    }
+
+    /** 
+     * Check if grid point is free
+     */
+    kt_bool IsFree(const Point2<kt_int32s>& rPose) const
+    {
+      kt_int8u* pOffsets = (kt_int8u*)GetDataPointer(rPose);
+      if(*pOffsets == GridStates_Free)
+      {
+        return true;
+      }
+
+      return false;
     }
 
   private:
@@ -4075,7 +4161,7 @@ namespace karto
         Point2<kt_double> scanPosition = pScan->GetScannerPose().GetPosition();
         
         // get scan point readings 
-        const PointVectorDouble& rPointReadings = pScan->GetPointReadings(GetCoordinateConverter());      
+        const PointVectorDouble& rPointReadings = pScan->GetPointReadings();      
         
         // draw lines from scan position to all point readings 
         int pointIndex = 0;
@@ -4366,7 +4452,315 @@ namespace karto
     DatasetObjectVector m_DatasetObjects;
     DeviceMap m_Devices;
     DatasetInfo* m_pDatasetInfo;
-  };
+  }; // Dataset
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * An array that can be resized as long as the size
+   * does not exceed the initial capacity
+   */
+  class LookupArray
+  {
+  public:
+    /**
+     * Constructs lookup array
+     * @param arraySize
+     */
+    LookupArray()
+      : m_pArray(NULL)
+      , m_Capacity(0)
+      , m_Size(0)
+    {
+      m_pArray = new kt_int32s[m_Capacity];
+    }
+
+    /**
+     * Destructor
+     */
+    virtual ~LookupArray()
+    {
+      assert(m_pArray != NULL);
+      
+      delete[] m_pArray;
+      m_pArray = NULL;
+    }
+
+  public:
+    /**
+     * Clear array
+     */
+    void Clear()
+    {
+      memset(m_pArray, 0, sizeof(kt_int32s) * m_Capacity);
+    }
+
+    /**
+     * Gets size of array
+     * @return array size
+     */
+    kt_int32u GetSize() const
+    {
+      return m_Size;
+    }
+
+    /**
+     * Sets size of array (resize if not big enough)
+     * @param size
+     */
+    void SetSize(kt_int32u size)
+    {
+      assert(size != 0);
+      
+      if (size > m_Capacity)
+      {
+        if (m_pArray != NULL)
+        {
+          delete [] m_pArray;
+        }
+        m_Capacity = size;
+        m_pArray = new kt_int32s[m_Capacity];
+      }
+      
+      m_Size = size;
+    }
+
+    /**
+     * Gets reference to value at given index
+     * @param index
+     * @return reference to value at index
+     */
+    inline kt_int32s& operator [] (kt_int32u index) 
+    {
+      assert(index < m_Size);
+
+      return m_pArray[index]; 
+    }
+
+    /**
+     * Gets value at given index
+     * @param index
+     * @return value at index
+     */
+    inline kt_int32s operator [] (kt_int32u index) const 
+    {
+      assert(index < m_Size);
+
+      return m_pArray[index]; 
+    }
+
+    /**
+     * Gets array pointer
+     * @return array pointer
+     */
+    inline kt_int32s* GetArrayPointer()
+    {
+      return m_pArray;
+    }
+
+    /**
+     * Gets array pointer
+     * @return array pointer
+     */
+    inline kt_int32s* GetArrayPointer() const
+    {
+      return m_pArray;
+    }
+
+  private:
+    kt_int32s* m_pArray;
+    kt_int32u m_Capacity;
+    kt_int32u m_Size;
+  }; // LookupArray
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Create lookup tables for point readings at varying angles in grid.
+   * For each angle, grid indexes are calculated for each range reading.
+   * This is to speed up finding best angle/position for a localized range scan
+   * 
+   * Used heavily in mapper and localizer. 
+   * 
+   * In the localizer, this is a huge speed up for calculating possible position.  For each particle,
+   * a probability is calculated.  The range scan is the same, but all grid indexes at all possible angles are
+   * calculated.  So when calculating the particle probability at a specific angle, the index table is used
+   * to look up probability in probability grid!
+   * 
+   */
+  template<typename T>
+  class GridIndexLookup
+  {
+  public:
+    GridIndexLookup(Grid<T>* pGrid)
+      : m_pGrid(pGrid)
+      , m_Capacity(0)
+      , m_Size(0)
+      , m_ppLookupArray(NULL)
+    {
+    }
+    
+    /**
+     * Destructor
+     */
+    virtual ~GridIndexLookup()
+    {
+      DestroyArrays();
+    }
+
+  public:
+    /**
+     * Gets the lookup array for a particular angle index
+     * @param index
+     * @return lookup array
+     */
+    const LookupArray* GetLookupArray(kt_int32u index) const
+    {
+      assert(Math::IsUpTo(index, m_Size));
+      
+      return m_ppLookupArray[index];
+    }
+    
+    /**
+     * Compute lookup table of the points of the given scan for the given angular space
+     * @param pScan the scan
+     * @param angleCenter
+     * @param angleOffset computes lookup arrays for the angles within this offset around angleStart
+     * @param angleResolution how fine a granularity to compute lookup arrays in the angular space
+     */
+    void ComputeOffsets(LocalizedRangeScan* pScan, kt_double angleCenter, kt_double angleOffset, kt_double angleResolution)
+    {
+      assert(angleOffset != 0.0);
+      assert(angleResolution != 0.0);
+ 
+      kt_int32u nAngles = static_cast<kt_int32u>(Math::Round(angleOffset * 2.0 / angleResolution) + 1);
+      SetSize(nAngles);
+
+      //////////////////////////////////////////////////////
+      // convert points into local coordinates of scan pose
+
+      const PointVectorDouble& rPointReadings = pScan->GetPointReadings();
+
+      // compute transform to scan pose
+      Transform transform(pScan->GetScannerPose());
+
+      Pose2Vector localPoints;
+      const_forEach(PointVectorDouble, &rPointReadings)
+      {
+        // do inverse transform to get points in local coordinates
+        Pose2 vec = transform.InverseTransformPose(Pose2(*iter, 0.0));
+        localPoints.push_back(vec);
+      }
+
+      //////////////////////////////////////////////////////
+      // create lookup array for different angles
+      kt_double angle = 0.0;
+      kt_double startAngle = angleCenter - angleOffset;
+      for (kt_int32u angleIndex = 0; angleIndex < nAngles; angleIndex++)
+      {
+        angle = startAngle + angleIndex * angleResolution;
+        ComputeOffsets(angleIndex, angle, localPoints);
+      }
+      assert(Math::DoubleEqual(angle, angleCenter + angleOffset));
+    }
+
+  private:
+    /**
+     * Compute lookup value of points for given angle
+     * @param angleIndex
+     * @param angle
+     * @param rLocalPoints
+     */
+    void ComputeOffsets(kt_int32u angleIndex, kt_double angle, const Pose2Vector& rLocalPoints)
+    {
+      m_ppLookupArray[angleIndex]->SetSize(rLocalPoints.size());
+      
+      // set up point array by computing relative offsets to points readings
+      // when rotated by given angle
+      
+      const Point2<kt_double>& gridOffset = m_pGrid->GetCoordinateConverter()->GetOffset();
+      
+      kt_double cosine = cos(angle);
+      kt_double sine = sin(angle);
+      
+      kt_int32u readingIndex = 0;
+
+      kt_int32s* pAngleIndexPointer = m_ppLookupArray[angleIndex]->GetArrayPointer();
+
+      const_forEach(Pose2Vector, &rLocalPoints)
+      {
+        const Point2<kt_double>& rPosition = (*iter).GetPosition();
+        
+        // counterclockwise rotation and that rotation is about the origin (0, 0).
+        Point2<kt_double> offset;
+        offset.SetX(cosine * rPosition.GetX() -   sine * rPosition.GetY());
+        offset.SetY(  sine * rPosition.GetX() + cosine * rPosition.GetY());
+        
+        // have to compensate for the grid offset when getting the grid index
+        Point2<kt_int32s> gridPoint = m_pGrid->GetCoordinateConverter()->WorldToGrid(offset + gridOffset);
+        
+        // use base GridIndex to ignore ROI 
+        kt_int32s lookupIndex = m_pGrid->Grid<T>::GridIndex(gridPoint, false);
+
+        pAngleIndexPointer[readingIndex] = lookupIndex;
+
+        readingIndex++;
+      }
+    }
+        
+    /**
+     * Sets size of lookup table (resize if not big enough)
+     * @param size
+     */
+    void SetSize(kt_int32u size)
+    {
+      assert(size != 0);
+      
+      if (size > m_Capacity)
+      {
+        if (m_ppLookupArray != NULL)
+        {
+          DestroyArrays();
+        }
+        
+        m_Capacity = size;
+        m_ppLookupArray = new LookupArray*[m_Capacity];
+        for (kt_int32u i = 0; i < m_Capacity; i++)
+        {
+          m_ppLookupArray[i] = new LookupArray();
+        }        
+      }
+      
+      m_Size = size;
+    }
+
+    /**
+     * Delete the arrays
+     */
+    void DestroyArrays()
+    {
+      for (kt_int32u i = 0; i < m_Capacity; i++)
+      {
+        delete m_ppLookupArray[i];
+      }
+      
+      delete[] m_ppLookupArray;
+      m_ppLookupArray = NULL;      
+    }
+    
+  private:
+    Grid<T>* m_pGrid; 
+
+    kt_int32u m_Capacity;
+    kt_int32u m_Size;
+    
+    LookupArray **m_ppLookupArray;
+  }; // class GridIndexLookup
+
 }
 
 #endif // __KARTO_TYPES__

@@ -27,7 +27,7 @@ namespace karto
 {
   ////////////////////////////////////////////////////////////////////////////////////////
   // Listener classes
-  
+
   class MapperListener
   {
   public:
@@ -90,14 +90,14 @@ namespace karto
     {
       Update(rPose1, rPose2, rCovariance);
     }
-    
+
     /**
      * Destructor
      */
     virtual ~LinkInfo()
     {
     }
-    
+
   public:
     /**
      * Changes the link information to be the given parameters
@@ -109,18 +109,18 @@ namespace karto
     {
       m_Pose1 = rPose1;
       m_Pose2 = rPose2;
-      
+
       // transform second pose into the coordinate system of the first pose
       Transform transform(rPose1, Pose2());
       m_PoseDifference = transform.TransformPose(rPose2);
-      
+
       // transform covariance into reference of first pose
       Matrix3 rotationMatrix;
       rotationMatrix.FromAxisAngle(0, 0, 1, -rPose1.GetHeading());
-      
+
       m_Covariance = rotationMatrix * rCovariance * rotationMatrix.Transpose();
     }
-    
+
     /**
      * Gets the first pose
      * @return first pose
@@ -129,7 +129,7 @@ namespace karto
     {
       return m_Pose1;
     }
-    
+
     /**
      * Gets the second pose
      * @return second pose
@@ -138,7 +138,7 @@ namespace karto
     {
       return m_Pose2;
     }
-    
+
     /**
      * Gets the pose difference
      * @return pose difference
@@ -147,7 +147,7 @@ namespace karto
     {
       return m_PoseDifference;
     }
-    
+
     /**
      * Gets the link covariance
      * @return link covariance
@@ -156,7 +156,7 @@ namespace karto
     {
       return m_Covariance;
     }
-    
+
   private:
     Pose2 m_Pose1;
     Pose2 m_Pose2;
@@ -178,7 +178,7 @@ namespace karto
   class Vertex
   {
     friend class Edge<T>;
-    
+
   public:
     /**
      * Constructs a vertex representing the given object
@@ -188,14 +188,14 @@ namespace karto
       : m_pObject(pObject)
     {
     }
-    
+
     /**
      * Destructor
      */
     virtual ~Vertex()
     {
     }
-    
+
     /**
      * Gets edges adjacent to this vertex
      * @return adjacent edges
@@ -204,7 +204,7 @@ namespace karto
     {
       return m_Edges;
     }
-    
+
     /**
      * Gets the object associated with this vertex
      * @return the object
@@ -213,7 +213,7 @@ namespace karto
     {
       return m_pObject;
     }
-  
+
     /**
      * Gets a vector of the vertices adjacent to this vertex
      * @return adjacent vertices
@@ -221,26 +221,26 @@ namespace karto
     std::vector<Vertex<T>*> GetAdjacentVertices() const
     {
       std::vector<Vertex<T>*> vertices;
-      
+
       const_forEach(typename std::vector<Edge<T>*>, &m_Edges)
       {
         Edge<T>* pEdge = *iter;
-        
+
         // check both source and target because we have a undirected graph
         if (pEdge->GetSource() != this)
         {
           vertices.push_back(pEdge->GetSource());
         }
-        
+
         if (pEdge->GetTarget() != this)
         {
           vertices.push_back(pEdge->GetTarget());
         }
       }
-      
+
       return vertices;
     }
-    
+
   private:
     /**
      * Adds the given edge to this vertex's edge list
@@ -249,8 +249,8 @@ namespace karto
     inline void AddEdge(Edge<T>* pEdge)
     {
       m_Edges.push_back(pEdge);
-    }    
-    
+    }
+
     T* m_pObject;
     std::vector<Edge<T>*> m_Edges;
   }; // class Vertex
@@ -388,7 +388,7 @@ namespace karto
 
   protected:
     Graph<T>* m_pGraph;
-  }; // class GraphTraversal  
+  }; // class GraphTraversal
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -399,7 +399,7 @@ namespace karto
   {
   public:
     typedef std::map<kt_int32s, std::vector<Vertex<T>*> > VertexMap;
-    
+
   public:
     /**
      * Default constructor
@@ -427,7 +427,7 @@ namespace karto
     {
       m_Vertices[id].push_back(pVertex);
     }
-    
+
     /**
      * Adds an edge to the graph
      * @param pEdge
@@ -490,11 +490,12 @@ namespace karto
   class ScanSolver
   {
   public:
+    typedef std::vector<std::pair<kt_int32s, Pose2> > IdPoseVector;
+
     /**
      * Default constructor
      */
     ScanSolver()
-      : m_Computed(false)
     {
     };
 
@@ -509,43 +510,28 @@ namespace karto
     /**
      * Solve!
      */
-    void Compute()
-    {
-      if (!m_Computed)
-      {
-        InternalCompute();
-        m_Computed = true;
-      }
-    }
-
-    /**
-     * Initialize the data needed by solver
-     * @param rPoses
-     * @param rPoseDifferences
-     * @param rCovariances
-     * @param rLinkScanIDs
-     */
-    virtual void Initialize(const Pose2Vector& rPoses, const Pose2Vector& rPoseDifferences, const std::vector<Matrix3>& rCovariances, const Matrix& rLinkScanIDs) = 0;
+    virtual void Compute() = 0;
 
     /**
      * Get corrected poses after optimization
      * @return optimized poses
      */
-    virtual const Pose2Vector& GetCorrectedPoses() const = 0;
+    virtual const IdPoseVector& GetCorrections() const = 0;
+
+    /**
+     * Adds a node to the solver
+     */
+    virtual void AddNode(Vertex<LocalizedRangeScan>* pVertex) {}
+
+    /**
+     * Adds a constraint to the solver
+     */
+    virtual void AddConstraint(Edge<LocalizedRangeScan>* pEdge) {}
 
     /**
      * Resets the solver
      */
-    virtual void Clear() = 0;
-
-  protected:
-    /**
-     * Specific to each algorithm
-     */
-    virtual void InternalCompute() = 0;
-
-  protected:
-    kt_bool m_Computed;
+    virtual void Clear() {};
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -563,9 +549,9 @@ namespace karto
   {
     friend class MapperGraph;
     friend class ScanMatcher;
-    
+
   public:
-    /** 
+    /**
      * Default constructor
      */
     Mapper();
@@ -577,7 +563,7 @@ namespace karto
 
   public:
     /**
-     * Resets the mapper. 
+     * Resets the mapper.
      * Deallocate memory allocated in Initialize()
      */
     void Reset();
@@ -619,7 +605,7 @@ namespace karto
      * Set scan optimizer used by mapper when closing the loop
      * @param pSolver
      */
-    void SetScanOptimizer(ScanSolver* pSolver);
+    void SetScanSolver(ScanSolver* pSolver);
 
     /**
      * Get scan link graph
@@ -703,7 +689,7 @@ namespace karto
     std::vector<MapperListener*> m_Listeners;
 
 
-    /** 
+    /**
      * When set to true, the mapper will use a scan matching algorithm. In most real-world situations
      * this should be set to true so that the mapper algorithm can correct for noise and errors in
      * odometry and scan data. In some simulator environments where the simulated scan and odometry
