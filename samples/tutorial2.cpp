@@ -17,7 +17,7 @@
 
 #include "SpaSolver.h"
 
-#include <kt_Mapper.h>
+#include <OpenKarto/Mapper.h>
 
 /**
  * Sample code to demonstrate karto map creation
@@ -30,10 +30,10 @@ karto::Dataset* CreateMap(karto::Mapper* pMapper)
 
   /////////////////////////////////////
   // Create a laser range finder device - use SmartPointer to let karto subsystem manage memory.
-  std::string name = "";
-  karto::LaserRangeFinder* pLaserRangefinder = karto::LaserRangeFinder::CreateLaserRangeFinder(name, karto::LaserRangeFinder_Custom, 1);
+  karto::Name name("laser0");
+  karto::LaserRangeFinder* pLaserRangefinder = karto::LaserRangeFinder::CreateLaserRangeFinder(karto::LaserRangeFinder_Custom, name);
   pLaserRangefinder->SetOffsetPose(karto::Pose2(1.0, 0.0, 0.0));
-  pLaserRangefinder->SetAngularResolution(karto::Math::DegreesToRadians(0.5));
+  pLaserRangefinder->SetAngularResolution(karto::math::DegreesToRadians(0.5));
   pLaserRangefinder->SetRangeThreshold(12.0);
 
   /////////////////////////////////////
@@ -50,7 +50,7 @@ karto::Dataset* CreateMap(karto::Mapper* pMapper)
   }
   
   // create localized range scan
-  pLocalizedRangeScan = new karto::LocalizedRangeScan(pLaserRangefinder, readings);
+  pLocalizedRangeScan = new karto::LocalizedRangeScan(name, readings);
   pLocalizedRangeScan->SetOdometricPose(karto::Pose2(0.0, 0.0, 0.0));
   pLocalizedRangeScan->SetCorrectedPose(karto::Pose2(0.0, 0.0, 0.0));
 
@@ -64,7 +64,7 @@ karto::Dataset* CreateMap(karto::Mapper* pMapper)
   // 2. localized range scan
 
   // create localized range scan
-  pLocalizedRangeScan = new karto::LocalizedRangeScan(pLaserRangefinder, readings);
+  pLocalizedRangeScan = new karto::LocalizedRangeScan(name, readings);
   pLocalizedRangeScan->SetOdometricPose(karto::Pose2(1.0, 0.0, 1.57));
   pLocalizedRangeScan->SetCorrectedPose(karto::Pose2(1.0, 0.0, 1.57));
 
@@ -78,7 +78,7 @@ karto::Dataset* CreateMap(karto::Mapper* pMapper)
   // 3. localized range scan
 
   // create localized range scan
-  pLocalizedRangeScan = new karto::LocalizedRangeScan(pLaserRangefinder, readings);
+  pLocalizedRangeScan = new karto::LocalizedRangeScan(name, readings);
   pLocalizedRangeScan->SetOdometricPose(karto::Pose2(1.0, -1.0, 2.35619449));
   pLocalizedRangeScan->SetCorrectedPose(karto::Pose2(1.0, -1.0, 2.35619449));
 
@@ -115,7 +115,7 @@ void PrintOccupancyGrid(karto::OccupancyGrid* pOccupancyGrid)
     // Output ASCII representation of map
     kt_int32s width = pOccupancyGrid->GetWidth();
     kt_int32s height = pOccupancyGrid->GetHeight();
-    karto::Point2<kt_double> offset = pOccupancyGrid->GetCoordinateConverter()->GetOffset();
+    karto::Vector2<kt_double> offset = pOccupancyGrid->GetCoordinateConverter()->GetOffset();
 
     std::cout << "width = " << width << ", height = " << height << ", scale = " << pOccupancyGrid->GetCoordinateConverter()->GetScale() << ", offset: " << offset.GetX() << ", " << offset.GetY() << std::endl;
     for (kt_int32s y=0; y<height; y++)
@@ -123,7 +123,7 @@ void PrintOccupancyGrid(karto::OccupancyGrid* pOccupancyGrid)
       for (kt_int32s x=0; x<width; x++) 
       {
         // Getting the value at position x,y
-        kt_int8u value = pOccupancyGrid->GetValue(karto::Point2<kt_int32s>(x, y));
+        kt_int8u value = pOccupancyGrid->GetValue(karto::Vector2<kt_int32s>(x, y));
 
         switch (value)
         {
