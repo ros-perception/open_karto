@@ -60,16 +60,6 @@ ADD_LIBRARY(${LIB_NAME}
   ${SOURCE_FILES}
 )
 
-if(POCO_FOUND)
-  target_link_libraries(${LIB_NAME} ${POCO_LIBRARY})
-endif()
-
-karto_install_lib(${LIB_NAME})
-install(
-  FILES ${HEADER_FILES} 
-  DESTINATION include/${LIB_NAME}
-)
-
 install(
   FILES ${SOURCE_FILES} 
   DESTINATION source/${LIB_NAME}
