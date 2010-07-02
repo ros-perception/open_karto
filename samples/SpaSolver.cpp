@@ -16,7 +16,7 @@
  */
 
 #include "SpaSolver.h"
-#include <kt_Types.h>
+#include <OpenKarto/Karto.h>
 
 SpaSolver::SpaSolver()
 {
