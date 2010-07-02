@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+ADD_DEFINITIONS(-DUSE_SPA)
+
 if(WIN32)
   ADD_DEFINITIONS(-DEIGEN_DONT_ALIGN)
 endif()
@@ -37,4 +39,33 @@ target_link_libraries(Karto_Tutorial1 Karto)
 
 if (UNIX)
   target_link_libraries(Karto_Tutorial1 "pthread")
+endif()
+
+############################################################################
+# tutorial 2
+
+include_directories(${KartoOpenSource_SOURCE_DIR}/3rdParty/sba/include)
+
+add_executable(
+  Karto_Tutorial2
+  tutorial2.cpp
+  SpaSolver.h
+  SpaSolver.cpp
+)
+
+target_link_libraries(Karto_Tutorial2 Karto)
+target_link_libraries(Karto_Tutorial2 spa2d)
+target_link_libraries(Karto_Tutorial2 csparse)
+
+if(XERCES_FOUND)
+  target_link_libraries(Karto_Tutorial2 ${XERCES_LIBRARY_RELEASE})
+endif()
+
+if(PNG_FOUND)
+  target_link_libraries(Karto_Tutorial2 ${ZLIB_LIBRARIES})
+  target_link_libraries(Karto_Tutorial2 ${PNG_LIBRARIES})
+endif()
+
+if (UNIX)
+  target_link_libraries(Karto_Tutorial2 "pthread")
 endif()

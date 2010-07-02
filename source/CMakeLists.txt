@@ -14,11 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-
-CMAKE_MINIMUM_REQUIRED(VERSION 2.4.6)
  
 # set library name
-SET(LIB_NAME Karto)
+SET(LIB_NAME OpenKarto)
 
 PROJECT(${LIB_NAME})
 
@@ -27,18 +25,21 @@ if(WIN32)
   foreach(warning 4251)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd${warning}")
   endforeach(warning)
-endif(WIN32)
+endif()
 
 # define public header files
 SET(HEADER_FILES
-  kt_Types.h
-  kt_Mapper.h
+  OpenKarto/Karto.h
+  OpenKarto/Macros.h
+  OpenKarto/Mapper.h
+  OpenKarto/Math.h
+  OpenKarto/Types.h
 )
 
 # define source files
 SET(SOURCE_FILES
-  kt_Types.cpp
-  kt_Mapper.cpp
+  Karto.cpp
+  Mapper.cpp
 )
 
 # define 'Header Files' source group - used in Visual Studio
@@ -51,16 +52,6 @@ SOURCE_GROUP("Source Files" FILES
   ${SOURCE_FILES}
 )
 
-# Add platform specific definitions
-IF (WIN32)
-  ADD_DEFINITIONS(-D_UNICODE)
-ENDIF (WIN32)
-
-if (KARTO_STATIC)
-  ADD_DEFINITIONS(-DKARTO_STATIC)
-else (KARTO_STATIC)
-  ADD_DEFINITIONS(-DKARTO_DYNAMIC)
-endif (KARTO_STATIC)
 
 # setup kt target
 ADD_LIBRARY(${LIB_NAME}
@@ -68,22 +59,26 @@ ADD_LIBRARY(${LIB_NAME}
   ${HEADER_FILES}
   ${SOURCE_FILES}
 )
-# Also build a shared version of the library
-ADD_LIBRARY(${LIB_NAME}-shared SHARED
-  ${KARTO_LIB_TYPE}
-  ${HEADER_FILES}
-  ${SOURCE_FILES}
-)
-# Prevent deletion of existing lib of same name
-SET_TARGET_PROPERTIES(${LIB_NAME}-shared PROPERTIES CLEAN_DIRECT_OUTPUT 1)
-# Set output name to be the same as shared lib (may not work on
-# Windows)
-SET_TARGET_PROPERTIES(${LIB_NAME}-shared PROPERTIES OUTPUT_NAME ${LIB_NAME})
 
-# Install libraries and header(s)
-INSTALL(TARGETS ${LIB_NAME}
-        ARCHIVE DESTINATION "lib")
-INSTALL(TARGETS ${LIB_NAME}-shared
-        LIBRARY DESTINATION "lib")
-INSTALL(FILES kt_Mapper.h kt_Types.h
-        DESTINATION "include/karto")
+if(POCO_FOUND)
+  target_link_libraries(${LIB_NAME} ${POCO_LIBRARY})
+endif()
+
+karto_install_lib(${LIB_NAME})
+install(
+  FILES ${HEADER_FILES} 
+  DESTINATION include/${LIB_NAME}
+)
+
+install(
+  FILES ${SOURCE_FILES} 
+  DESTINATION source/${LIB_NAME}
+)
+
+# install dependent dlls 
+if (UNIX)
+  install (TARGETS ${LIB_NAME} DESTINATION lib)
+endif(UNIX)
+
+
+
