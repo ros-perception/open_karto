@@ -32,28 +32,23 @@ include_directories(../source)
 
 ############################################################################
 # tutorial 1
-#add_executable(
-#  Karto_Tutorial1 
-#  tutorial1.cpp
-#)
+add_executable(
+  Karto_Tutorial1 
+  tutorial1.cpp
+)
 
-#target_link_libraries(Karto_Tutorial1 OpenKarto)
+target_link_libraries(Karto_Tutorial1 OpenKarto)
 
-#if (UNIX)
-#  target_link_libraries(Karto_Tutorial1 "pthread")
-#endif()
+if (UNIX)
+  target_link_libraries(Karto_Tutorial1 "pthread")
+endif()
 
 ############################################################################
 # tutorial 2
 
-message(STATUS "HELLO")
-message(STATUS ${KartoOpenSource_SOURCE_DIR})
 include_directories(${KartoOpenSource_SOURCE_DIR}/3rdParty/CSparse/Include)
 include_directories(${KartoOpenSource_SOURCE_DIR}/3rdParty/sba/include)
 include_directories(${KartoOpenSource_SOURCE_DIR}/3rdParty/eigen)
-#include_directories(/Users/bensonl/karto/sdk/3rdParty/eigen)
-#include_directories(/Users/bensonl/karto/sdk/3rdParty/CSparse/Include)
-#include_directories(/Users/bensonl/karto/sdk/3rdParty/sba/include)
 
 add_executable(
   Karto_Tutorial2
