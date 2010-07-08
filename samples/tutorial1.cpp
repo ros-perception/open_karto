@@ -29,10 +29,12 @@ karto::Dataset* CreateMap(karto::Mapper* pMapper)
   /////////////////////////////////////
   // Create a laser range finder device - use SmartPointer to let karto subsystem manage memory.
   karto::Name name("laser0");
-  karto::LaserRangeFinder* pLaserRangefinder = karto::LaserRangeFinder::CreateLaserRangeFinder(karto::LaserRangeFinder_Custom, name);
-  pLaserRangefinder->SetOffsetPose(karto::Pose2(1.0, 0.0, 0.0));
-  pLaserRangefinder->SetAngularResolution(karto::math::DegreesToRadians(0.5));
-  pLaserRangefinder->SetRangeThreshold(12.0);
+  karto::LaserRangeFinder* pLaserRangeFinder = karto::LaserRangeFinder::CreateLaserRangeFinder(karto::LaserRangeFinder_Custom, name);
+  pLaserRangeFinder->SetOffsetPose(karto::Pose2(1.0, 0.0, 0.0));
+  pLaserRangeFinder->SetAngularResolution(karto::math::DegreesToRadians(0.5));
+  pLaserRangeFinder->SetRangeThreshold(12.0);
+
+  pDataset->Add(pLaserRangeFinder);
 
   /////////////////////////////////////
   // Create three localized range scans, all using the same range readings, but with different poses. 
@@ -116,7 +118,7 @@ void PrintOccupancyGrid(karto::OccupancyGrid* pOccupancyGrid)
     karto::Vector2<kt_double> offset = pOccupancyGrid->GetCoordinateConverter()->GetOffset();
 
     std::cout << "width = " << width << ", height = " << height << ", scale = " << pOccupancyGrid->GetCoordinateConverter()->GetScale() << ", offset: " << offset.GetX() << ", " << offset.GetY() << std::endl;
-    for (kt_int32s y=0; y<height; y++)
+    for (kt_int32s y=height-1; y>=0; y--)
     {
       for (kt_int32s x=0; x<width; x++) 
       {
