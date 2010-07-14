@@ -74,7 +74,7 @@ namespace karto
     inline void AddScan(LocalizedRangeScan* pScan, kt_int32s uniqueId)
     {
       // assign state id to scan
-      pScan->SetStateId(m_Scans.size());
+      pScan->SetStateId(static_cast<kt_int32u>(m_Scans.size()));
 
       // assign unique id to scan
       pScan->SetUniqueId(uniqueId);
@@ -508,7 +508,7 @@ namespace karto
     // calculate pose response array size
     kt_int32u nAngles = static_cast<kt_int32u>(math::Round(searchAngleOffset * 2.0 / searchAngleResolution) + 1);
     
-    kt_int32u poseResponseSize = xPoses.size() * yPoses.size() * nAngles;
+    kt_int32u poseResponseSize = static_cast<kt_int32u>(xPoses.size() * yPoses.size() * nAngles);
     
     // allocate array
     std::pair<kt_double, Pose2>* pPoseResponse = new std::pair<kt_double, Pose2>[poseResponseSize];
@@ -1409,7 +1409,7 @@ namespace karto
       chain.push_back(pNearScan);
       
       // add scans after current scan being processed
-      kt_int32u end = m_pMapper->m_pMapperSensorManager->GetScans(pNearScan->GetSensorName()).size();
+      kt_int32u end = static_cast<kt_int32u>(m_pMapper->m_pMapperSensorManager->GetScans(pNearScan->GetSensorName()).size());
       for (kt_int32u candidateScanNum = pNearScan->GetStateId() + 1; candidateScanNum < end; candidateScanNum++)
       {
         LocalizedRangeScan* pCandidateScan = m_pMapper->m_pMapperSensorManager->GetScan(pNearScan->GetSensorName(), candidateScanNum);
@@ -1509,7 +1509,7 @@ namespace karto
     // path of links to the scan of interest
     const LocalizedRangeScanVector nearLinkedScans = FindNearLinkedScans(pScan, m_pMapper->m_pLoopSearchMaximumDistance->GetValue());
     
-    kt_int32u nScans = m_pMapper->m_pMapperSensorManager->GetScans(rSensorName).size();
+    kt_int32u nScans = static_cast<kt_int32u>(m_pMapper->m_pMapperSensorManager->GetScans(rSensorName).size());
     for (; rStartNum < nScans; rStartNum++)
     {
       LocalizedRangeScan* pCandidateScan = m_pMapper->m_pMapperSensorManager->GetScan(rSensorName, rStartNum);
@@ -1811,68 +1811,73 @@ namespace karto
 
   kt_bool Mapper::Process(LocalizedRangeScan* pScan)
   {
-    karto::LaserRangeFinder* pLaserRangeFinder = pScan->GetLaserRangeFinder();
-
-    // validate scan
-    if (pLaserRangeFinder == NULL || pScan == NULL || pLaserRangeFinder->Validate(pScan) == false)
+    if(pScan != NULL)
     {
-      return false;
-    }
+      karto::LaserRangeFinder* pLaserRangeFinder = pScan->GetLaserRangeFinder();
 
-    if (m_Initialized == false)
-    {
-      // initialize mapper with range threshold from device
-      Initialize(pLaserRangeFinder->GetRangeThreshold());
-    }
-
-    // get last scan
-    LocalizedRangeScan* pLastScan = m_pMapperSensorManager->GetLastScan(pScan->GetSensorName());
-
-    // update scans corrected pose based on last correction
-    if (pLastScan != NULL)
-    {
-      Transform lastTransform(pLastScan->GetOdometricPose(), pLastScan->GetCorrectedPose());
-      pScan->SetCorrectedPose(lastTransform.TransformPose(pScan->GetOdometricPose()));
-    }
-
-    // test if scan is outside minimum boundary or if heading is larger then minimum heading
-    if (!HasMovedEnough(pScan, pLastScan))
-    {
-      return false;
-    }
-
-    Matrix3 covariance;
-    covariance.SetToIdentity();
-
-    // correct scan (if not first scan)
-    if (m_pUseScanMatching->GetValue() && pLastScan != NULL)
-    {
-      Pose2 bestPose;
-      m_pSequentialScanMatcher->MatchScan(pScan, m_pMapperSensorManager->GetRunningScans(pScan->GetSensorName()), bestPose, covariance);
-      pScan->SetSensorPose(bestPose);
-    }
-
-    // add scan to buffer and assign id
-    m_pMapperSensorManager->AddScan(pScan);
-
-    if (m_pUseScanMatching->GetValue())
-    {
-      // add to graph
-      m_pGraph->AddVertex(pScan);
-      m_pGraph->AddEdges(pScan, covariance);
-
-      m_pMapperSensorManager->AddRunningScan(pScan);
-
-      std::vector<Name> deviceNames = m_pMapperSensorManager->GetSensorNames();
-      const_forEach(std::vector<Name>, &deviceNames)
+      // validate scan
+      if (pLaserRangeFinder == NULL || pScan == NULL || pLaserRangeFinder->Validate(pScan) == false)
       {
-        m_pGraph->TryCloseLoop(pScan, *iter);
+        return false;
       }
+
+      if (m_Initialized == false)
+      {
+        // initialize mapper with range threshold from device
+        Initialize(pLaserRangeFinder->GetRangeThreshold());
+      }
+
+      // get last scan
+      LocalizedRangeScan* pLastScan = m_pMapperSensorManager->GetLastScan(pScan->GetSensorName());
+
+      // update scans corrected pose based on last correction
+      if (pLastScan != NULL)
+      {
+        Transform lastTransform(pLastScan->GetOdometricPose(), pLastScan->GetCorrectedPose());
+        pScan->SetCorrectedPose(lastTransform.TransformPose(pScan->GetOdometricPose()));
+      }
+
+      // test if scan is outside minimum boundary or if heading is larger then minimum heading
+      if (!HasMovedEnough(pScan, pLastScan))
+      {
+        return false;
+      }
+
+      Matrix3 covariance;
+      covariance.SetToIdentity();
+
+      // correct scan (if not first scan)
+      if (m_pUseScanMatching->GetValue() && pLastScan != NULL)
+      {
+        Pose2 bestPose;
+        m_pSequentialScanMatcher->MatchScan(pScan, m_pMapperSensorManager->GetRunningScans(pScan->GetSensorName()), bestPose, covariance);
+        pScan->SetSensorPose(bestPose);
+      }
+
+      // add scan to buffer and assign id
+      m_pMapperSensorManager->AddScan(pScan);
+
+      if (m_pUseScanMatching->GetValue())
+      {
+        // add to graph
+        m_pGraph->AddVertex(pScan);
+        m_pGraph->AddEdges(pScan, covariance);
+
+        m_pMapperSensorManager->AddRunningScan(pScan);
+
+        std::vector<Name> deviceNames = m_pMapperSensorManager->GetSensorNames();
+        const_forEach(std::vector<Name>, &deviceNames)
+        {
+          m_pGraph->TryCloseLoop(pScan, *iter);
+        }
+      }
+
+      m_pMapperSensorManager->SetLastScan(pScan);
+
+      return true;
     }
 
-    m_pMapperSensorManager->SetLastScan(pScan);
-
-    return true;
+    return false;
   }
 
   /**

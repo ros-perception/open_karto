@@ -455,6 +455,7 @@ namespace karto
 
     /**
      * Write Name onto output stream
+     * @param rStream output stream
      * @param rName to write
      */
     friend inline std::ostream& operator << (std::ostream& rStream, const Name& rName)
@@ -706,10 +707,18 @@ namespace karto
   class KARTO_EXPORT Module : public Object
   {
   public:
-    KARTO_Object(Module)
+    KARTO_Object(Module);
     
   public:
+    /**
+     * Construct a Module
+     * @param rName module name
+     */
     Module(const std::string& rName);
+
+    /**
+     * Destructor
+     */
     virtual ~Module();
 
   public:
@@ -832,6 +841,7 @@ namespace karto
 
     /**
      * Write Size2 onto output stream
+     * @param rStream output stream
      * @param rSize to write
      */
     friend inline std::ostream& operator << (std::ostream& rStream, const Size2& rSize)
@@ -1099,6 +1109,7 @@ namespace karto
 
     /**
      * Write Vector2 onto output stream
+     * @param rStream output stream
      * @param rVector to write
      */
     friend inline std::ostream& operator << (std::ostream& rStream, const Vector2& rVector)
@@ -1109,6 +1120,7 @@ namespace karto
     
     /**
      * Read Vector2 from input stream
+     * @param rStream input stream
      * @param rVector to read
      */
     friend inline std::istream& operator >> (std::istream& rStream, const Vector2& /*rVector*/)
@@ -1358,6 +1370,7 @@ namespace karto
 
     /**
      * Write Vector3 onto output stream
+     * @param rStream output stream
      * @param rVector to write
      */
     friend inline std::ostream& operator << (std::ostream& rStream, const Vector3& rVector)
@@ -1368,6 +1381,7 @@ namespace karto
 
     /**
      * Read Vector3 from input stream
+     * @param rStream input stream
      * @param rVector to read
      */
     friend inline std::istream& operator >> (std::istream& rStream, const Vector3& /*rVector*/)
@@ -1597,7 +1611,7 @@ namespace karto
 
     /**
      * Write this quaternion onto output stream
-     * @param rStream
+     * @param rStream output stream
      * @param rQuaternion
      */
     friend inline std::ostream& operator << (std::ostream& rStream, const Quaternion& rQuaternion)
@@ -1642,12 +1656,20 @@ namespace karto
     {
     }
 
+    /**
+     * Constructor initializing rectangle parameters
+     * @param rPosition (x,y)-coordinate of rectangle
+     * @param rSize Size of the rectangle
+     */
     Rectangle2(const Vector2<T>& rPosition, const Size2<T>& rSize)
       : m_Position(rPosition)
       , m_Size(rSize)
     {
     }
 
+    /**
+     * Copy constructor
+     */
     Rectangle2(const Rectangle2& rOther)
       : m_Position(rOther.m_Position)
       , m_Size(rOther.m_Size)
@@ -1884,7 +1906,7 @@ namespace karto
 
     /**
      * Sets the x-coordinate
-     * @param the x-coordinate of the pose
+     * @param x the x-coordinate of the pose
      */
     inline void SetX(kt_double x)
     {
@@ -1902,7 +1924,7 @@ namespace karto
 
     /**
      * Sets the y-coordinate
-     * @param the y-coordinate of the pose
+     * @param y the y-coordinate of the pose
      */
     inline void SetY(kt_double y)
     {
@@ -2009,6 +2031,7 @@ namespace karto
 
     /**
      * Read pose from input stream
+     * @param rStream input stream
      * @param rPose to write
      */
     friend inline std::istream& operator >> (std::istream& rStream, const Pose2& /*rPose*/)
@@ -2019,6 +2042,7 @@ namespace karto
     
     /**
      * Write this pose onto output stream
+     * @param rStream output stream
      * @param rPose to read
      */
     friend inline std::ostream& operator << (std::ostream& rStream, const Pose2& rPose)
@@ -2178,6 +2202,7 @@ namespace karto
 
     /**
      * Write Pose3 onto output stream
+     * @param rStream output stream
      * @param rPose to write
      */
     friend inline std::ostream& operator << (std::ostream& rStream, const Pose3& rPose)
@@ -2188,6 +2213,7 @@ namespace karto
 
     /**
      * Read Pose3 from input stream
+     * @param rStream input stream
      * @param rPose to read
      */
     friend inline std::istream& operator >> (std::istream& rStream, const Pose3& /*rPose*/)
@@ -2462,6 +2488,7 @@ namespace karto
     
     /**
      * Write Matrix3 onto output stream
+     * @param rStream output stream
      * @param rMatrix to write
      */
     friend inline std::ostream& operator << (std::ostream& rStream, const Matrix3& rMatrix)
@@ -2907,7 +2934,7 @@ namespace karto
   public:
     /**
      * Write this parameter onto output stream
-     * @param rStream
+     * @param rStream output stream
      * @param rParameter
      */
     friend std::ostream& operator << (std::ostream& rStream, const AbstractParameter& rParameter)
@@ -3254,9 +3281,13 @@ namespace karto
   class KARTO_EXPORT Sensor : public Object
   {
   public:
-    KARTO_Object(Sensor)
+    KARTO_Object(Sensor);
 
   protected:
+    /**
+     * Construct a Sensor
+     * @param rName sensor name
+     */
     Sensor(const Name& rName);
 
   public:
@@ -3344,6 +3375,9 @@ namespace karto
     }
 
   public:
+    /**
+     * Get singleton instance of SensorManager
+     */
     static SensorManager* GetInstance();
 
   public:
@@ -4085,6 +4119,10 @@ namespace karto
       m_Size = rSize;
     }
 
+    /**
+     * Gets the size
+     * @return size
+     */
     inline const Size2<kt_int32s>& GetSize() const
     {
       return m_Size;
@@ -4562,7 +4600,7 @@ namespace karto
   class KARTO_EXPORT SensorData : public Object
   {
   public:
-    KARTO_Object(SensorData)
+    KARTO_Object(SensorData);
 
   public:
     /**
