@@ -46,9 +46,9 @@ endif()
 ############################################################################
 # tutorial 2
 
-include_directories(${KartoOpenSource_SOURCE_DIR}/3rdParty/CSparse/Include)
-include_directories(${KartoOpenSource_SOURCE_DIR}/3rdParty/sba/include)
-include_directories(${KartoOpenSource_SOURCE_DIR}/3rdParty/eigen)
+include_directories(${CSPARSE_DIR}/CSparse/Include)
+include_directories(${SBA_DIR}/sba/include)
+include_directories(${EIGEN_DIR}/eigen)
 
 add_executable(
   Karto_Tutorial2
