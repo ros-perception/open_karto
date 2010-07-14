@@ -1499,6 +1499,7 @@ namespace karto
 
     /**
      * Converts this quaternion into Euler angles
+     * Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/index.htm
      * @param rYaw
      * @param rPitch
      * @param rRoll
@@ -1510,16 +1511,16 @@ namespace karto
       if (test > 0.499)
       { 
         // singularity at north pole
-        rPitch = 2 * atan2(m_Values[0], m_Values[3]);
-        rRoll = KT_PI_2;
-        rYaw = 0;
+        rYaw = 2 * atan2(m_Values[0], m_Values[3]);;
+        rPitch = KT_PI_2;
+        rRoll = 0;
       }
       else if (test < -0.499)
       { 
         // singularity at south pole
-        rPitch = -2 * atan2(m_Values[0], m_Values[3]);
-        rRoll = -KT_PI_2;
-        rYaw = 0;
+        rYaw = -2 * atan2(m_Values[0], m_Values[3]);
+        rPitch = -KT_PI_2;
+        rRoll = 0;
       }
       else
       {
@@ -1527,14 +1528,15 @@ namespace karto
         kt_double sqy = m_Values[1] * m_Values[1];
         kt_double sqz = m_Values[2] * m_Values[2];
 
-        rPitch = atan2(2 * m_Values[1] * m_Values[3] - 2 * m_Values[0] * m_Values[2], 1 - 2 * sqy - 2 * sqz);
-        rRoll = asin(2 * test);
-        rYaw = atan2(2 * m_Values[0] * m_Values[3] - 2 * m_Values[1] * m_Values[2], 1 - 2 * sqx - 2 * sqz);
+        rYaw = atan2(2 * m_Values[1] * m_Values[3] - 2 * m_Values[0] * m_Values[2], 1 - 2 * sqy - 2 * sqz);
+        rPitch = asin(2 * test);
+        rRoll = atan2(2 * m_Values[0] * m_Values[3] - 2 * m_Values[1] * m_Values[2], 1 - 2 * sqx - 2 * sqz);
       }
     }
 
     /**
      * Set x,y,z,w values of the quaternion based on Euler angles. 
+     * Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/eulerToQuaternion/index.htm
      * @param yaw
      * @param pitch
      * @param roll
@@ -1555,10 +1557,10 @@ namespace karto
       kt_double cRoll = cos(angle);
       kt_double sRoll = sin(angle);
 
-      m_Values[0] = cPitch * cRoll * sYaw + sPitch * sRoll * cYaw;
-      m_Values[1] = sPitch * cRoll * cYaw + cPitch * sRoll * sYaw;
-      m_Values[2] = cPitch * sRoll * cYaw - sPitch * cRoll * sYaw;
-      m_Values[3] = cPitch * cRoll * cYaw - sPitch * sRoll * sYaw;
+      m_Values[0] = sYaw * sPitch * cRoll + cYaw * cPitch * sRoll;
+      m_Values[1] = sYaw * cPitch * cRoll + cYaw * sPitch * sRoll;
+      m_Values[2] = cYaw * sPitch * cRoll - sYaw * cPitch * sRoll;
+      m_Values[3] = cYaw * cPitch * cRoll - sYaw * sPitch * sRoll;
     }
 
     /**
@@ -2576,12 +2578,12 @@ namespace karto
       }
       catch (std::bad_alloc exception)
       {
-        throw std::runtime_error("Matrix allocation error");
+        throw Exception("Matrix allocation error");
       }
       
       if (m_pData == NULL)
       {
-        throw std::runtime_error("Matrix allocation error");
+        throw Exception("Matrix allocation error");
       }
     }
     
@@ -2594,12 +2596,12 @@ namespace karto
     {
       if (math::IsUpTo(row, m_Rows) == false)
       {
-        throw std::runtime_error("Matrix - RangeCheck ERROR!!!!");
+        throw Exception("Matrix - RangeCheck ERROR!!!!");
       }
 
       if (math::IsUpTo(column, m_Columns) == false)
       {
-        throw std::runtime_error("Matrix - RangeCheck ERROR!!!!");
+        throw Exception("Matrix - RangeCheck ERROR!!!!");
       }
     }
 
@@ -3135,7 +3137,14 @@ namespace karto
       }
       else
       {
-        throw std::runtime_error("Unable set enum");
+        std::string validValues;
+
+        const_forEach(EnumMap, &m_EnumDefines)
+        {
+          validValues += iter->first + ", ";
+        }
+
+        throw Exception("Unable to set enum: " + rStringValue + ". Valid values are: " + validValues);
       }
     }
 
@@ -3153,7 +3162,7 @@ namespace karto
         }
       }
 
-      throw std::runtime_error("Unable to lookup enum");
+      throw Exception("Unable to lookup enum");
     }
 
     /**
@@ -3169,9 +3178,10 @@ namespace karto
       }
       else
       {
+        std::cerr << "Overriding enum value: " << m_EnumDefines[rName] << " with " << value << std::endl;
+
         m_EnumDefines[rName] = value;
 
-        std::cerr << "Overriding enum value" << std::endl;
         assert(false);
       }
     }
@@ -3352,7 +3362,8 @@ namespace karto
         throw Exception("Cannot register sensor:  already registered:  " + pSensor->GetName().ToString());
       }
 
-      std::cout << "Registering sensor:  " << pSensor->GetName().ToString() << std::endl;
+      std::cout << "Registering sensor: " << pSensor->GetName().ToString() << std::endl;
+      
       m_Sensors[pSensor->GetName()] = pSensor;
     }
 
@@ -3366,6 +3377,8 @@ namespace karto
 
       if(m_Sensors.find(pSensor->GetName()) != m_Sensors.end())
       {
+        std::cout << "Unregistering sensor: " << pSensor->GetName().ToString() << std::endl;
+
         m_Sensors.erase(pSensor->GetName());
       }
       else
@@ -3386,7 +3399,7 @@ namespace karto
         return m_Sensors[rName];
       }
 
-      throw Exception("Sensor not registered:  " + rName.ToString());
+      throw Exception("Sensor not registered:  " + rName.ToString() + " (Did you add the sensor to the Dataset?)");
     }
     
     /**
@@ -3523,7 +3536,7 @@ namespace karto
     {
     }
 
-  public:
+  public:   
     /**
      * Gets this range finder sensor's minimum range
      * @return minimum range
@@ -3563,26 +3576,6 @@ namespace karto
 
       SetRangeThreshold(GetRangeThreshold());
     }
-    
-    /**
-     * Gets this range finder sensor's minimum angle
-     * @return minimum angle
-     */
-    inline kt_double GetMinimumAngle() const
-    {
-      return m_pMinimumAngle->GetValue();
-    }
-    
-    /**
-     * Sets this range finder sensor's minimum angle
-     * @param minimumAngle
-     */
-    inline void SetMinimumAngle(kt_double minimumAngle)
-    {
-      m_pMinimumAngle->SetValue(minimumAngle);
-
-      Update();
-    }
 
     /**
      * Gets the range threshold
@@ -3606,6 +3599,26 @@ namespace karto
       {
         std::cout << "Info: clipped range threshold to be within minimum and maximum range!" << std::endl;
       }
+    }
+
+    /**
+     * Gets this range finder sensor's minimum angle
+     * @return minimum angle
+     */
+    inline kt_double GetMinimumAngle() const
+    {
+      return m_pMinimumAngle->GetValue();
+    }
+    
+    /**
+     * Sets this range finder sensor's minimum angle
+     * @param minimumAngle
+     */
+    inline void SetMinimumAngle(kt_double minimumAngle)
+    {
+      m_pMinimumAngle->SetValue(minimumAngle);
+
+      Update();
     }
 
     /**
@@ -4243,7 +4256,7 @@ namespace karto
         {
           std::stringstream error;
           error << "Index " << rGrid << " out of range.  Index must be between [0; " << m_Width << ") and [0; " << m_Height << ")";
-          throw std::runtime_error(error.str());          
+          throw Exception(error.str());          
         }
       }
 
@@ -4580,7 +4593,7 @@ namespace karto
      * Gets sensor unique id
      * @return unique id
      */
-    inline kt_int32s GetUniqueId()
+    inline kt_int32s GetUniqueId() const
     {
       return m_UniqueId;
     }
@@ -4744,7 +4757,7 @@ namespace karto
       //{
       //  std::stringstream error;
       //  error << "Given number of readings (" << rRangeReadings.size() << ") does not match expected number of range finder (" << GetNumberOfRangeReadings() << ")";
-      //  throw std::runtime_error(error.str());
+      //  throw Exception(error.str());
       //}
 
       if (rRangeReadings.size() > 0)
@@ -4755,7 +4768,7 @@ namespace karto
           delete [] m_pRangeReadings;
 
           // store size of array!
-          m_NumberOfRangeReadings = rRangeReadings.size();
+          m_NumberOfRangeReadings = static_cast<kt_int32u>(rRangeReadings.size());
 
           // allocate range readings
           m_pRangeReadings = new kt_double[m_NumberOfRangeReadings];
@@ -5985,7 +5998,7 @@ namespace karto
      */
     void ComputeOffsets(kt_int32u angleIndex, kt_double angle, const Pose2Vector& rLocalPoints)
     {
-      m_ppLookupArray[angleIndex]->SetSize(rLocalPoints.size());
+      m_ppLookupArray[angleIndex]->SetSize(static_cast<kt_int32u>(rLocalPoints.size()));
       m_Angles.at(angleIndex) = angle;
       
       // set up point array by computing relative offsets to points readings
