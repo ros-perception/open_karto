@@ -28,23 +28,49 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   // Listener classes
 
+  /**
+   * Abstract class to listen to mapper general messages
+   */
   class MapperListener
   {
   public:
+    /**
+     * Called with general message
+     */
     virtual void Info(const std::string& /*rInfo*/) {};
   };
 
+  /**
+   * Abstract class to listen to mapper debug messages
+   */
   class MapperDebugListener
   {
   public:
+    /**
+     * Called with debug message
+     */
     virtual void Debug(const std::string& /*rInfo*/) {};
   };
 
+  /**
+   * Abstract class to listen to mapper loop closure messages
+   */
   class MapperLoopClosureListener : public MapperListener
   {
   public:
+    /**
+     * Called when checking for loop closures
+     */    
     virtual void LoopClosureCheck(const std::string& /*rInfo*/) {};
+
+    /**
+     * Called when loop closure is starting
+     */    
     virtual void BeginLoopClosure(const std::string& /*rInfo*/) {};
+    
+    /**
+     * Called when loop closure is over
+     */    
     virtual void EndLoopClosure(const std::string& /*rInfo*/) {};
   }; // MapperListener
 
@@ -52,6 +78,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Class for edge labels
+   */
   class EdgeLabel
   {
   public:
@@ -259,6 +288,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Represents an edge in a graph
+   */
   template<typename T>
   class Edge
   {
@@ -322,7 +354,7 @@ namespace karto
 
     /**
      * Sets the link payload
-     * @param pTag
+     * @param pLabel
      */
     inline void SetLabel(EdgeLabel* pLabel)
     {
@@ -339,6 +371,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Visitor class
+   */
   template<typename T>
   class Visitor
   {
@@ -358,6 +393,9 @@ namespace karto
   template<typename T>
   class Graph;
 
+  /**
+   * Graph traversal algorithm
+   */
   template<typename T>
   class GraphTraversal
   {
@@ -387,6 +425,9 @@ namespace karto
     virtual std::vector<T*> Traverse(Vertex<T>* pStartVertex, Visitor<T>* pVisitor) = 0;
 
   protected:
+    /**
+     * Graph being traversed
+     */
     Graph<T>* m_pGraph;
   }; // GraphTraversal<T>
 
@@ -394,10 +435,16 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Graph
+   */
   template<typename T>
   class Graph
   {
   public:
+    /**
+     * Maps names to vector of vertices
+     */
     typedef std::map<Name, std::vector<Vertex<T>*> > VertexMap;
 
   public:
@@ -405,7 +452,6 @@ namespace karto
      * Default constructor
      */
     Graph()
-      : m_pTraversal(NULL)
     {
     }
 
@@ -478,9 +524,15 @@ namespace karto
     }
 
   protected:
+    /**
+     * Map of names to vector of vertices
+     */
     VertexMap m_Vertices;
-    std::vector<Edge<T>*> m_Edges;
-    GraphTraversal<T>* m_pTraversal;
+    
+    /**
+     * Edges of this graph
+     */
+    std::vector<Edge<T>*> m_Edges;    
   }; // Graph<T>
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -490,14 +542,16 @@ namespace karto
   class Mapper;
   class ScanMatcher;
 
+  /**
+   * Graph for graph SLAM algorithm
+   */
   class KARTO_EXPORT MapperGraph : public Graph<LocalizedRangeScan>
   {
   public:
     /**
      * Graph for graph SLAM
      * @param pMapper
-     * @param rParameters
-     * @param pSensorManager
+     * @param rangeThreshold
      */
     MapperGraph(Mapper* pMapper, kt_double rangeThreshold);
     
@@ -628,18 +682,35 @@ namespace karto
     void CorrectPoses();
     
   private:
+    /**
+     * Mapper of this graph
+     */
     Mapper* m_pMapper;
     
+    /**
+     * Scan matcher for loop closures
+     */
     ScanMatcher* m_pLoopScanMatcher;    
+    
+    /**
+     * Traversal algorithm to find near linked scans
+     */
+    GraphTraversal<LocalizedRangeScan>* m_pTraversal;    
   }; // MapperGraph
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   
+  /**
+   * Graph optimization algorithm
+   */
   class ScanSolver
   {
   public:
+    /**
+     * Vector of id-pose pairs
+     */
     typedef std::vector<std::pair<kt_int32s, Pose2> > IdPoseVector;
 
     /**
@@ -670,7 +741,6 @@ namespace karto
 
     /**
      * Adds a node to the solver
-     * @param pVertex
      */
     virtual void AddNode(Vertex<LocalizedRangeScan>* /*pVertex*/)
     {
@@ -678,7 +748,6 @@ namespace karto
 
     /**
      * Removes a node from the solver
-     * @param id
      */
     virtual void RemoveNode(kt_int32s /*id*/)
     {
@@ -686,7 +755,6 @@ namespace karto
 
     /**
      * Adds a constraint to the solver
-     * @param pEdge
      */
     virtual void AddConstraint(Edge<LocalizedRangeScan>* /*pEdge*/)
     {
@@ -694,8 +762,6 @@ namespace karto
     
     /**
      * Removes a constraint from the solver
-     * @param sourceId
-     * @param targetId
      */
     virtual void RemoveConstraint(kt_int32s /*sourceId*/, kt_int32s /*targetId*/)
     {
@@ -730,7 +796,8 @@ namespace karto
      * Create a correlation grid of given size and parameters
      * @param width
      * @param height
-     * @param params
+     * @param resolution
+     * @param smearDeviation
      * @return correlation grid
      */
     static CorrelationGrid* CreateGrid(kt_int32s width, kt_int32s height, kt_double resolution, kt_double smearDeviation)
@@ -822,7 +889,9 @@ namespace karto
      * Constructs a correlation grid of given size and parameters
      * @param width
      * @param height
-     * @param parameters
+     * @param borderSize
+     * @param resolution
+     * @param smearDeviation
      */
     CorrelationGrid(kt_int32u width, kt_int32u height, kt_int32u borderSize, kt_double resolution, kt_double smearDeviation)
       : Grid<kt_int8u>(width + borderSize * 2, height + borderSize * 2)
@@ -898,7 +967,8 @@ namespace karto
     /**
      * Computes the kernel half-size based on the smear distance and the grid resolution.
      * Computes to two standard deviations to get 95% region and to reduce aliasing.
-     * @param params
+     * @param smearDeviation
+     * @param resolution
      * @return kernel half-size based on the parameters
      */
     static kt_int32s GetHalfKernelSize(kt_double smearDeviation, kt_double resolution)
@@ -929,6 +999,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   
+  /**
+   * Scan matcher
+   */
   class KARTO_EXPORT ScanMatcher
   {
   public:
@@ -960,7 +1033,7 @@ namespace karto
      * Finds the best pose for the scan centering the search in the correlation grid
      * at the given pose and search in the space by the vector and angular offsets
      * in increments of the given resolutions
-     * @param rScan scan to match against correlation grid
+     * @param pScan scan to match against correlation grid
      * @param rSearchCenter the center of the search space
      * @param rSearchSpaceOffset searches poses in the area offset by this vector around search center
      * @param rSearchSpaceResolution how fine a granularity to search in the search space
@@ -994,7 +1067,7 @@ namespace karto
      * @param rBestPose
      * @param bestResponse
      * @param rSearchCenter
-     * @param rSearchAngleOffset
+     * @param searchAngleOffset
      * @param searchAngleResolution
      * @param rCovariance
      */
@@ -1097,14 +1170,14 @@ namespace karto
     
   public:
     /**
-     * Registers a device (with given name); do
+     * Registers a sensor (with given name); do
      * nothing if device already registered
-     * @param id
+     * @param rSensorName
      */
     void RegisterSensor(const Name& rSensorName);
     
     /**
-     * Gets scan from given device with given ID
+     * Gets scan from given sensor with given ID
      * @param rSensorName
      * @param scanIndex
      * @return localized range scan
@@ -1112,8 +1185,8 @@ namespace karto
     LocalizedRangeScan* GetScan(const Name& rSensorName, kt_int32s scanIndex);
     
     /**
-     * Gets names of all devices
-     * @return device IDs
+     * Gets names of all sensors
+     * @return sensor names
      */
     inline std::vector<Name> GetSensorNames()
     {
@@ -1127,9 +1200,9 @@ namespace karto
     }
     
     /**
-     * Gets last scan of given device
-     * @param deviceId
-     * @return last localized range scan of device
+     * Gets last scan of given sensor
+     * @param rSensorName
+     * @return last localized range scan of sensor
      */
     LocalizedRangeScan* GetLastScan(const Name& rSensorName);
     
@@ -1230,7 +1303,161 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   
   /**
-   * The Mapper class
+   * Graph SLAM mapper. Creates a map given a set of LocalizedRangeScans
+   * The current Karto implementation is a proprietary, high-performance
+   * scan-matching algorithm that constructs a map from individual range scans and corrects for
+   * errors in the range and odometry data.
+   *
+   * The following parameters can be set on the Mapper.
+   *
+   *  \a UseScanMatching (ParameterBool)\n
+   *     When set to true, the mapper will use a scan matching algorithm. In most real-world situations
+   *     this should be set to true so that the mapper algorithm can correct for noise and errors in
+   *     odometry and scan data. In some simulator environments where the simulated scan and odometry
+   *     data are very accurate, the scan matching algorithm can produce worse results. In those cases
+   *     set to false to improve results.
+   *     Default value is true.
+   *
+   *  \a UseScanBarycenter (ParameterBool)\n
+   *
+   *  \a UseResponseExpansion (ParameterBool)\n
+   *
+   *  \a RangeThreshold (ParameterDouble - meters)\n
+   *     The range threshold is used to truncate range scan distance measurement readings.  The threshold should
+   *     be set such that adjacent range readings in a scan will generally give "solid" coverage of objects.
+   *
+   *     \image html doxygen/RangeThreshold.png
+   *     \image latex doxygen/RangeThreshold.png "" width=3in
+   *
+   *     Having solid coverage depends on the map resolution and the angular resolution of the range scan device.
+   *     The following are the recommended threshold values for the corresponding map resolution and range finder
+   *     resolution values:
+   *
+   *     <table border=0>
+   *      <tr>
+   *       <td><b>Map Resolution</b></td>
+   *       <td colspan=3 align=center><b>Laser Angular Resolution</b></td>
+   *      </tr>
+   *      <tr>
+   *       <td></td>
+   *       <td align=center><b>1.0 degree</b></td>
+   *       <td align=center><b>0.5 degree</b></td>
+   *       <td align=center><b>0.25 degree</b></td>
+   *      </tr>
+   *      <tr>
+   *       <td align=center><b>0.1</b></td>
+   *       <td align=center>5.7m</td>
+   *       <td align=center>11.4m</td>
+   *       <td align=center>22.9m</td>
+   *      </tr>
+   *      <tr>
+   *       <td align=center><b>0.05</b></td>
+   *       <td align=center>2.8m</td>
+   *       <td align=center>5.7m</td>
+   *       <td align=center>11.4m</td>
+   *      </tr>
+   *      <tr>
+   *       <td align=center><b>0.01</b></td>
+   *       <td align=center>0.5m</td>
+   *       <td align=center>1.1m</td>
+   *       <td align=center>2.3m</td>
+   *      </tr>
+   *     </table>
+   *
+   *     Note that the value of RangeThreshold should be adjusted taking into account the values of
+   *     MinimumTravelDistance and MinimumTravelHeading (see also below).  By incorporating scans
+   *     into the map more frequently, the RangeThreshold value can be increased as the additional scans
+   *     will "fill in" the gaps of objects at greater distances where there is less solid coverage.
+   *
+   *     Default value is 12.0 (meters).
+   *
+   *  \a MinimumTravelDistance (ParameterDouble - meters)\n
+   *     Sets the minimum travel between scans. If a new scan's position is more than minimumDistance from
+   *     the previous scan, the mapper will use the data from the new scan. Otherwise, it will discard the
+   *     new scan if it also does not meet the minimum change in heading requirement.
+   *     For performance reasons, generally it is a good idea to only process scans if the robot
+   *     has moved a reasonable amount.
+   *     Default value is 0.3 (meters).
+   *
+   *  \a MinimumTravelHeading (ParameterDouble - radians)\n
+   *     Sets the minimum heading change between scans. If a new scan's heading is more than minimumHeading from
+   *     the previous scan, the mapper will use the data from the new scan. Otherwise, it will discard the
+   *     new scan if it also does not meet the minimum travel distance requirement.
+   *     For performance reasons, generally it is a good idea to only process scans if the robot
+   *     has moved a reasonable amount.
+   *     Default value is 0.08726646259971647 (radians) - 5 degrees.
+   *
+   *  \a ScanBufferSize (ParameterIn32u - size)\n
+   *     Scan buffer size is the length of the scan chain stored for scan matching.
+   *     "ScanBufferSize" should be set to approximately "ScanBufferMaximumScanDistance" / "MinimumTravelDistance".
+   *     The idea is to get an area approximately 20 meters long for scan matching.
+   *     For example, if we add scans every MinimumTravelDistance = 0.3 meters, then "ScanBufferSize"
+   *     should be 20 / 0.3 = 67.)
+   *     Default value is 67.
+   *
+   *  \a ScanBufferMaximumScanDistance (ParameterDouble - meters)\n
+   *     Scan buffer maximum scan distance is the maximum distance between the first and last scans
+   *     in the scan chain stored for matching.
+   *     Default value is 20.0.
+   *
+   *  \a CorrelationSearchSpaceDimension (ParameterDouble - meters)\n
+   *     The size of the correlation grid used by the matcher.
+   *     Default value is 0.3 meters which tells the matcher to use a 30cm x 30cm grid.
+   *
+   *  \a CorrelationSearchSpaceResolution (ParameterDouble - meters)\n
+   *     The resolution (size of a grid cell) of the correlation grid.
+   *     Default value is 0.01 meters.
+   *
+   *  \a CorrelationSearchSpaceSmearDeviation (ParameterDouble - meters)\n
+   *     The robot position is smeared by this value in X and Y to create a smoother response.
+   *     Default value is 0.03 meters.
+   *
+   *  \a LinkMatchMinimumResponseFine (ParameterDouble - probability (>= 0.0, <= 1.0))\n
+   *     Scans are linked only if the correlation response value is greater than this value.
+   *     Default value is 0.4
+   *
+   *  \a LinkScanMaximumDistance (ParameterDouble - meters)\n
+   *     Maximum distance between linked scans.  Scans that are farther apart will not be linked
+   *     regardless of the correlation response value.
+   *     Default value is 6.0 meters.
+   *
+   *  \a LoopSearchSpaceDimension (ParameterDouble - meters)\n
+   *     Dimension of the correlation grid used by the loop closure detection algorithm
+   *     Default value is 4.0 meters.
+   *
+   *  \a LoopSearchSpaceResolution (ParameterDouble - meters)\n
+   *     Coarse resolution of the correlation grid used by the matcher to determine a possible
+   *     loop closure.
+   *     Default value is 0.05 meters.
+   *
+   *  \a LoopSearchSpaceSmearDeviation (ParameterDouble - meters)\n
+   *     Smearing distance in the correlation grid used by the matcher to determine a possible
+   *     loop closure match.
+   *     Default value is 0.03 meters.
+   *
+   *  \a LoopSearchMaximumDistance (ParameterDouble - meters)\n
+   *     Scans less than this distance from the current position will be considered for a match
+   *     in loop closure.
+   *     Default value is 4.0 meters.
+   *
+   *  \a LoopMatchMinimumChainSize (ParameterIn32s)\n
+   *     When the loop closure detection finds a candidate it must be part of a large
+   *     set of linked scans. If the chain of scans is less than this value we do not attempt
+   *     to close the loop.
+   *     Default value is 10.
+   *
+   *  \a LoopMatchMaximumVarianceCoarse (ParameterDouble)\n
+   *     The co-variance values for a possible loop closure have to be less than this value
+   *     to consider a viable solution. This applies to the coarse search.
+   *     Default value is 0.16.
+   *
+   *  \a LoopMatchMinimumResponseCoarse (ParameterDouble - probability (>= 0.0, <= 1.0))\n
+   *     If response is larger then this then initiate loop closure search at the coarse resolution.
+   *     Default value is 0.7.
+   *
+   *  \a LoopMatchMinimumResponseFine (ParameterDouble - probability (>= 0.0, <= 1.0))\n
+   *     If response is larger then this then initiate loop closure search at the fine resolution.
+   *     Default value is 0.5.
    */
   class KARTO_EXPORT Mapper : public Module
   {
@@ -1280,6 +1507,9 @@ namespace karto
      */
     virtual kt_bool Process(LocalizedRangeScan* pScan);
 
+    /**
+     * Process an Object 
+     */
     virtual kt_bool Process(Object* pObject);
     
     /**
@@ -1336,10 +1566,9 @@ namespace karto
     }
     
     /**
-     * Tries to close a loop using the given scan with the scans from the given device
+     * Tries to close a loop using the given scan with the scans from the given sensor
      * @param pScan
      * @param rSensorName
-     * @param true if a loop was closed
      */
     inline kt_bool TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName)
     {

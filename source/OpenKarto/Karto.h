@@ -56,28 +56,36 @@ const kt_objecttype ObjectType_Misc									= 0x10000000;
 
 const kt_objecttype ObjectType_Drive								= ObjectType_Sensor | 0x01;
 const kt_objecttype ObjectType_LaserRangeFinder			= ObjectType_Sensor | 0x02;
+const kt_objecttype ObjectType_Camera								= ObjectType_Sensor | 0x04;
 
 const kt_objecttype ObjectType_DrivePose						= ObjectType_SensorData | 0x01;
 const kt_objecttype ObjectType_LaserRangeScan		    = ObjectType_SensorData | 0x02;
-const kt_objecttype ObjectType_LocalizedRangeScan		= ObjectType_SensorData | 0x03;
+const kt_objecttype ObjectType_LocalizedRangeScan		= ObjectType_SensorData | 0x04;
+const kt_objecttype ObjectType_CameraImage      	  = ObjectType_SensorData | 0x08;
 
-const kt_objecttype ObjectType_Parameters				    = ObjectType_Misc | 0x01;
-const kt_objecttype ObjectType_DatasetInfo			    = ObjectType_Misc | 0x02;
-const kt_objecttype ObjectType_Module               = ObjectType_Misc | 0x03;
+const kt_objecttype ObjectType_Header								= ObjectType_Misc | 0x01;
+const kt_objecttype ObjectType_Parameters				    = ObjectType_Misc | 0x02;
+const kt_objecttype ObjectType_DatasetInfo			    = ObjectType_Misc | 0x04;
+const kt_objecttype ObjectType_Module               = ObjectType_Misc | 0x08;
 
 namespace karto
 {
 
   /**
-   * Exception class
+   * \defgroup OpenKarto OpenKarto Module
+   */
+  /*@{*/
+
+  /**
+   * Exception class. All exceptions thrown from Karto will inherit from this class or be of this class
    */
   class KARTO_EXPORT Exception
   {
   public:    
     /**
      * Constructor with exception message
-     * @param rMessage exception message
-     * @param errorCode
+     * @param rMessage exception message (default: "Karto Exception")
+     * @param errorCode error code (default: 0)
      */
     Exception(const std::string& rMessage = "Karto Exception", kt_int32s errorCode = 0)
       : m_Message(rMessage)
@@ -149,6 +157,10 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Subclass this class to make a non-copyable class (copy
+   * constructor and assignment operator are private)
+   */
   class KARTO_EXPORT NonCopyable 
   {
   private:
@@ -169,20 +181,33 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Singleton class ensures only one instance of T is created
+   */
   template <class T>
   class Singleton
   {
   public:
+    /**
+     * Constructor
+     */
     Singleton()
       : m_pPointer(NULL)
     {
     }
 
+    /**
+     * Destructor
+     */
     virtual ~Singleton()
     {
       delete m_pPointer;
     }
 
+    /**
+     * Gets the singleton
+     * @return singleton
+     */
     T* Get()
     {
 #ifdef USE_POCO
@@ -212,9 +237,15 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Functor
+   */
   class KARTO_EXPORT Functor
   {
   public:
+    /**
+     * Functor function
+     */
     virtual void operator() (kt_int32u) {};
   }; // Functor
   
@@ -225,10 +256,13 @@ namespace karto
   class AbstractParameter;
 
   /**
-   * Typedef for vectors of Parameter
+   * Type declaration of AbstractParameter vector
    */
   typedef std::vector<AbstractParameter*> ParameterVector;
 
+  /**
+   * Parameter manager. 
+   */
   class KARTO_EXPORT ParameterManager : public NonCopyable
   {
   public:
@@ -548,6 +582,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Abstract base class for Karto objects.
+   */
   class KARTO_EXPORT Object : public NonCopyable
   {
   public:
@@ -634,6 +671,9 @@ namespace karto
     ParameterManager* m_pParameterManager;
   };
 
+  /**
+   * Type declaration of Object vector
+   */
   typedef std::vector<Object*> ObjectVector;
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -704,11 +744,16 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Abstract base class for Karto modules.
+   */
   class KARTO_EXPORT Module : public Object
   {
   public:
-    KARTO_Object(Module);
-    
+    //@cond EXCLUDE
+    KARTO_Object(Module)
+    //@endcond
+   
   public:
     /**
      * Construct a Module
@@ -722,8 +767,14 @@ namespace karto
     virtual ~Module();
 
   public:
+    /**
+     * Reset the module
+     */ 
     virtual void Reset() = 0;
 
+    /**
+     * Process an Object
+     */ 
     virtual kt_bool Process(karto::Object*)
     {
       return false;
@@ -739,7 +790,7 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Represents a point (x, y) in 2-dimensional real space.
+   * Represents a size (width, height) in 2-dimensional real space.
    */
   template<typename T>
   class Size2
@@ -859,6 +910,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Represents a vector (x, y) in 2-dimensional real space.
+   */
   template<typename T>
   class Vector2
   {
@@ -1121,7 +1175,6 @@ namespace karto
     /**
      * Read Vector2 from input stream
      * @param rStream input stream
-     * @param rVector to read
      */
     friend inline std::istream& operator >> (std::istream& rStream, const Vector2& /*rVector*/)
     {
@@ -1134,7 +1187,7 @@ namespace karto
   }; // Vector2<T>
   
   /**
-   * Typedef for vectors of points
+   * Type declaration of Vector2<kt_double> vector
    */
   typedef std::vector< Vector2<kt_double> > PointVectorDouble;
 
@@ -1142,6 +1195,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Represents a vector (x, y, z) in 3-dimensional real space.
+   */
   template<typename T>
   class Vector3
   {
@@ -1160,6 +1216,7 @@ namespace karto
      * Constructor initializing point location
      * @param x
      * @param y
+     * @param z
      */
     Vector3(T x, T y, T z)
     {
@@ -1303,7 +1360,7 @@ namespace karto
 
     /**
      * Binary vector add.
-     * @param rVector
+     * @param rOther
      * @return vector sum
      */
     inline const Vector3 operator + (const Vector3& rOther) const
@@ -1323,7 +1380,7 @@ namespace karto
 
     /**
      * Binary vector subtract.
-     * @param rVector
+     * @param rOther
      * @return vector difference
      */
     inline const Vector3 operator - (const Vector3& rOther) const
@@ -1382,7 +1439,6 @@ namespace karto
     /**
      * Read Vector3 from input stream
      * @param rStream input stream
-     * @param rVector to read
      */
     friend inline std::istream& operator >> (std::istream& rStream, const Vector3& /*rVector*/)
     {
@@ -1398,6 +1454,27 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Defines an orientation as a quaternion rotation using the positive Z axis as the zero reference.
+   * <BR>
+   * Q = w + ix + jy + kz <BR>
+   * w = c_1 * c_2 * c_3 - s_1 * s_2 * s_3 <BR>
+   * x = s_1 * s_2 * c_3 + c_1 * c_2 * s_3 <BR>
+   * y = s_1 * c_2 * c_3 + c_1 * s_2 * s_3 <BR>
+   * z = c_1 * s_2 * c_3 - s_1 * c_2 * s_3 <BR>
+   * where <BR>
+   * c_1 = cos(theta/2) <BR>
+   * c_2 = cos(phi/2) <BR>
+   * c_3 = cos(psi/2) <BR>
+   * s_1 = sin(theta/2) <BR>
+   * s_2 = sin(phi/2) <BR>
+   * s_3 = sin(psi/2) <BR>
+   * and <BR>
+   * theta is the angle of rotation about the Y axis measured from the Z axis. <BR>
+   * phi is the angle of rotation about the Z axis measured from the X axis. <BR>
+   * psi is the angle of rotation about the X axis measured from the Y axis. <BR>
+   * (All angles are right-handed.)
+   */
   class Quaternion
   {
   public:
@@ -1450,7 +1527,7 @@ namespace karto
 
     /**
      * Sets the X-value
-     * @param X-value of the quaternion
+     * @param x X-value of the quaternion
      */
     inline void SetX(kt_double x)
     {
@@ -1468,7 +1545,7 @@ namespace karto
 
     /**
      * Sets the Y-value
-     * @param Y-value of the quaternion
+     * @param y Y-value of the quaternion
      */
     inline void SetY(kt_double y)
     {
@@ -1486,7 +1563,7 @@ namespace karto
 
     /**
      * Sets the Z-value
-     * @param Z-value of the quaternion
+     * @param z Z-value of the quaternion
      */
     inline void SetZ(kt_double z)
     {
@@ -1504,7 +1581,7 @@ namespace karto
 
     /**
      * Sets the W-value
-     * @param W-value of the quaternion
+     * @param w W-value of the quaternion
      */
     inline void SetW(kt_double w)
     {
@@ -1960,13 +2037,17 @@ namespace karto
 
     /**
      * Sets the heading
-     * @param the heading of the pose
+     * @param heading of the pose
      */
     inline void SetHeading(kt_double heading)
     {
       m_Heading = heading;
     }
 
+    /** 
+     * Return the squared distance between two Pose2
+     * @return squared distance
+     */
     inline kt_double SquaredDistance(const Pose2& rOther) const
     {
       return m_Position.SquaredDistance(rOther.m_Position);
@@ -2032,7 +2113,6 @@ namespace karto
     /**
      * Read pose from input stream
      * @param rStream input stream
-     * @param rPose to write
      */
     friend inline std::istream& operator >> (std::istream& rStream, const Pose2& /*rPose*/)
     {
@@ -2058,7 +2138,7 @@ namespace karto
   }; // Pose2
 
   /**
-   * Typedef for vectors of Pose2
+   * Type declaration of Pose2 vector
    */
   typedef std::vector< Pose2 > Pose2Vector;
 
@@ -2214,7 +2294,6 @@ namespace karto
     /**
      * Read Pose3 from input stream
      * @param rStream input stream
-     * @param rPose to read
      */
     friend inline std::istream& operator >> (std::istream& rStream, const Pose3& /*rPose*/)
     {
@@ -2437,7 +2516,7 @@ namespace karto
 
     /**
      * Binary Matrix3 multiplication.
-     * @param rkMatrix
+     * @param rOther
      * @return Matrix3 product
      */
     Matrix3 operator * (const Matrix3& rOther) const
@@ -2603,7 +2682,7 @@ namespace karto
         
         m_pData = new kt_double[m_Rows * m_Columns];
       }
-      catch (std::bad_alloc exception)
+      catch (std::bad_alloc ex)
       {
         throw Exception("Matrix allocation error");
       }
@@ -2838,6 +2917,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Enumerated type for valid LaserRangeFinder types
+   */
   typedef enum
   {
     LaserRangeFinder_Custom = 0,
@@ -2854,12 +2936,16 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /** 
+   * Abstract base class for Parameters
+   */ 
   class AbstractParameter 
   {
   public:
     /**
      * Constructs a parameter with the given name
      * @param rName
+     * @param pParameterManger
      */
     AbstractParameter(const std::string& rName, ParameterManager* pParameterManger = NULL)
       : m_Name(rName)
@@ -2875,6 +2961,7 @@ namespace karto
      * Constructs a parameter with the given name and description
      * @param rName
      * @param rDescription
+     * @param pParameterManger
      */
     AbstractParameter(const std::string& rName, const std::string& rDescription, ParameterManager* pParameterManger = NULL)
       : m_Name(rName)
@@ -2955,6 +3042,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Parameter class
+   */
   template<typename T>
   class Parameter : public AbstractParameter
   {
@@ -2963,6 +3053,7 @@ namespace karto
      * Parameter with given name and value
      * @param rName
      * @param value
+     * @param pParameterManger
      */
     Parameter(const std::string& rName, T value, ParameterManager* pParameterManger = NULL)
       : AbstractParameter(rName, pParameterManger)
@@ -2973,7 +3064,9 @@ namespace karto
     /**
      * Parameter with given name, description and value
      * @param rName
+     * @param rDescription
      * @param value
+     * @param pParameterManger
      */
     Parameter(const std::string& rName, const std::string& rDescription, T value, ParameterManager* pParameterManger = NULL)
       : AbstractParameter(rName, rDescription, pParameterManger)
@@ -3060,6 +3153,9 @@ namespace karto
     }
 
   protected:
+    /**
+     * Parameter value
+     */
     T m_Value;
   }; // Parameter
 
@@ -3114,7 +3210,7 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Represent enum parameter
+   * Parameter enum class
    */
   class ParameterEnum : public Parameter<kt_int32s>
   {
@@ -3125,6 +3221,7 @@ namespace karto
      * Construct a Parameter object with name and value
      * @param rName parameter name
      * @param value of parameter
+     * @param pParameterManger 
      */
     ParameterEnum(const std::string& rName, kt_int32s value, ParameterManager* pParameterManger = NULL)
       : Parameter<kt_int32s>(rName, value, pParameterManger)
@@ -3242,10 +3339,15 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Set of parameters
+   */
   class Parameters : public Object
   {
   public:
+    //@cond EXCLUDE
     KARTO_Object(Parameters)
+    //@endcond
 
   public:
     /**
@@ -3281,7 +3383,9 @@ namespace karto
   class KARTO_EXPORT Sensor : public Object
   {
   public:
-    KARTO_Object(Sensor);
+    //@cond EXCLUDE
+    KARTO_Object(Sensor)
+    //@endcond
 
   protected:
     /**
@@ -3346,12 +3450,18 @@ namespace karto
     Parameter<Pose2>* m_pOffsetPose;
   }; // Sensor
 
+  /**
+   * Type declaration of Sensor vector
+   */
   typedef std::vector<Sensor*> SensorVector;
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Type declaration of <Name, Sensor*> map
+   */
   typedef std::map<Name, Sensor*> SensorManagerMap;
 
   /**
@@ -3385,6 +3495,7 @@ namespace karto
      * Registers a sensor by it's name. The Sensor name must be unique, if not sensor is not registered
      * unless override is set to true
      * @param pSensor sensor to register
+     * @param override 
      * @return true if sensor is registered with SensorManager, false if Sensor name is not unique
      */
     void RegisterSensor(Sensor* pSensor, kt_bool override = false)
@@ -3393,10 +3504,10 @@ namespace karto
       
       if ((m_Sensors.find(pSensor->GetName()) != m_Sensors.end()) && !override)
       {
-        throw Exception("Cannot register sensor:  already registered:  " + pSensor->GetName().ToString());
+        throw Exception("Cannot register sensor: already registered: [" + pSensor->GetName().ToString() + "] (Consider setting 'override' to true)");
       }
 
-      std::cout << "Registering sensor: " << pSensor->GetName().ToString() << std::endl;
+      std::cout << "Registering sensor: [" << pSensor->GetName().ToString() << "]" << std::endl;
       
       m_Sensors[pSensor->GetName()] = pSensor;
     }
@@ -3417,7 +3528,7 @@ namespace karto
       }
       else
       {
-        throw Exception("Cannot unregister sensor:  not registered:  " + pSensor->GetName().ToString());
+        throw Exception("Cannot unregister sensor: not registered: [" + pSensor->GetName().ToString() + "]");
       }
     }
 
@@ -3433,7 +3544,7 @@ namespace karto
         return m_Sensors[rName];
       }
 
-      throw Exception("Sensor not registered:  " + rName.ToString() + " (Did you add the sensor to the Dataset?)");
+      throw Exception("Sensor not registered: [" + rName.ToString() + "] (Did you add the sensor to the Dataset?)");
     }
     
     /**
@@ -3483,6 +3594,9 @@ namespace karto
     }
     
   protected:
+    /**
+     * Sensor map
+     */
     SensorManagerMap m_Sensors;
   };
 
@@ -3499,7 +3613,9 @@ namespace karto
   class Drive : public Sensor
   {
   public:
+    //@cond EXCLUDE
     KARTO_Object(Drive)
+    //@endcond
 
   public:
     /**
@@ -3560,7 +3676,9 @@ namespace karto
   class KARTO_EXPORT LaserRangeFinder : public Sensor
   {
   public:
+    //@cond EXCLUDE
     KARTO_Object(LaserRangeFinder)
+    //@endcond
 
   public:
     /**
@@ -3709,7 +3827,7 @@ namespace karto
           std::stringstream stream;
           stream << "Invalid resolution for Sick LMS100:  ";
           stream << angularResolution;
-          throw karto::Exception(stream.str());
+          throw Exception(stream.str());
         }
       }
       else if (m_pType->GetValue() == LaserRangeFinder_Sick_LMS200 || m_pType->GetValue() == LaserRangeFinder_Sick_LMS291)
@@ -3731,18 +3849,21 @@ namespace karto
           std::stringstream stream;
           stream << "Invalid resolution for Sick LMS291:  ";
           stream << angularResolution;
-          throw karto::Exception(stream.str());
+          throw Exception(stream.str());
         }
       }
       else
       {
-        throw karto::Exception("Can't set angular resolution, please create a LaserRangeFinder of type Custom");
+        throw Exception("Can't set angular resolution, please create a LaserRangeFinder of type Custom");
         return;
       }
 
       Update();
     }
 
+    /**
+     * Return Laser type
+     */
     inline kt_int32s GetType()
     {
       return m_pType->GetValue();
@@ -3774,7 +3895,10 @@ namespace karto
 
     /**
      * Get point readings (potentially scale readings if given coordinate converter is not null)
+     * @param pLocalizedRangeScan
      * @param pCoordinateConverter
+     * @param ignoreThresholdPoints
+     * @param flipY
      */
     const PointVectorDouble GetPointReadings(LocalizedRangeScan* pLocalizedRangeScan, CoordinateConverter* pCoordinateConverter, kt_bool ignoreThresholdPoints = true, kt_bool flipY = false) const;
 
@@ -4033,6 +4157,7 @@ namespace karto
     /**
      * Converts the point from world coordinates to grid coordinates
      * @param rWorld world coordinate
+     * @param flipY
      * @return grid coordinate
      */
     inline Vector2<kt_int32s> WorldToGrid(const Vector2<kt_double>& rWorld, kt_bool flipY = false) const
@@ -4055,6 +4180,7 @@ namespace karto
     /**
      * Converts the point from grid coordinates to world coordinates
      * @param rGrid world coordinate
+     * @param flipY
      * @return world coordinate
      */
     inline Vector2<kt_double> GridToWorld(const Vector2<kt_int32s>& rGrid, kt_bool flipY = false) const
@@ -4272,8 +4398,7 @@ namespace karto
     
     /**
      * Checks whether the given coordinates are valid grid indices
-     * @param x
-     * @param y
+     * @param rGrid
      */
     inline kt_bool IsValidGridIndex(const Vector2<kt_int32s>& rGrid) const
     {
@@ -4310,7 +4435,7 @@ namespace karto
 
     /** 
      * Gets the grid coordinate from an index
-     * @param grid index
+     * @param index
      * @return grid coordinate
      */
     Vector2<kt_int32s> IndexToGrid(kt_int32s index) const
@@ -4326,6 +4451,7 @@ namespace karto
     /**
      * Converts the point from world coordinates to grid coordinates
      * @param rWorld world coordinate
+     * @param flipY
      * @return grid coordinate
      */
     inline Vector2<kt_int32s> WorldToGrid(const Vector2<kt_double>& rWorld, kt_bool flipY = false) const
@@ -4336,6 +4462,7 @@ namespace karto
     /**
      * Converts the point from grid coordinates to world coordinates
      * @param rGrid world coordinate
+     * @param flipY
      * @return world coordinate
      */
     inline Vector2<kt_double> GridToWorld(const Vector2<kt_int32s>& rGrid, kt_bool flipY = false) const
@@ -4383,6 +4510,10 @@ namespace karto
       return m_Height;
     };
 
+    /**
+     * Get the size as a Size2<kt_int32s>
+     * @return size of the grid
+     */
     inline const Size2<kt_int32s> GetSize() const
     {
       return Size2<kt_int32s>(m_Width, m_Height);
@@ -4564,23 +4695,43 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * For making custom data
+   */
   class CustomData : public Object
   {
   public:
+    //@cond EXCLUDE
     KARTO_Object(CustomData)
+    //@endcond
 
   public:
+    /**
+     * Constructor
+     */
     CustomData()
       : Object()
     {
     }
 
+    /**
+     * Destructor
+     */
     virtual ~CustomData()
     {
     }
 
   public:
+    /**
+     * Write out this custom data as a string
+     * @return string representation of this data object
+     */
     virtual const std::string Write() const = 0;
+    
+    /**
+     * Read in this custom data from a string
+     * @param rValue string representation of this data object
+     */
     virtual void Read(const std::string& rValue) = 0;
 
   private:
@@ -4588,6 +4739,9 @@ namespace karto
     const CustomData& operator=(const CustomData&);
   };
 
+  /**
+   * Type declaration of CustomData vector
+   */
   typedef std::vector<CustomData*> CustomDataVector;
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -4600,7 +4754,9 @@ namespace karto
   class KARTO_EXPORT SensorData : public Object
   {
   public:
-    KARTO_Object(SensorData);
+    //@cond EXCLUDE
+    KARTO_Object(SensorData)
+    //@endcond
 
   public:
     /**
@@ -4620,11 +4776,11 @@ namespace karto
 
     /**
      * Sets sensor data id
-     * @param sensor id
+     * @param stateId id 
      */
-    inline void SetStateId(kt_int32s id)
+    inline void SetStateId(kt_int32s stateId)
     {
-      m_StateId = id;
+      m_StateId = stateId;
     }
 
     /**
@@ -4638,11 +4794,11 @@ namespace karto
 
     /**
      * Sets sensor unique id
-     * @param unique id
+     * @param uniqueId 
      */
-    inline void SetUniqueId(kt_int32u id)
+    inline void SetUniqueId(kt_int32u uniqueId)
     {
-      m_UniqueId = id;
+      m_UniqueId = uniqueId;
     }
     
     /**
@@ -4691,6 +4847,9 @@ namespace karto
     }
 
   protected:
+    /**
+     * Construct a SensorData object with a sensor name
+     */
     SensorData(const Name& rSensorName);
     
   private:
@@ -4732,6 +4891,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+   * Type declaration of range readings vector
+   */
   typedef std::vector<kt_double> RangeReadingsVector;
 
   /**
@@ -4740,25 +4902,26 @@ namespace karto
   class LaserRangeScan : public SensorData
   {
   public:
+    //@cond EXCLUDE
     KARTO_Object(LaserRangeScan)
+    //@endcond
 
   public:
     /**
      * Constructs a scan from the given sensor with the given readings
-     * @param pSensor
+     * @param rSensorName
      */
-    LaserRangeScan(const std::string& rSensorName)
+    LaserRangeScan(const Name& rSensorName)
       : SensorData(rSensorName)
       , m_pRangeReadings(NULL)
       , m_NumberOfRangeReadings(0)
     {
-      assert(rSensorName != "");
     }
 
     /**
      * Constructs a scan from the given sensor with the given readings
-     * @param pSensor
-     * @param rReadings
+     * @param rSensorName
+     * @param rRangeReadings
      */
     LaserRangeScan(const Name& rSensorName, const RangeReadingsVector& rRangeReadings)
       : SensorData(rSensorName)
@@ -4788,6 +4951,10 @@ namespace karto
       return m_pRangeReadings;
     }
 
+    /**
+     * Sets the range readings for this scan
+     * @param rRangeReadings
+     */
     inline void SetRangeReadings(const RangeReadingsVector& rRangeReadings)
     {
       // ignore for now! XXXMAE BUGUBUG 05/21/2010
@@ -4863,14 +5030,16 @@ namespace karto
   class DrivePose : public SensorData
   {
   public:
+    //@cond EXCLUDE
     KARTO_Object(DrivePose)
+    //@endcond
 
   public:
     /**
      * Constructs a pose of the given drive sensor
-     * @param pSensor
+     * @param rSensorName
      */
-    DrivePose(const std::string& rSensorName)
+    DrivePose(const Name& rSensorName)
       : SensorData(rSensorName)
     {
     }
@@ -4925,7 +5094,9 @@ namespace karto
   class LocalizedRangeScan : public LaserRangeScan
   {
   public:
+    //@cond EXCLUDE
     KARTO_Object(LocalizedRangeScan)
+    //@endcond
 
   public:
     /**
@@ -5206,6 +5377,9 @@ namespace karto
     kt_bool m_IsDirty;
   }; // LocalizedRangeScan
 
+  /**
+   * Type declaration of LocalizedRangeScan vector
+   */
   typedef std::vector<LocalizedRangeScan*> LocalizedRangeScanVector;
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -5238,22 +5412,8 @@ namespace karto
   class OccupancyGrid : public Grid<kt_int8u>
   {
     friend class CellUpdater;
+    friend class IncrementalOccupancyGrid;
     
-  public:
-    /**
-     * Destructor
-     */
-    virtual ~OccupancyGrid()
-    {
-      delete m_pCellUpdater;
-
-      delete m_pCellPassCnt;
-      delete m_pCellHitsCnt;   
-
-      delete m_pMinPassThrough;
-      delete m_pOccupancyThreshold;
-    }
-
   public:
     /**
      * Constructs an occupancy grid of given size
@@ -5283,8 +5443,23 @@ namespace karto
     }
     
     /**
+     * Destructor
+     */
+    virtual ~OccupancyGrid()
+    {
+      delete m_pCellUpdater;
+
+      delete m_pCellPassCnt;
+      delete m_pCellHitsCnt;   
+
+      delete m_pMinPassThrough;
+      delete m_pOccupancyThreshold;
+    }
+
+  public:
+    /**
      * Create an occupancy grid from the given scans using the given resolution
-     * @param scans
+     * @param rScans
      * @param resolution
      */
     static OccupancyGrid* CreateFromScans(const LocalizedRangeScanVector& rScans, kt_double resolution)
@@ -5381,18 +5556,35 @@ namespace karto
       
       return (distance < maxRange)? distance : maxRange;
     }
-    
+
+  protected:
+    /**
+     * Get cell hit grid
+     * @return Grid<kt_int32u>*
+     */
     virtual Grid<kt_int32u>* GetCellHitsCounts()
     {
       return m_pCellHitsCnt;
     }
 
+    /**
+     * Get cell pass grid
+     * @return Grid<kt_int32u>*
+     */
     virtual Grid<kt_int32u>* GetCellPassCounts()
     {
       return m_pCellPassCnt;
     }
     
   protected:
+    /**
+     * Calculate grid dimensions from localized range scans
+     * @param rScans
+     * @param resolution
+     * @param rWidth
+     * @param rHeight
+     * @param rOffset
+     */
     static void ComputeDimensions(const LocalizedRangeScanVector& rScans, kt_double resolution, kt_int32s& rWidth, kt_int32s& rHeight, Vector2<kt_double>& rOffset)
     {
       BoundingBox2 boundingBox;
@@ -5411,7 +5603,7 @@ namespace karto
     
     /**
      * Create grid using scans 
-     * @param scans
+     * @param rScans
      */
     virtual void CreateFromScans(const LocalizedRangeScanVector& rScans)
     {
@@ -5491,8 +5683,7 @@ namespace karto
      * @param rWorldFrom start position of beam
      * @param rWorldTo end position of beam
      * @param isEndPointValid is the reading within the range threshold?
-     * @param pCoordinatorConverter converter from world to grid coordinates
-     * @param whether to update the cells' occupancy status immediately
+     * @param doUpdate whether to update the cells' occupancy status immediately
      * @return returns false if an endpoint fell off the grid, otherwise true
      */
     virtual kt_bool RayTrace(const Vector2<kt_double>& rWorldFrom, const Vector2<kt_double>& rWorldTo, kt_bool isEndPointValid, kt_bool doUpdate = false)
@@ -5587,10 +5778,14 @@ namespace karto
     }
     
   protected:
-    // Counters of number of times a beam passed through a cell
+    /**
+     * Counters of number of times a beam passed through a cell
+     */
     Grid<kt_int32u>* m_pCellPassCnt;
     
-    // Counters of number of times a beam ended at a cell    
+    /**
+     * Counters of number of times a beam ended at a cell    
+     */
     Grid<kt_int32u>* m_pCellHitsCnt;
 
   private:
@@ -5624,14 +5819,15 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * \ingroup kt
    * Dataset info
    * Contains title, author and other information about the dataset
    */
   class DatasetInfo : public Object
   {
   public:
+    //@cond EXCLUDE
     KARTO_Object(DatasetInfo)
+    //@endcond
 
   public:
     DatasetInfo()
@@ -5720,8 +5916,8 @@ namespace karto
 
   public:
     /**
-     * Adds scan to this dataset
-     * @param pScan
+     * Adds object to this dataset
+     * @param pObject
      */
     void Add(Object* pObject)
     {
@@ -5764,19 +5960,13 @@ namespace karto
       return m_Objects;
     }
 
+    /**
+     * Get dataset info
+     * @return dataset info
+     */
     inline DatasetInfo* GetDatasetInfo()
     {
       return m_pDatasetInfo;
-    }
-
-    inline Sensor* GetSensor(const std::string& rName)
-    {
-      if(m_SensorNameLookup.find(rName) != m_SensorNameLookup.end())
-      {
-        return m_SensorNameLookup[rName];
-      }
-
-      return NULL;
     }
 
     /**
@@ -5822,7 +6012,6 @@ namespace karto
   public:
     /**
      * Constructs lookup array
-     * @param arraySize
      */
     LookupArray()
       : m_pArray(NULL)
@@ -5950,6 +6139,10 @@ namespace karto
   class GridIndexLookup
   {
   public:
+    /**
+     * Construct a GridIndexLookup with a grid
+     * @param pGrid
+     */
     GridIndexLookup(Grid<T>* pGrid)
       : m_pGrid(pGrid)
       , m_Capacity(0)
@@ -5979,6 +6172,10 @@ namespace karto
       return m_ppLookupArray[index];
     }
     
+    /**
+     * Get angles 
+     * @return std::vector<kt_double>& angles
+     */
     const std::vector<kt_double>& GetAngles() const
     {
       return m_Angles;
@@ -6144,6 +6341,8 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
+  //@cond EXCLUDE
+
   template<typename T>
   inline void Object::SetParameter(const std::string& rName, T value)
   {
@@ -6156,7 +6355,7 @@ namespace karto
     }
     else
     {
-      throw karto::Exception("Parameter does not exist:  " + rName);
+      throw Exception("Parameter does not exist:  " + rName);
     }
   }
   
@@ -6170,9 +6369,13 @@ namespace karto
     }
     else
     {
-      throw karto::Exception("Parameter does not exist:  " + rName);
+      throw Exception("Parameter does not exist:  " + rName);
     }
   }
+
+  //@endcond
+
+  /*@}*/
 }
 
 #endif // __KARTO_KARTO__
