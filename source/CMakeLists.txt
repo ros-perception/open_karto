@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+cmake_minimum_required(VERSION 2.8)
  
 # set library name
 SET(LIB_NAME OpenKarto)
@@ -61,8 +62,8 @@ ADD_LIBRARY(${LIB_NAME}
 )
 
 install(
-  FILES ${SOURCE_FILES} 
-  DESTINATION source/${LIB_NAME}
+  FILES ${HEADER_FILES} 
+  DESTINATION include/${LIB_NAME}
 )
 
 # install dependent dlls 
