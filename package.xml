@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>OpenKarto</name>
+  <version>1.0.0</version>
+  <description>Release-package for OpenKarto</description>
+
+  <maintainer email="swirth@willowgarage.com">Stephan Wirth</maintainer>
+  <license>LGPLv3</license>
+
+  <run_depend>catkin</run_depend>
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
