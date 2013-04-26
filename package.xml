@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>OpenKarto</name>
+  <name>open_karto</name>
   <version>1.0.0</version>
   <description>Release-package for OpenKarto</description>
 
