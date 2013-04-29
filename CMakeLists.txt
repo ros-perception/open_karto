@@ -8,7 +8,7 @@ if (USE_CATKIN)
   find_package(catkin)
   if(catkin_FOUND)
     message(STATUS "Using catkin.")
-    catkin_package(INCLUDE_DIRS source/OpenKarto/
+    catkin_package(INCLUDE_DIRS source/
                   LIBRARIES OpenKarto)
   endif(catkin_FOUND)
 endif(USE_CATKIN)
