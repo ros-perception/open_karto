@@ -15,11 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 cmake_minimum_required(VERSION 2.8)
- 
+
 # set library name
 SET(LIB_NAME OpenKarto)
-
-PROJECT(${LIB_NAME})
 
 if(WIN32)
   # turn off various warnings
