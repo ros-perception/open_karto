@@ -5557,6 +5557,25 @@ namespace karto
       return (distance < maxRange)? distance : maxRange;
     }
 
+    /**
+     * Sets the minimum number of beams that must pass through a cell before it 
+     * will be considered to be occupied or unoccupied.  
+     * This prevents stray beams from messing up the map.
+     */
+    void SetMinPassThrough(kt_int32u count)
+    {
+      m_pMinPassThrough->SetValue(count);
+    }
+
+    /**
+     * Sets the minimum ratio of beams hitting cell to beams passing through 
+     * cell for cell to be marked as occupied.
+     */
+    void SetOccupancyThreshold(kt_double thresh)
+    {
+      m_pOccupancyThreshold->SetValue(thresh);
+    }
+
   protected:
     /**
      * Get cell hit grid
