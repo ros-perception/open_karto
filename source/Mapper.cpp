@@ -1680,6 +1680,12 @@ namespace karto
     m_pLoopSearchMaximumDistance = new Parameter<kt_double>("LoopSearchMaximumDistance", 4.0, GetParameterManager());
 
     /**
+     * Enable/disable loop closure.
+     * Default is enabled.
+     */
+    m_pDoLoopClosing = new Parameter<kt_bool>("DoLoopClosing", true, GetParameterManager());
+
+    /**
      * When the loop closure detection finds a candidate it must be part of a large
      * set of linked scans. If the chain of scans is less than this value we do not attempt
      * to close the loop.
@@ -1862,13 +1868,16 @@ namespace karto
         // add to graph
         m_pGraph->AddVertex(pScan);
         m_pGraph->AddEdges(pScan, covariance);
-
+ 
         m_pMapperSensorManager->AddRunningScan(pScan);
 
-        std::vector<Name> deviceNames = m_pMapperSensorManager->GetSensorNames();
-        const_forEach(std::vector<Name>, &deviceNames)
+        if (m_pDoLoopClosing->GetValue())
         {
-          m_pGraph->TryCloseLoop(pScan, *iter);
+          std::vector<Name> deviceNames = m_pMapperSensorManager->GetSensorNames();
+          const_forEach(std::vector<Name>, &deviceNames)
+          {
+            m_pGraph->TryCloseLoop(pScan, *iter);
+          }
         }
       }
 

@@ -1717,6 +1717,12 @@ namespace karto
     Parameter<kt_double>* m_pLinkScanMaximumDistance;
 
     /**
+     * Enable/disable loop closure.
+     * Default is enabled.
+     */
+    Parameter<kt_bool>* m_pDoLoopClosing;
+
+    /**
      * Scans less than this distance from the current position will be considered for a match
      * in loop closure.
      * Default value is 4.0 meters.
