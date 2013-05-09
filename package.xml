@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>open_karto</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>Release-package for OpenKarto</description>
 
   <maintainer email="swirth@willowgarage.com">Stephan Wirth</maintainer>
