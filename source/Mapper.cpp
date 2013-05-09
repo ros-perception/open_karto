@@ -1607,177 +1607,198 @@ namespace karto
 
   void Mapper::InitializeParameters()
   {
-    /**
-     * When set to true, the mapper will use a scan matching algorithm. In most real-world situations
-     * this should be set to true so that the mapper algorithm can correct for noise and errors in
-     * odometry and scan data. In some simulator environments where the simulated scan and odometry
-     * data are very accurate, the scan matching algorithm can produce worse results. In those cases
-     * set this to false to improve results.
-     * Default value is true.
-     */
-    m_pUseScanMatching = new Parameter<kt_bool>("UseScanMatching", true, GetParameterManager());
+    m_pUseScanMatching = new Parameter<kt_bool>(
+        "UseScanMatching", 
+        "When set to true, the mapper will use a scan matching algorithm. "
+        "In most real-world situations this should be set to true so that the "
+        "mapper algorithm can correct for noise and errors in odometry and "
+        "scan data. In some simulator environments where the simulated scan "
+        "and odometry data are very accurate, the scan matching algorithm can "
+        "produce worse results. In those cases set this to false to improve "
+        "results.",
+        true, 
+        GetParameterManager());
 
-    /**
-     * Default value is true.
-     */
-    m_pUseScanBarycenter = new Parameter<kt_bool>("UseScanBarycenter", true, GetParameterManager());
+    m_pUseScanBarycenter = new Parameter<kt_bool>(
+        "UseScanBarycenter", 
+        "Use the barycenter of scan endpoints to define distances between "
+        "scans.",
+        true, GetParameterManager());
 
-    /**
-     * Sets the minimum travel between scans.  If a new scan's position is more than minimumTravelDistance
-     * from the previous scan, the mapper will use the data from the new scan. Otherwise, it will discard the
-     * new scan if it also does not meet the minimum change in heading requirement.
-     * For performance reasons, generally it is a good idea to only process scans if the robot
-     * has moved a reasonable amount.
-     * Default value is 0.2 (meters).
-     */
-    m_pMinimumTravelDistance = new Parameter<kt_double>("MinimumTravelDistance", 0.2, GetParameterManager());
+    m_pMinimumTravelDistance = new Parameter<kt_double>(
+        "MinimumTravelDistance", 
+        "Sets the minimum travel between scans.  If a new scan's position is "
+        "more than minimumTravelDistance from the previous scan, the mapper "
+        "will use the data from the new scan. Otherwise, it will discard the "
+        "new scan if it also does not meet the minimum change in heading "
+        "requirement. For performance reasons, generally it is a good idea to "
+        "only process scans if the robot has moved a reasonable amount.",
+        0.2, GetParameterManager());
 
-    /**
-     * Sets the minimum heading change between scans. If a new scan's heading is more than minimumTravelHeading
-     * from the previous scan, the mapper will use the data from the new scan.  Otherwise, it will discard the
-     * new scan if it also does not meet the minimum travel distance requirement.
-     * For performance reasons, generally it is a good idea to only process scans if the robot
-     * has moved a reasonable amount.
-     * Default value is 10 degrees.
-     */
-    m_pMinimumTravelHeading = new Parameter<kt_double>("MinimumTravelHeading", math::DegreesToRadians(10), GetParameterManager());
+    m_pMinimumTravelHeading = new Parameter<kt_double>(
+        "MinimumTravelHeading", 
+        "Sets the minimum heading change between scans. If a new scan's "
+        "heading is more than MinimumTravelHeading from the previous scan, the "
+        "mapper will use the data from the new scan.  Otherwise, it will "
+        "discard the new scan if it also does not meet the minimum travel "
+        "distance requirement. For performance reasons, generally it is a good "
+        "idea to only process scans if the robot has moved a reasonable "
+        "amount.",
+        math::DegreesToRadians(10), GetParameterManager());
 
-    /**
-     * Scan buffer size is the length of the scan chain stored for scan matching.
-     * "scanBufferSize" should be set to approximately "scanBufferMaximumScanDistance" / "minimumTravelDistance".
-     * The idea is to get an area approximately 20 meters long for scan matching.
-     * For example, if we add scans every minimumTravelDistance == 0.3 meters, then "scanBufferSize"
-     * should be 20 / 0.3 = 67.)
-     * Default value is 67.
-     */
-    m_pScanBufferSize = new Parameter<kt_int32u>("ScanBufferSize", 70, GetParameterManager());
+    m_pScanBufferSize = new Parameter<kt_int32u>(
+        "ScanBufferSize", 
+        "Scan buffer size is the length of the scan chain stored for scan "
+        "matching. \"ScanBufferSize\" should be set to approximately "
+        "\"ScanBufferMaximumScanDistance\" / \"MinimumTravelDistance\". The "
+        "idea is to get an area approximately 20 meters long for scan "
+        "matching. For example, if we add scans every MinimumTravelDistance == "
+        "0.3 meters, then \"scanBufferSize\" should be 20 / 0.3 = 67.)",
+        70, GetParameterManager());
 
-    /**
-     * Scan buffer maximum scan distance is the maximum distance between the first and last scans
-     * in the scan chain stored for matching.
-     * Default value is 20.0.
-     */
-    m_pScanBufferMaximumScanDistance = new Parameter<kt_double>("ScanBufferMaximumScanDistance", 20.0, GetParameterManager());
+    m_pScanBufferMaximumScanDistance = new Parameter<kt_double>(
+        "ScanBufferMaximumScanDistance", 
+        "Scan buffer maximum scan distance is the maximum distance between the "
+        "first and last scans in the scan chain stored for matching.",
+        20.0, GetParameterManager());
 
-    /**
-     * Scans are linked only if the correlation response value is greater than this value.
-     * Default value is 0.4
-     */
-    m_pLinkMatchMinimumResponseFine = new Parameter<kt_double>("LinkMatchMinimumResponseFine", 0.8, GetParameterManager());
+    m_pLinkMatchMinimumResponseFine = new Parameter<kt_double>(
+        "LinkMatchMinimumResponseFine", 
+        "Scans are linked only if the correlation response value is greater "
+        "than this value.",
+        0.8, GetParameterManager());
 
-    /**
-     * Maximum distance between linked scans.  Scans that are farther apart will not be linked
-     * regardless of the correlation response value.
-     * Default value is 6.0 meters.
-     */
-    m_pLinkScanMaximumDistance = new Parameter<kt_double>("LinkScanMaximumDistance", 10.0, GetParameterManager());
+    m_pLinkScanMaximumDistance = new Parameter<kt_double>(
+        "LinkScanMaximumDistance", 
+        "Maximum distance between linked scans.  Scans that are farther apart "
+        "will not be linked regardless of the correlation response value.",
+        10.0, GetParameterManager());
 
-    /**
-     * Scans less than this distance from the current position will be considered for a match
-     * in loop closure.
-     * Default value is 4.0 meters.
-     */
-    m_pLoopSearchMaximumDistance = new Parameter<kt_double>("LoopSearchMaximumDistance", 4.0, GetParameterManager());
+    m_pLoopSearchMaximumDistance = new Parameter<kt_double>(
+        "LoopSearchMaximumDistance", 
+        "Scans less than this distance from the current position will be "
+        "considered for a match in loop closure.",
+        4.0, GetParameterManager());
 
-    /**
-     * Enable/disable loop closure.
-     * Default is enabled.
-     */
-    m_pDoLoopClosing = new Parameter<kt_bool>("DoLoopClosing", true, GetParameterManager());
+    m_pDoLoopClosing = new Parameter<kt_bool>(
+        "DoLoopClosing", 
+        "Enable/disable loop closure.",
+        true, GetParameterManager());
 
-    /**
-     * When the loop closure detection finds a candidate it must be part of a large
-     * set of linked scans. If the chain of scans is less than this value we do not attempt
-     * to close the loop.
-     * Default value is 10.
-     */
-    m_pLoopMatchMinimumChainSize = new Parameter<kt_int32u>("LoopMatchMinimumChainSize", 10, GetParameterManager());
+    m_pLoopMatchMinimumChainSize = new Parameter<kt_int32u>(
+        "LoopMatchMinimumChainSize", 
+        "When the loop closure detection finds a candidate it must be part of "
+        "a large set of linked scans. If the chain of scans is less than this "
+        "value we do not attempt to close the loop.",
+        10, GetParameterManager());
 
-    /**
-     * The co-variance values for a possible loop closure have to be less than this value
-     * to consider a viable solution. This applies to the coarse search.
-     * Default value is 0.16.
-     */
-    m_pLoopMatchMaximumVarianceCoarse = new Parameter<kt_double>("LoopMatchMaximumVarianceCoarse", math::Square(0.4), GetParameterManager());
+    m_pLoopMatchMaximumVarianceCoarse = new Parameter<kt_double>(
+        "LoopMatchMaximumVarianceCoarse", 
+        "The co-variance values for a possible loop closure have to be less "
+        "than this value to consider a viable solution. This applies to the "
+        "coarse search.",
+        math::Square(0.4), GetParameterManager());
 
-    /**
-     * If response is larger then this, then initiate loop closure search at the coarse resolution.
-     * Default value is 0.7.
-     */
-    m_pLoopMatchMinimumResponseCoarse = new Parameter<kt_double>("LoopMatchMinimumResponseCoarse", 0.8, GetParameterManager());
+    m_pLoopMatchMinimumResponseCoarse = new Parameter<kt_double>(
+        "LoopMatchMinimumResponseCoarse",
+        "If response is larger then this, then initiate loop closure search at "
+        "the coarse resolution.",
+        0.8, GetParameterManager());
 
-    /**
-     * If response is larger then this, then initiate loop closure search at the fine resolution.
-     * Default value is 0.7.
-     */
-    m_pLoopMatchMinimumResponseFine = new Parameter<kt_double>("LoopMatchMinimumResponseFine", 0.8, GetParameterManager());
+    m_pLoopMatchMinimumResponseFine = new Parameter<kt_double>(
+        "LoopMatchMinimumResponseFine", 
+        "If response is larger then this, then initiate loop closure search at "
+        "the fine resolution.",
+        0.8, GetParameterManager());
 
     //////////////////////////////////////////////////////////////////////////////
     //    CorrelationParameters correlationParameters;
 
-    /**
-     * The size of the search grid used by the matcher.
-     * Default value is 0.3 meters which tells the matcher to use a 30cm x 30cm grid.
-     */
-    m_pCorrelationSearchSpaceDimension = new Parameter<kt_double>("CorrelationSearchSpaceDimension", 0.3, GetParameterManager());
+    m_pCorrelationSearchSpaceDimension = new Parameter<kt_double>(
+        "CorrelationSearchSpaceDimension", 
+        "The size of the search grid used by the matcher. The search grid will "
+        "have the size CorrelationSearchSpaceDimension * "
+        "CorrelationSearchSpaceDimension",
+        0.3, GetParameterManager());
 
-    /**
-     * The resolution (size of a grid cell) of the correlation grid.
-     * Default value is 0.01 meters.
-     */
-    m_pCorrelationSearchSpaceResolution = new Parameter<kt_double>("CorrelationSearchSpaceResolution", 0.01, GetParameterManager());
+    m_pCorrelationSearchSpaceResolution = new Parameter<kt_double>(
+        "CorrelationSearchSpaceResolution", 
+        "The resolution (size of a grid cell) of the correlation grid.",
+        0.01, GetParameterManager());
 
-    /**
-     * The point readings are smeared by this value in X and Y to create a smoother response.
-     * Default value is 0.03 meters.
-     */
-    m_pCorrelationSearchSpaceSmearDeviation = new Parameter<kt_double>("CorrelationSearchSpaceSmearDeviation", 0.03, GetParameterManager());
+    m_pCorrelationSearchSpaceSmearDeviation = new Parameter<kt_double>(
+        "CorrelationSearchSpaceSmearDeviation",
+        "The point readings are smeared by this value in X and Y to create a "
+        "smoother response.",
+        0.03, GetParameterManager());
 
 
     //////////////////////////////////////////////////////////////////////////////
     //    CorrelationParameters loopCorrelationParameters;
 
-    /**
-     * The size of the search grid used by the matcher.
-     * Default value is 0.3 meters which tells the matcher to use a 30cm x 30cm grid.
-     */
-    m_pLoopSearchSpaceDimension = new Parameter<kt_double>("LoopSearchSpaceDimension", 8.0, GetParameterManager());
+    m_pLoopSearchSpaceDimension = new Parameter<kt_double>(
+        "LoopSearchSpaceDimension", 
+        "The size of the search grid used by the matcher.",
+        8.0, GetParameterManager());
 
-    /**
-     * The resolution (size of a grid cell) of the correlation grid.
-     * Default value is 0.01 meters.
-     */
-    m_pLoopSearchSpaceResolution = new Parameter<kt_double>("LoopSearchSpaceResolution", 0.05, GetParameterManager());
+    m_pLoopSearchSpaceResolution = new Parameter<kt_double>(
+        "LoopSearchSpaceResolution",
+        "The resolution (size of a grid cell) of the correlation grid.",
+        0.05, GetParameterManager());
 
-    /**
-     * The point readings are smeared by this value in X and Y to create a smoother response.
-     * Default value is 0.03 meters.
-     */
-    m_pLoopSearchSpaceSmearDeviation = new Parameter<kt_double>("LoopSearchSpaceSmearDeviation", 0.03, GetParameterManager());
+    m_pLoopSearchSpaceSmearDeviation = new Parameter<kt_double>(
+        "LoopSearchSpaceSmearDeviation", 
+        "The point readings are smeared by this value in X and Y to create a "
+        "smoother response.",
+        0.03, GetParameterManager());
 
     //////////////////////////////////////////////////////////////////////////////
     // ScanMatcherParameters;
 
-    // Variance of penalty for deviating from odometry when scan-matching.
-    // The penalty is a multiplier (less than 1.0) is a function of the
-    // delta of the scan position being tested and the odometric pose
-    m_pDistanceVariancePenalty = new Parameter<kt_double>("DistanceVariancePenalty", math::Square(0.3), GetParameterManager());
-    m_pAngleVariancePenalty = new Parameter<kt_double>("AngleVariancePenalty", math::Square(math::DegreesToRadians(20)), GetParameterManager());
+    m_pDistanceVariancePenalty = new Parameter<kt_double>(
+        "DistanceVariancePenalty", 
+        "Variance of penalty for deviating from odometry when scan-matching. "
+        "The penalty is a multiplier (less than 1.0) is a function of the "
+        "delta of the scan position being tested and the odometric pose.",
+        math::Square(0.3), GetParameterManager());
 
-    // The range of angles to search during a coarse search and a finer search
-    m_pFineSearchAngleOffset = new Parameter<kt_double>("FineSearchAngleOffset", math::DegreesToRadians(0.2), GetParameterManager());
-    m_pCoarseSearchAngleOffset = new Parameter<kt_double>("CoarseSearchAngleOffset", math::DegreesToRadians(20), GetParameterManager());
+    m_pAngleVariancePenalty = new Parameter<kt_double>(
+        "AngleVariancePenalty", 
+        "See DistanceVariancePenalty.",
+        math::Square(math::DegreesToRadians(20)), GetParameterManager());
 
-    // Resolution of angles to search during a coarse search
-    m_pCoarseAngleResolution = new Parameter<kt_double>("CoarseAngleResolution", math::DegreesToRadians(2), GetParameterManager());
+    m_pFineSearchAngleOffset = new Parameter<kt_double>(
+        "FineSearchAngleOffset", 
+        "The range of angles to search during a fine search.",
+        math::DegreesToRadians(0.2), GetParameterManager());
 
-    // Minimum value of the penalty multiplier so scores do not
-    // become too small
-    m_pMinimumAnglePenalty = new Parameter<kt_double>("MinimumAnglePenalty", 0.9, GetParameterManager());
-    m_pMinimumDistancePenalty = new Parameter<kt_double>("MinimumDistancePenalty", 0.5, GetParameterManager());
+    m_pCoarseSearchAngleOffset = new Parameter<kt_double>(
+        "CoarseSearchAngleOffset",
+        "The range of angles to search during a coarse search.",
+        math::DegreesToRadians(20), GetParameterManager());
 
-    // whether to increase the search space if no good matches are initially found
-    m_pUseResponseExpansion = new Parameter<kt_bool>("UseResponseExpansion", false, GetParameterManager());
+    m_pCoarseAngleResolution = new Parameter<kt_double>(
+        "CoarseAngleResolution", 
+        "Resolution of angles to search during a coarse search.",
+        math::DegreesToRadians(2), GetParameterManager());
+
+    m_pMinimumAnglePenalty = new Parameter<kt_double>(
+        "MinimumAnglePenalty", 
+        "Minimum value of the angle penalty multiplier so scores do not become "
+        "too small.",
+        0.9, GetParameterManager());
+
+    m_pMinimumDistancePenalty = new Parameter<kt_double>(
+        "MinimumDistancePenalty", 
+        "Minimum value of the distance penalty multiplier so scores do not "
+        "become too small.",
+        0.5, GetParameterManager());
+
+    m_pUseResponseExpansion = new Parameter<kt_bool>(
+        "UseResponseExpansion", 
+        "Whether to increase the search space if no good matches are initially "
+        "found.",
+        false, GetParameterManager());
   }
 
   void Mapper::Initialize(kt_double rangeThreshold)
