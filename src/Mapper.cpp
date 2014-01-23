@@ -1203,8 +1203,8 @@ namespace karto
       kt_double coarseResponse = m_pLoopScanMatcher->MatchScan(pScan, candidateChain, bestPose, covariance, false, false);
       
       std::stringstream stream;
-      stream << "COARSE RESPONSE: " << coarseResponse << " (&gt; " << m_pMapper->m_pLoopMatchMinimumResponseCoarse->GetValue() << ")" << std::endl;
-      stream << "            var: " << covariance(0, 0) << ",  " << covariance(1, 1) << " (&lt; " << m_pMapper->m_pLoopMatchMaximumVarianceCoarse->GetValue() << ")";
+      stream << "COARSE RESPONSE: " << coarseResponse << " (> " << m_pMapper->m_pLoopMatchMinimumResponseCoarse->GetValue() << ")" << std::endl;
+      stream << "            var: " << covariance(0, 0) << ",  " << covariance(1, 1) << " (< " << m_pMapper->m_pLoopMatchMaximumVarianceCoarse->GetValue() << ")";
       m_pMapper->FireLoopClosureCheck(stream.str());
       
       if ((coarseResponse > m_pMapper->m_pLoopMatchMinimumResponseCoarse->GetValue()) &&
