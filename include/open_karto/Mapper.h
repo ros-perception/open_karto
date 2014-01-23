@@ -1638,6 +1638,9 @@ namespace karto
      */
     const Mapper& operator=(const Mapper&);
 
+  public:
+    void SetUseScanMatching(kt_bool val) { m_pUseScanMatching->SetValue(val); }
+
   private:
     kt_bool m_Initialized;
 
