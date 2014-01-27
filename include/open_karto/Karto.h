@@ -3855,7 +3855,6 @@ namespace karto
       else
       {
         throw Exception("Can't set angular resolution, please create a LaserRangeFinder of type Custom");
-        return;
       }
 
       Update();
