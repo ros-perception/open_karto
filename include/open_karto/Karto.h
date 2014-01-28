@@ -4950,6 +4950,11 @@ namespace karto
       return m_pRangeReadings;
     }
 
+    inline RangeReadingsVector GetRangeReadingsVector() const
+    {
+      return RangeReadingsVector(m_pRangeReadings, m_pRangeReadings + m_NumberOfRangeReadings);
+    }
+
     /**
      * Sets the range readings for this scan
      * @param rRangeReadings

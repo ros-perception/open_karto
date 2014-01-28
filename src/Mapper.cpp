@@ -1211,11 +1211,13 @@ namespace karto
           (covariance(0, 0) < m_pMapper->m_pLoopMatchMaximumVarianceCoarse->GetValue()) &&
           (covariance(1, 1) < m_pMapper->m_pLoopMatchMaximumVarianceCoarse->GetValue()))
       {
-        // save for reversion
-        Pose2 oldPose = pScan->GetSensorPose();
-        
-        pScan->SetSensorPose(bestPose);
-        kt_double fineResponse = m_pMapper->m_pSequentialScanMatcher->MatchScan(pScan, candidateChain, bestPose, covariance, false);
+        LocalizedRangeScan tmpScan(pScan->GetSensorName(), pScan->GetRangeReadingsVector());
+        tmpScan.SetUniqueId(pScan->GetUniqueId());
+        tmpScan.SetTime(pScan->GetTime());
+        tmpScan.SetStateId(pScan->GetStateId());
+        tmpScan.SetCorrectedPose(pScan->GetCorrectedPose());
+        tmpScan.SetSensorPose(bestPose);  // This also updated OdometricPose.
+        kt_double fineResponse = m_pMapper->m_pSequentialScanMatcher->MatchScan(&tmpScan, candidateChain, bestPose, covariance, false);
         
         std::stringstream stream1;
         stream1 << "FINE RESPONSE: " << fineResponse << " (>" << m_pMapper->m_pLoopMatchMinimumResponseFine->GetValue() << ")" << std::endl;
@@ -1223,9 +1225,6 @@ namespace karto
         
         if (fineResponse < m_pMapper->m_pLoopMatchMinimumResponseFine->GetValue())
         {
-          // failed verification test, revert
-          pScan->SetSensorPose(oldPose);
-          
           m_pMapper->FireLoopClosureCheck("REJECTED!");
         }
         else
