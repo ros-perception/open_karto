@@ -2683,7 +2683,7 @@ namespace karto
 
         m_pData = new kt_double[m_Rows * m_Columns];
       }
-      catch (std::bad_alloc ex)
+      catch (const std::bad_alloc& ex)
       {
         throw Exception("Matrix allocation error");
       }
@@ -4970,7 +4970,7 @@ namespace karto
       //  throw Exception(error.str());
       //}
 
-      if (rRangeReadings.size() > 0)
+      if (!rRangeReadings.empty())
       {
         if (rRangeReadings.size() != m_NumberOfRangeReadings)
         {
@@ -5484,14 +5484,14 @@ namespace karto
      */
     static OccupancyGrid* CreateFromScans(const LocalizedRangeScanVector& rScans, kt_double resolution)
     {
-      if (rScans.size() == 0)
+      if (rScans.empty())
       {
         return NULL;
       }
 
       kt_int32s width, height;
       Vector2<kt_double> offset;
-      OccupancyGrid::ComputeDimensions(rScans, resolution, width, height, offset);
+      ComputeDimensions(rScans, resolution, width, height, offset);
       OccupancyGrid* pOccupancyGrid = new OccupancyGrid(width, height, offset, resolution);
       pOccupancyGrid->CreateFromScans(rScans);
 
@@ -6013,7 +6013,7 @@ namespace karto
      */
     virtual void Clear()
     {
-      for (std::map<Name, Sensor*>::iterator iter = m_SensorNameLookup.begin(); iter != m_SensorNameLookup.end(); iter++)
+      for (std::map<Name, Sensor*>::iterator iter = m_SensorNameLookup.begin(); iter != m_SensorNameLookup.end(); ++iter)
       {
         karto::SensorManager::GetInstance()->UnregisterSensor(iter->second);
       }

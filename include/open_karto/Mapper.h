@@ -1123,6 +1123,7 @@ namespace karto
       : m_pMapper(pMapper)
       , m_pCorrelationGrid(NULL)
       , m_pSearchSpaceProbs(NULL)
+      , m_pGridLookup(NULL)
     {
     }
 

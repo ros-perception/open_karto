@@ -924,7 +924,7 @@ namespace karto
         }
         else
         {
-          for (; trailingPointIter != iter; trailingPointIter++)
+          for (; trailingPointIter != iter; ++trailingPointIter)
           {
             validPoints.push_back(*trailingPointIter);
           }
@@ -1488,7 +1488,7 @@ namespace karto
       Matrix3 weight = inverseOfSumOfInverses * (*iter);
       accumulatedPose += weight * pose;
 
-      meansIter++;
+      ++meansIter;
     }
 
     thetaX /= rMeans.size();
