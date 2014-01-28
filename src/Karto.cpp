@@ -118,10 +118,10 @@ namespace karto
     kt_int8u* pDataPtr = m_pOccupancyGrid->GetDataPointer();
     kt_int32u* pCellPassCntPtr = m_pOccupancyGrid->m_pCellPassCnt->GetDataPointer();
     kt_int32u* pCellHitCntPtr = m_pOccupancyGrid->m_pCellHitsCnt->GetDataPointer();
-    
+
     m_pOccupancyGrid->UpdateCell(&pDataPtr[index], pCellPassCntPtr[index], pCellHitCntPtr[index]);
   }
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ namespace karto
     rStream << "Error detect: " << std::endl;
     rStream << " ==> error code: " << rException.GetErrorCode() << std::endl;
     rStream << " ==> error message: " << rException.GetErrorMessage() << std::endl;
-    
+
     return rStream;
   }
 
@@ -188,7 +188,7 @@ namespace karto
   {
     LaserRangeScan* pLaserRangeScan = dynamic_cast<LaserRangeScan*>(pSensorData);
 
-    // verify number of range readings in LaserRangeScan matches the number of expected range readings 
+    // verify number of range readings in LaserRangeScan matches the number of expected range readings
     if(pLaserRangeScan->GetNumberOfRangeReadings() != GetNumberOfRangeReadings())
     {
       std::cout << "LaserRangeScan contains " << pLaserRangeScan->GetNumberOfRangeReadings() << " range readings, expected " << GetNumberOfRangeReadings() << std::endl;
@@ -241,14 +241,14 @@ namespace karto
   std::string LaserRangeFinder::LaserRangeFinderTypeNames[6] =
   {
     "Custom",
-    
+
     "Sick_LMS100",
     "Sick_LMS200",
     "Sick_LMS291",
-    
+
     "Hokuyo_UTM_30LX",
     "Hokuyo_URG_04LX"
   };
-   */  
+   */
 }
 

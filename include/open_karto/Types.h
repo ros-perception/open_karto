@@ -21,7 +21,7 @@
 #include <cstddef>
 
 /**
- * Karto type definition 
+ * Karto type definition
  * Ensures platform independent types for windows, linux and mac
  */
 #if defined(_MSC_VER)

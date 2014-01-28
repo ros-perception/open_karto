@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Karto defines for handling deprecated code 
+ * Karto defines for handling deprecated code
  */
 #ifndef KARTO_DEPRECATED
 #  if defined(__GNUC__) && (__GNUC__ >= 4 || (__GNUC__==3 && __GNUC_MINOR__>=1))
@@ -40,7 +40,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Karto defines for windows dynamic build 
+ * Karto defines for windows dynamic build
  */
 #if defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__) || defined( __BCPLUSPLUS__)  || defined( __MWERKS__)
 # if defined( _LIB ) || defined( KARTO_STATIC ) || defined( STATIC_BUILD )
@@ -50,18 +50,18 @@
 #    define KARTO_EXPORT __declspec(dllexport)
 #  else
 #    define KARTO_EXPORT __declspec(dllimport)
-#  endif // KARTO_DYNAMIC 
+#  endif // KARTO_DYNAMIC
 # endif
 #else
 #  define KARTO_EXPORT
-#endif 
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-/** 
- * Helper defines for std iterator loops 
+/**
+ * Helper defines for std iterator loops
  */
 #define forEach( listtype, list ) \
   for ( listtype::iterator iter = (list)->begin(); iter != (list)->end(); ++iter )
@@ -86,7 +86,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-/** 
+/**
  * Disable annoying compiler warnings
  */
 

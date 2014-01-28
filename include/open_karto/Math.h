@@ -33,14 +33,14 @@ namespace karto
   const kt_double KT_PI_2       =  1.57079632679489661923;  // PI / 2
   const kt_double KT_PI_180     =  0.01745329251994329577;  // PI / 180
   const kt_double KT_180_PI     = 57.29577951308232087685;  // 180 / PI
-  
+
   /**
    * Lets define a small number!
    */
   const kt_double KT_TOLERANCE  = 1e-06;
-  
+
   namespace math
-  {    
+  {
     /**
      * Converts degrees into radians
      * @param degrees
@@ -50,7 +50,7 @@ namespace karto
     {
       return degrees * KT_PI_180;
     }
-    
+
     /**
      * Converts radians into degrees
      * @param radians
@@ -60,7 +60,7 @@ namespace karto
     {
       return radians * KT_180_PI;
     }
-    
+
     /**
      * Square function
      * @param value
@@ -71,7 +71,7 @@ namespace karto
     {
       return (value * value);
     }
-    
+
     /**
      * Round function
      * @param value
@@ -81,7 +81,7 @@ namespace karto
     {
       return value >= 0.0 ? floor(value + 0.5) : ceil(value - 0.5);
     }
-    
+
     /**
      * Binary minimum function
      * @param value1
@@ -93,7 +93,7 @@ namespace karto
     {
       return value1 < value2 ? value1 : value2;
     }
-    
+
     /**
      * Binary maximum function
      * @param value1
@@ -105,7 +105,7 @@ namespace karto
     {
       return value1 > value2 ? value1 : value2;
     }
-    
+
     /**
      * Clips a number to the specified minimum and maximum values.
      * @param n number to be clipped
@@ -113,12 +113,12 @@ namespace karto
      * @param maxValue maximum value
      * @return the clipped value
      */
-    template<typename T> 
+    template<typename T>
     inline const T& Clip(const T& n, const T& minValue, const T& maxValue)
     {
       return Minimum(Maximum(n, minValue), maxValue);
     }
-    
+
     /**
      * Checks whether two numbers are equal within a certain tolerance.
      * @param a
@@ -127,10 +127,10 @@ namespace karto
      */
     inline kt_bool DoubleEqual(kt_double a, kt_double b)
     {
-      double delta = a - b; 
+      double delta = a - b;
       return delta < 0.0 ? delta >= -KT_TOLERANCE : delta <= KT_TOLERANCE;
     }
-    
+
     /**
      * Checks whether value is in the range [0;maximum)
      * @param value
@@ -154,7 +154,7 @@ namespace karto
       return (value < maximum);
     }
 
-    
+
     /**
      * Checks whether value is in the range [a;b]
      * @param value
@@ -166,7 +166,7 @@ namespace karto
     {
       return (value >= a && value <= b);
     }
-    
+
     /**
      * Normalizes angle to be in the range of [-pi, pi]
      * @param angle to be normalized
@@ -185,7 +185,7 @@ namespace karto
           angle += KT_2PI;
         }
       }
-      
+
       while (angle > KT_PI)
       {
         if (angle > KT_2PI)
@@ -197,12 +197,12 @@ namespace karto
           angle -= KT_2PI;
         }
       }
-      
+
       assert(math::InRange(angle, -KT_PI, KT_PI));
-      
+
       return angle;
     }
-    
+
     /**
      * Returns an equivalent angle to the first parameter such that the difference
      * when the second parameter is subtracted from this new value is an angle
@@ -217,17 +217,17 @@ namespace karto
       {
         minuend += KT_2PI;
       }
-      
+
       while (minuend - subtrahend > KT_PI)
       {
         minuend -= KT_2PI;
       }
-      
+
       return minuend;
     }
-    
+
     /**
-     * Align a value to the alignValue. 
+     * Align a value to the alignValue.
      * The alignValue should be the power of two (2, 4, 8, 16, 32 and so on)
      * @param value
      * @param alignValue
@@ -239,7 +239,7 @@ namespace karto
       return static_cast<T> ((value + (alignValue - 1)) & ~(alignValue - 1));
     }
   } // Math
-    
+
 }
 
 #endif // __KARTO_MATH__
