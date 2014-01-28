@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <boost/thread.hpp>
 
 #ifdef USE_POCO
 #include <Poco/Mutex.h>
@@ -5119,6 +5120,9 @@ namespace karto
     {
     }
 
+  private:
+    mutable boost::shared_mutex m_Lock;
+
   public:
     /**
      * Gets the odometric pose of this scan
@@ -5167,9 +5171,12 @@ namespace karto
      */
     inline const Pose2& GetBarycenterPose() const 
     {
+      boost::shared_lock<boost::shared_mutex> lock(m_Lock);
       if (m_IsDirty)
       {
         // throw away constness and do an update!
+        lock.unlock();
+        boost::unique_lock<boost::shared_mutex> uniqueLock(m_Lock);
         const_cast<LocalizedRangeScan*>(this)->Update();
       }
 
@@ -5183,9 +5190,12 @@ namespace karto
      */
     inline Pose2 GetReferencePose(kt_bool useBarycenter) const 
     {
+      boost::shared_lock<boost::shared_mutex> lock(m_Lock);
       if (m_IsDirty)
       {
         // throw away constness and do an update!
+        lock.unlock();
+        boost::unique_lock<boost::shared_mutex> uniqueLock(m_Lock);
         const_cast<LocalizedRangeScan*>(this)->Update();
       }
 
@@ -5237,9 +5247,12 @@ namespace karto
      */
     inline const BoundingBox2& GetBoundingBox() const
     {
+      boost::shared_lock<boost::shared_mutex> lock(m_Lock);
       if (m_IsDirty)
       {
         // throw away constness and do an update!
+        lock.unlock();
+        boost::unique_lock<boost::shared_mutex> uniqueLock(m_Lock);
         const_cast<LocalizedRangeScan*>(this)->Update();
       }
 
@@ -5251,9 +5264,12 @@ namespace karto
      */
     inline const PointVectorDouble& GetPointReadings(kt_bool wantFiltered = false) const
     {
+      boost::shared_lock<boost::shared_mutex> lock(m_Lock);
       if (m_IsDirty)
       {
         // throw away constness and do an update!
+        lock.unlock();
+        boost::unique_lock<boost::shared_mutex> uniqueLock(m_Lock);
         const_cast<LocalizedRangeScan*>(this)->Update();
       }
 
@@ -5267,7 +5283,7 @@ namespace karto
       }
     }
 
-  private:    
+  private:
     /**
      * Compute point readings based on range readings
      * Only range readings within [minimum range; range threshold] are returned
