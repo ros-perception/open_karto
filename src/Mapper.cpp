@@ -1216,7 +1216,7 @@ namespace karto
         tmpScan.SetTime(pScan->GetTime());
         tmpScan.SetStateId(pScan->GetStateId());
         tmpScan.SetCorrectedPose(pScan->GetCorrectedPose());
-        tmpScan.SetSensorPose(bestPose);  // This also updated OdometricPose.
+        tmpScan.SetSensorPose(bestPose);  // This also updates OdometricPose.
         kt_double fineResponse = m_pMapper->m_pSequentialScanMatcher->MatchScan(&tmpScan, candidateChain, bestPose, covariance, false);
 
         std::stringstream stream1;
