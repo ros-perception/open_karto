@@ -26,7 +26,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "OpenKarto/Mapper.h"
+#include "open_karto/Mapper.h"
 
 namespace karto
 {
