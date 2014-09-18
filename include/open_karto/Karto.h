@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <boost/thread.hpp>
 
 #ifdef USE_POCO
 #include <Poco/Mutex.h>
@@ -81,7 +82,7 @@ namespace karto
    */
   class KARTO_EXPORT Exception
   {
-  public:    
+  public:
     /**
      * Constructor with exception message
      * @param rMessage exception message (default: "Karto Exception")
@@ -92,7 +93,7 @@ namespace karto
       , m_ErrorCode(errorCode)
     {
     }
-    
+
     /**
      * Copy constructor
      */
@@ -101,14 +102,14 @@ namespace karto
       , m_ErrorCode(rException.m_ErrorCode)
     {
     }
-    
+
     /**
      * Destructor
      */
     virtual ~Exception()
     {
     }
-    
+
   public:
     /**
      * Assignment operator
@@ -117,10 +118,10 @@ namespace karto
     {
       m_Message = rException.m_Message;
       m_ErrorCode = rException.m_ErrorCode;
-      
+
       return *this;
     }
-    
+
   public:
     /**
      * Gets the exception message
@@ -130,7 +131,7 @@ namespace karto
     {
       return m_Message;
     }
-    
+
     /**
      * Gets error code
      * @return error code
@@ -139,7 +140,7 @@ namespace karto
     {
       return m_ErrorCode;
     }
-    
+
   public:
     /**
      * Write exception to output stream
@@ -147,12 +148,12 @@ namespace karto
      * @param rException exception to write
      */
     friend KARTO_EXPORT std::ostream& operator << (std::ostream& rStream, Exception& rException);
-    
+
   private:
     std::string m_Message;
     kt_int32s m_ErrorCode;
   }; // class Exception
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -161,7 +162,7 @@ namespace karto
    * Subclass this class to make a non-copyable class (copy
    * constructor and assignment operator are private)
    */
-  class KARTO_EXPORT NonCopyable 
+  class KARTO_EXPORT NonCopyable
   {
   private:
     NonCopyable(const NonCopyable&);
@@ -172,10 +173,10 @@ namespace karto
     {
     }
 
-    virtual ~NonCopyable() 
+    virtual ~NonCopyable()
     {
     }
-  }; // class NonCopyable 
+  }; // class NonCopyable
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -213,7 +214,7 @@ namespace karto
 #ifdef USE_POCO
       Poco::FastMutex::ScopedLock lock(m_Mutex);
 #endif
-      if (m_pPointer == NULL) 
+      if (m_pPointer == NULL)
       {
         m_pPointer = new T;
       }
@@ -248,11 +249,11 @@ namespace karto
      */
     virtual void operator() (kt_int32u) {};
   }; // Functor
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
-  
+
   class AbstractParameter;
 
   /**
@@ -261,7 +262,7 @@ namespace karto
   typedef std::vector<AbstractParameter*> ParameterVector;
 
   /**
-   * Parameter manager. 
+   * Parameter manager.
    */
   class KARTO_EXPORT ParameterManager : public NonCopyable
   {
@@ -272,7 +273,7 @@ namespace karto
     ParameterManager()
     {
     }
-    
+
     /**
      * Destructor
      */
@@ -287,7 +288,7 @@ namespace karto
      * @param pParameter
      */
     void Add(AbstractParameter* pParameter);
-    
+
     /**
      * Gets the parameter of the given name
      * @param rName
@@ -299,17 +300,17 @@ namespace karto
       {
         return m_ParameterLookup[rName];
       }
-      
+
       std::cout << "Unknown parameter: " << rName << std::endl;
-      
+
       return NULL;
     }
-    
+
     /**
      * Clears the manager of all parameters
      */
     void Clear();
-    
+
     /**
      * Gets all parameters
      * @return vector of all parameters
@@ -342,13 +343,13 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
-  
+
   // valid names
   // 'Test' -- no scope
   // '/Test' -- no scope will be parsed to 'Test'
   // '/scope/Test' - 'scope' scope and 'Test' name
   // '/scope/name/Test' - 'scope/name' scope and 'Test' name
-  // 
+  //
   class Name
   {
   public:
@@ -420,7 +421,7 @@ namespace karto
     /**
      * Sets the scope of this name
      * @param rScope scope
-     */    
+     */
     inline void SetScope(const std::string& rScope)
     {
       m_Scope = rScope;
@@ -449,7 +450,7 @@ namespace karto
     }
 
   public:
-    /** 
+    /**
      * Assignment operator.
      */
     Name& operator = (const Name& rOther)
@@ -463,25 +464,25 @@ namespace karto
       return *this;
     }
 
-    /** 
+    /**
      * Equality operator.
-     */    
+     */
     kt_bool operator == (const Name& rOther) const
     {
       return (m_Name == rOther.m_Name) && (m_Scope == rOther.m_Scope);
     }
 
-    /** 
+    /**
      * Inequality operator.
-     */    
+     */
     kt_bool operator != (const Name& rOther) const
     {
       return !(*this == rOther);
     }
 
-    /** 
+    /**
      * Less than operator.
-     */    
+     */
     kt_bool operator < (const Name& rOther) const
     {
       return ToString() < rOther.ToString();
@@ -497,7 +498,7 @@ namespace karto
       rStream << rName.ToString();
       return rStream;
     }
-    
+
   private:
     /**
      * Parse the given string into a Name object
@@ -609,9 +610,9 @@ namespace karto
      * Gets the name of this object
      * @return name
      */
-    inline const Name& GetName() const 
+    inline const Name& GetName() const
     {
-      return m_Name; 
+      return m_Name;
     }
 
     /**
@@ -619,7 +620,7 @@ namespace karto
      * @return class name
      */
     virtual const char* GetClassName() const = 0;
-    
+
     /**
      * Gets the type of this object
      * @return object type
@@ -634,7 +635,7 @@ namespace karto
     {
       return m_pParameterManager;
     }
-    
+
     /**
      * Gets the named parameter
      * @param rName name of parameter
@@ -644,7 +645,7 @@ namespace karto
     {
       return m_pParameterManager->Get(rName);
     }
-    
+
     /**
      * Sets the parameter with the given name with the given value
      * @param rName name
@@ -652,7 +653,7 @@ namespace karto
      */
     template<typename T>
     inline void SetParameter(const std::string& rName, T value);
-    
+
     /**
      * Gets all parameters
      * @return parameters
@@ -753,7 +754,7 @@ namespace karto
     //@cond EXCLUDE
     KARTO_Object(Module)
     //@endcond
-   
+
   public:
     /**
      * Construct a Module
@@ -769,12 +770,12 @@ namespace karto
   public:
     /**
      * Reset the module
-     */ 
+     */
     virtual void Reset() = 0;
 
     /**
      * Process an Object
-     */ 
+     */
     virtual kt_bool Process(karto::Object*)
     {
       return false;
@@ -784,7 +785,7 @@ namespace karto
     Module(const Module&);
     const Module& operator=(const Module&);
   };
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -925,7 +926,7 @@ namespace karto
       m_Values[0] = 0;
       m_Values[1] = 0;
     }
-    
+
     /**
      * Constructor initializing vector location
      * @param x
@@ -936,7 +937,7 @@ namespace karto
       m_Values[0] = x;
       m_Values[1] = y;
     }
-    
+
   public:
     /**
      * Gets the x-coordinate of this vector2
@@ -946,7 +947,7 @@ namespace karto
     {
       return m_Values[0];
     }
-    
+
     /**
      * Sets the x-coordinate of this vector2
      * @param x the x-coordinate of the vector2
@@ -955,7 +956,7 @@ namespace karto
     {
       m_Values[0] = x;
     }
-    
+
     /**
      * Gets the y-coordinate of this vector2
      * @return the y-coordinate of the vector2
@@ -964,7 +965,7 @@ namespace karto
     {
       return m_Values[1];
     }
-    
+
     /**
      * Sets the y-coordinate of this vector2
      * @param y the y-coordinate of the vector2
@@ -973,7 +974,7 @@ namespace karto
     {
       m_Values[1] = y;
     }
-        
+
     /**
      * Floor point operator
      * @param rOther
@@ -983,7 +984,7 @@ namespace karto
       if ( rOther.m_Values[0] < m_Values[0] ) m_Values[0] = rOther.m_Values[0];
       if ( rOther.m_Values[1] < m_Values[1] ) m_Values[1] = rOther.m_Values[1];
     }
-    
+
     /**
      * Ceiling point operator
      * @param rOther
@@ -993,7 +994,7 @@ namespace karto
       if ( rOther.m_Values[0] > m_Values[0] ) m_Values[0] = rOther.m_Values[0];
       if ( rOther.m_Values[1] > m_Values[1] ) m_Values[1] = rOther.m_Values[1];
     }
-    
+
     /**
      * Returns the square of the length of the vector
      * @return square of the length of the vector
@@ -1002,7 +1003,7 @@ namespace karto
     {
       return math::Square(m_Values[0]) + math::Square(m_Values[1]);
     }
-    
+
     /**
      * Returns the length of the vector (x and y).
      * @return length of the vector
@@ -1011,7 +1012,7 @@ namespace karto
     {
       return sqrt(SquaredLength());
     }
-    
+
     /**
      * Returns the square distance to the given vector
      * @returns square distance to the given vector
@@ -1020,8 +1021,8 @@ namespace karto
     {
       return (*this - rOther).SquaredLength();
     }
-    
-    /** 
+
+    /**
      * Gets the distance to the other vector2
      * @param rOther
      * @return distance to other vector2
@@ -1030,7 +1031,7 @@ namespace karto
     {
       return sqrt(SquaredDistance(rOther));
     }
-    
+
   public:
     /**
      * In place Vector2 addition.
@@ -1040,7 +1041,7 @@ namespace karto
       m_Values[0] += rOther.m_Values[0];
       m_Values[1] += rOther.m_Values[1];
     }
-    
+
     /**
      * In place Vector2 subtraction.
      */
@@ -1059,7 +1060,7 @@ namespace karto
     {
       return Vector2(m_Values[0] + rOther.m_Values[0], m_Values[1] + rOther.m_Values[1]);
     }
-    
+
     /**
      * Subtraction operator
      * @param rOther
@@ -1069,7 +1070,7 @@ namespace karto
     {
       return Vector2(m_Values[0] - rOther.m_Values[0], m_Values[1] - rOther.m_Values[1]);
     }
-    
+
     /**
      * In place scalar division operator
      * @param scalar
@@ -1079,7 +1080,7 @@ namespace karto
       m_Values[0] /= scalar;
       m_Values[1] /= scalar;
     }
-    
+
     /**
      * Divides a Vector2
      * @param scalar
@@ -1089,7 +1090,7 @@ namespace karto
     {
       return Vector2(m_Values[0] / scalar, m_Values[1] / scalar);
     }
-        
+
     /**
      * Computes the dot product between the two vectors
      * @param rOther
@@ -1098,8 +1099,8 @@ namespace karto
     inline kt_double operator * (const Vector2& rOther) const
     {
       return m_Values[0] * rOther.m_Values[0] + m_Values[1] * rOther.m_Values[1];
-    }    
-    
+    }
+
     /**
      * Scales the vector by the given scalar
      * @param scalar
@@ -1108,7 +1109,7 @@ namespace karto
     {
       return Vector2(m_Values[0] * scalar, m_Values[1] * scalar);
     }
-    
+
     /**
      * Subtract the vector by the given scalar
      * @param scalar
@@ -1127,7 +1128,7 @@ namespace karto
       m_Values[0] *= scalar;
       m_Values[1] *= scalar;
     }
-    
+
     /**
      * Equality operator returns true if the corresponding x, y values of each Vector2 are the same values.
      * @param rOther
@@ -1136,7 +1137,7 @@ namespace karto
     {
       return (m_Values[0] == rOther.m_Values[0] && m_Values[1] == rOther.m_Values[1]);
     }
-    
+
     /**
      * Inequality operator returns true if any of the corresponding x, y values of each Vector2 not the same.
      * @param rOther
@@ -1145,7 +1146,7 @@ namespace karto
     {
       return (m_Values[0] != rOther.m_Values[0] || m_Values[1] != rOther.m_Values[1]);
     }
-    
+
     /**
      * Less than operator
      * @param rOther
@@ -1157,7 +1158,7 @@ namespace karto
         return true;
       else if (m_Values[0] > rOther.m_Values[0])
         return false;
-      else 
+      else
         return (m_Values[1] < rOther.m_Values[1]);
     }
 
@@ -1171,7 +1172,7 @@ namespace karto
       rStream << rVector.GetX() << " " << rVector.GetY();
       return rStream;
     }
-    
+
     /**
      * Read Vector2 from input stream
      * @param rStream input stream
@@ -1181,11 +1182,11 @@ namespace karto
       // Implement me!!
       return rStream;
     }
-    
+
   private:
     T m_Values[2];
   }; // Vector2<T>
-  
+
   /**
    * Type declaration of Vector2<kt_double> vector
    */
@@ -1241,9 +1242,9 @@ namespace karto
      * Gets the x-component of this vector
      * @return x-component
      */
-    inline const T& GetX() const 
+    inline const T& GetX() const
     {
-      return m_Values[0]; 
+      return m_Values[0];
     }
 
     /**
@@ -1252,16 +1253,16 @@ namespace karto
      */
     inline void SetX(const T& x)
     {
-      m_Values[0] = x; 
+      m_Values[0] = x;
     }
 
     /**
      * Gets the y-component of this vector
      * @return y-component
      */
-    inline const T& GetY() const 
+    inline const T& GetY() const
     {
-      return m_Values[1]; 
+      return m_Values[1];
     }
 
     /**
@@ -1270,7 +1271,7 @@ namespace karto
      */
     inline void SetY(const T& y)
     {
-      m_Values[1] = y; 
+      m_Values[1] = y;
     }
 
     /**
@@ -1279,7 +1280,7 @@ namespace karto
      */
     inline const T& GetZ() const
     {
-      return m_Values[2]; 
+      return m_Values[2];
     }
 
     /**
@@ -1288,8 +1289,8 @@ namespace karto
      */
     inline void SetZ(const T& z)
     {
-      m_Values[2] = z; 
-    } 
+      m_Values[2] = z;
+    }
 
     /**
      * Floor vector operator
@@ -1330,7 +1331,7 @@ namespace karto
     {
       return sqrt(SquaredLength());
     }
-    
+
     /**
      * Returns a string representation of this vector
      * @return string representation of this vector
@@ -1339,7 +1340,7 @@ namespace karto
     {
       std::stringstream converter;
       converter.precision(std::numeric_limits<double>::digits10);
-      
+
       converter << GetX() << " " << GetY() << " " << GetZ();
 
       return converter.str();
@@ -1486,7 +1487,7 @@ namespace karto
       m_Values[0] = 0.0;
       m_Values[1] = 0.0;
       m_Values[2] = 0.0;
-      m_Values[3] = 1.0; 
+      m_Values[3] = 1.0;
     }
 
     /**
@@ -1522,7 +1523,7 @@ namespace karto
      */
     inline kt_double GetX() const
     {
-      return m_Values[0]; 
+      return m_Values[0];
     }
 
     /**
@@ -1531,7 +1532,7 @@ namespace karto
      */
     inline void SetX(kt_double x)
     {
-      m_Values[0] = x; 
+      m_Values[0] = x;
     }
 
     /**
@@ -1540,7 +1541,7 @@ namespace karto
      */
     inline kt_double GetY() const
     {
-      return m_Values[1]; 
+      return m_Values[1];
     }
 
     /**
@@ -1549,7 +1550,7 @@ namespace karto
      */
     inline void SetY(kt_double y)
     {
-      m_Values[1] = y; 
+      m_Values[1] = y;
     }
 
     /**
@@ -1558,7 +1559,7 @@ namespace karto
      */
     inline kt_double GetZ() const
     {
-      return m_Values[2]; 
+      return m_Values[2];
     }
 
     /**
@@ -1567,7 +1568,7 @@ namespace karto
      */
     inline void SetZ(kt_double z)
     {
-      m_Values[2] = z; 
+      m_Values[2] = z;
     }
 
     /**
@@ -1576,7 +1577,7 @@ namespace karto
      */
     inline kt_double GetW() const
     {
-      return m_Values[3]; 
+      return m_Values[3];
     }
 
     /**
@@ -1585,7 +1586,7 @@ namespace karto
      */
     inline void SetW(kt_double w)
     {
-      m_Values[3] = w; 
+      m_Values[3] = w;
     }
 
     /**
@@ -1595,19 +1596,19 @@ namespace karto
      * @param rPitch
      * @param rRoll
      */
-    void ToEulerAngles(kt_double& rYaw, kt_double& rPitch, kt_double& rRoll) const 
+    void ToEulerAngles(kt_double& rYaw, kt_double& rPitch, kt_double& rRoll) const
     {
       kt_double test = m_Values[0] * m_Values[1] + m_Values[2] * m_Values[3];
 
       if (test > 0.499)
-      { 
+      {
         // singularity at north pole
         rYaw = 2 * atan2(m_Values[0], m_Values[3]);;
         rPitch = KT_PI_2;
         rRoll = 0;
       }
       else if (test < -0.499)
-      { 
+      {
         // singularity at south pole
         rYaw = -2 * atan2(m_Values[0], m_Values[3]);
         rPitch = -KT_PI_2;
@@ -1626,7 +1627,7 @@ namespace karto
     }
 
     /**
-     * Set x,y,z,w values of the quaternion based on Euler angles. 
+     * Set x,y,z,w values of the quaternion based on Euler angles.
      * Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/eulerToQuaternion/index.htm
      * @param yaw
      * @param pitch
@@ -1636,15 +1637,15 @@ namespace karto
     {
       kt_double angle;
 
-      angle = yaw * 0.5; 
+      angle = yaw * 0.5;
       kt_double cYaw = cos(angle);
       kt_double sYaw = sin(angle);
 
-      angle = pitch * 0.5; 
+      angle = pitch * 0.5;
       kt_double cPitch = cos(angle);
       kt_double sPitch = sin(angle);
 
-      angle = roll * 0.5; 
+      angle = roll * 0.5;
       kt_double cRoll = cos(angle);
       kt_double sRoll = sin(angle);
 
@@ -1704,7 +1705,7 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
-  
+
   /**
    * Stores x, y, width and height that represents the location and size of a rectangle
    * (x, y) is at bottom left in mapper!
@@ -1762,12 +1763,12 @@ namespace karto
     {
       return m_Position.GetX();
     }
-    
+
     /**
      * Sets the x-coordinate of the left edge of this rectangle
      * @param x the x-coordinate of the left edge of this rectangle
      */
-    inline void SetX(T x) 
+    inline void SetX(T x)
     {
       m_Position.SetX(x);
     }
@@ -1789,7 +1790,7 @@ namespace karto
     {
       m_Position.SetY(y);
     }
-    
+
     /**
      * Gets the width of this rectangle
      * @return the width of this rectangle
@@ -1807,7 +1808,7 @@ namespace karto
     {
       m_Size.SetWidth(width);
     }
-    
+
     /**
      * Gets the height of this rectangle
      * @return the height of this rectangle
@@ -1825,11 +1826,11 @@ namespace karto
     {
       m_Size.SetHeight(height);
     }
-    
+
     /**
      * Gets the position of this rectangle
      * @return the position of this rectangle
-     */    
+     */
     inline const Vector2<T>& GetPosition() const
     {
       return m_Position;
@@ -1839,7 +1840,7 @@ namespace karto
      * Sets the position of this rectangle
      * @param rX x
      * @param rY y
-     */    
+     */
     inline void SetPosition(const T& rX, const T& rY)
     {
       m_Position = Vector2<T>(rX, rY);
@@ -1848,7 +1849,7 @@ namespace karto
     /**
      * Sets the position of this rectangle
      * @param rPosition position
-     */    
+     */
     inline void SetPosition(const Vector2<T>& rPosition)
     {
       m_Position = rPosition;
@@ -1857,7 +1858,7 @@ namespace karto
     /**
      * Gets the size of this rectangle
      * @return the size of this rectangle
-     */    
+     */
     inline const Size2<T>& GetSize() const
     {
       return m_Size;
@@ -1866,8 +1867,8 @@ namespace karto
     /**
      * Sets the size of this rectangle
      * @param rSize size
-     */    
-    inline void SetSize(const Size2<T>& rSize) 
+     */
+    inline void SetSize(const Size2<T>& rSize)
     {
       m_Size = rSize;
     }
@@ -1889,7 +1890,7 @@ namespace karto
     {
       m_Position = rOther.m_Position;
       m_Size = rOther.m_Size;
-      
+
       return *this;
     }
 
@@ -2044,7 +2045,7 @@ namespace karto
       m_Heading = heading;
     }
 
-    /** 
+    /**
      * Return the squared distance between two Pose2
      * @return squared distance
      */
@@ -2052,7 +2053,7 @@ namespace karto
     {
       return m_Position.SquaredDistance(rOther.m_Position);
     }
-    
+
   public:
     /**
      * Assignment operator
@@ -2119,7 +2120,7 @@ namespace karto
       // Implement me!!
       return rStream;
     }
-    
+
     /**
      * Write this pose onto output stream
      * @param rStream output stream
@@ -2151,7 +2152,7 @@ namespace karto
    * Karto uses a right-handed coordinate system with X, Y as the 2-D ground plane and X is forward and Y is left.
    * Values in Vector3 used to define position must have units of meters.
    * The value of angle when defining orientation in two dimensions must be in units of radians.
-   * The definition of orientation in three dimensions uses quaternions.  
+   * The definition of orientation in three dimensions uses quaternions.
    */
   class Pose3
   {
@@ -2246,12 +2247,12 @@ namespace karto
     {
       std::stringstream converter;
       converter.precision(std::numeric_limits<double>::digits10);
-      
+
       converter << GetPosition() << " " << GetOrientation();
-      
+
       return converter.str();
     }
-    
+
   public:
     /**
      * Assignment operator
@@ -2461,7 +2462,7 @@ namespace karto
 
       return true;
     }
-    
+
     /**
      * Returns a string representation of this matrix
      * @return string representation of this matrix
@@ -2470,7 +2471,7 @@ namespace karto
     {
       std::stringstream converter;
       converter.precision(std::numeric_limits<double>::digits10);
-      
+
       for (int row = 0; row < 3; row++)
       {
         for (int col = 0; col < 3; col++)
@@ -2478,7 +2479,7 @@ namespace karto
           converter << m_Matrix[row][col] << " ";
         }
       }
-      
+
       return converter.str();
     }
 
@@ -2564,7 +2565,7 @@ namespace karto
         }
       }
     }
-    
+
     /**
      * Write Matrix3 onto output stream
      * @param rStream output stream
@@ -2679,20 +2680,20 @@ namespace karto
         {
           delete[] m_pData;
         }
-        
+
         m_pData = new kt_double[m_Rows * m_Columns];
       }
-      catch (std::bad_alloc ex)
+      catch (const std::bad_alloc& ex)
       {
         throw Exception("Matrix allocation error");
       }
-      
+
       if (m_pData == NULL)
       {
         throw Exception("Matrix allocation error");
       }
     }
-    
+
     /**
      * Checks if (row,column) is a valid entry into the matrix
      * @param row
@@ -2714,7 +2715,7 @@ namespace karto
   private:
     kt_int32u m_Rows;
     kt_int32u m_Columns;
-    
+
     kt_double* m_pData;
   }; // Matrix
 
@@ -2738,15 +2739,15 @@ namespace karto
     }
 
   public:
-    /** 
+    /**
      * Get bounding box minimum
      */
     inline const Vector2<kt_double>& GetMinimum() const
-    { 
-      return m_Minimum; 
+    {
+      return m_Minimum;
     }
 
-    /** 
+    /**
      * Set bounding box minimum
      */
     inline void SetMinimum(const Vector2<kt_double>& mMinimum)
@@ -2754,15 +2755,15 @@ namespace karto
       m_Minimum = mMinimum;
     }
 
-    /** 
+    /**
      * Get bounding box maximum
      */
     inline const Vector2<kt_double>& GetMaximum() const
-    { 
+    {
       return m_Maximum;
     }
 
-    /** 
+    /**
      * Set bounding box maximum
      */
     inline void SetMaximum(const Vector2<kt_double>& rMaximum)
@@ -2771,7 +2772,7 @@ namespace karto
     }
 
     /**
-     * Get the size of the bounding box 
+     * Get the size of the bounding box
      */
     inline Size2<kt_double> GetSize() const
     {
@@ -2797,7 +2798,7 @@ namespace karto
       Add(rBoundingBox.GetMinimum());
       Add(rBoundingBox.GetMaximum());
     }
-    
+
     /**
      * Whether the given point is in the bounds of this box
      * @param rPoint
@@ -2929,17 +2930,17 @@ namespace karto
     LaserRangeFinder_Sick_LMS291 = 3,
 
     LaserRangeFinder_Hokuyo_UTM_30LX = 4,
-    LaserRangeFinder_Hokuyo_URG_04LX = 5    
+    LaserRangeFinder_Hokuyo_URG_04LX = 5
   } LaserRangeFinderType;
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
-  /** 
+  /**
    * Abstract base class for Parameters
-   */ 
-  class AbstractParameter 
+   */
+  class AbstractParameter
   {
   public:
     /**
@@ -2986,9 +2987,9 @@ namespace karto
      * Gets the name of this object
      * @return name
      */
-    inline const std::string& GetName() const 
+    inline const std::string& GetName() const
     {
-      return m_Name; 
+      return m_Name;
     }
 
     /**
@@ -3060,7 +3061,7 @@ namespace karto
       , m_Value(value)
     {
     }
-    
+
     /**
      * Parameter with given name, description and value
      * @param rName
@@ -3073,14 +3074,14 @@ namespace karto
       , m_Value(value)
     {
     }
-    
+
     /**
      * Destructor
      */
     virtual ~Parameter()
     {
     }
-    
+
   public:
     /**
      * Gets value of parameter
@@ -3090,7 +3091,7 @@ namespace karto
     {
       return m_Value;
     }
-    
+
     /**
      * Sets value of parameter
      * @param rValue
@@ -3099,7 +3100,7 @@ namespace karto
     {
       m_Value = rValue;
     }
-    
+
     /**
      * Gets value of parameter as string
      * @return string version of value
@@ -3110,18 +3111,18 @@ namespace karto
       converter << m_Value;
       return converter.str();
     }
-    
+
     /**
      * Sets value of parameter from string
      * @param rStringValue
      */
     virtual void SetValueFromString(const std::string& rStringValue)
     {
-      std::stringstream converter;      
+      std::stringstream converter;
       converter.str(rStringValue);
       converter >> m_Value;
     }
-    
+
     /**
      * Clone this parameter
      * @return clone of this parameter
@@ -3130,7 +3131,7 @@ namespace karto
     {
       return new Parameter(GetName(), GetDescription(), GetValue());
     }
-    
+
   public:
     /**
      * Assignment operator
@@ -3165,13 +3166,13 @@ namespace karto
     int precision = std::numeric_limits<double>::digits10;
     std::stringstream converter;
     converter.precision(precision);
-    
+
     converter.str(rStringValue);
-    
+
     m_Value = 0.0;
     converter >> m_Value;
   }
-  
+
   template<>
   inline const std::string Parameter<kt_double>::GetValueAsString() const
   {
@@ -3180,7 +3181,7 @@ namespace karto
     converter << m_Value;
     return converter.str();
   }
-  
+
   template<>
   inline void Parameter<kt_bool>::SetValueFromString(const std::string& rStringValue)
   {
@@ -3193,7 +3194,7 @@ namespace karto
       m_Value = false;
     }
   }
-  
+
   template<>
   inline const std::string Parameter<kt_bool>::GetValueAsString() const
   {
@@ -3201,10 +3202,10 @@ namespace karto
     {
       return "true";
     }
-    
+
     return "false";
   }
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -3221,7 +3222,7 @@ namespace karto
      * Construct a Parameter object with name and value
      * @param rName parameter name
      * @param value of parameter
-     * @param pParameterManger 
+     * @param pParameterManger
      */
     ParameterEnum(const std::string& rName, kt_int32s value, ParameterManager* pParameterManger = NULL)
       : Parameter<kt_int32s>(rName, value, pParameterManger)
@@ -3317,7 +3318,7 @@ namespace karto
     ParameterEnum& operator = (const ParameterEnum& rOther)
     {
       SetValue(rOther.GetValue());
-     
+
       return *this;
     }
 
@@ -3409,7 +3410,7 @@ namespace karto
     {
       return m_pOffsetPose->GetValue();
     }
-    
+
     /**
      * Sets this range finder sensor's offset
      * @param rPose
@@ -3420,7 +3421,7 @@ namespace karto
     }
 
     /**
-     * Validates sensor 
+     * Validates sensor
      * @return true if valid
      */
     virtual kt_bool Validate() = 0;
@@ -3495,20 +3496,20 @@ namespace karto
      * Registers a sensor by it's name. The Sensor name must be unique, if not sensor is not registered
      * unless override is set to true
      * @param pSensor sensor to register
-     * @param override 
+     * @param override
      * @return true if sensor is registered with SensorManager, false if Sensor name is not unique
      */
     void RegisterSensor(Sensor* pSensor, kt_bool override = false)
     {
       Validate(pSensor);
-      
+
       if ((m_Sensors.find(pSensor->GetName()) != m_Sensors.end()) && !override)
       {
         throw Exception("Cannot register sensor: already registered: [" + pSensor->GetName().ToString() + "] (Consider setting 'override' to true)");
       }
 
       std::cout << "Registering sensor: [" << pSensor->GetName().ToString() << "]" << std::endl;
-      
+
       m_Sensors[pSensor->GetName()] = pSensor;
     }
 
@@ -3546,7 +3547,7 @@ namespace karto
 
       throw Exception("Sensor not registered: [" + rName.ToString() + "] (Did you add the sensor to the Dataset?)");
     }
-    
+
     /**
      * Gets the sensor with the given name
      * @param rName name of sensor
@@ -3556,10 +3557,10 @@ namespace karto
     T* GetSensorByName(const Name& rName)
     {
       Sensor* pSensor = GetSensorByName(rName);
-      
+
       return dynamic_cast<T*>(pSensor);
     }
-    
+
     /**
      * Gets all registered sensors
      * @return vector of all registered sensors
@@ -3589,10 +3590,10 @@ namespace karto
       }
       else if (pSensor->GetName().ToString() == "")
       {
-        throw Exception("Invalid sensor:  nameless");        
+        throw Exception("Invalid sensor:  nameless");
       }
     }
-    
+
   protected:
     /**
      * Sensor map
@@ -3688,7 +3689,7 @@ namespace karto
     {
     }
 
-  public:   
+  public:
     /**
      * Gets this range finder sensor's minimum range
      * @return minimum range
@@ -3705,7 +3706,7 @@ namespace karto
     inline void SetMinimumRange(kt_double minimumRange)
     {
       m_pMinimumRange->SetValue(minimumRange);
-      
+
       SetRangeThreshold(GetRangeThreshold());
     }
 
@@ -3761,7 +3762,7 @@ namespace karto
     {
       return m_pMinimumAngle->GetValue();
     }
-    
+
     /**
      * Sets this range finder sensor's minimum angle
      * @param minimumAngle
@@ -3781,7 +3782,7 @@ namespace karto
     {
       return m_pMaximumAngle->GetValue();
     }
-    
+
     /**
      * Sets this range finder sensor's maximum angle
      * @param maximumAngle
@@ -3792,7 +3793,7 @@ namespace karto
 
       Update();
     }
-    
+
     /**
      * Gets this range finder sensor's angular resolution
      * @return angular resolution
@@ -3801,7 +3802,7 @@ namespace karto
     {
       return m_pAngularResolution->GetValue();
     }
-    
+
     /**
      * Sets this range finder sensor's angular resolution
      * @param angularResolution
@@ -3855,7 +3856,6 @@ namespace karto
       else
       {
         throw Exception("Can't set angular resolution, please create a LaserRangeFinder of type Custom");
-        return;
       }
 
       Update();
@@ -3925,12 +3925,12 @@ namespace karto
           pLrf->m_pMinimumRange->SetValue(0.0);
           pLrf->m_pMaximumRange->SetValue(20.0);
 
-          // 270 degree range, 50 Hz 
-          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-135)); 
-          pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(135)); 
+          // 270 degree range, 50 Hz
+          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-135));
+          pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(135));
 
           // 0.25 degree angular resolution
-          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.25)); 
+          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.25));
 
           pLrf->m_NumberOfRangeReadings = 1081;
         }
@@ -3946,12 +3946,12 @@ namespace karto
           pLrf->m_pMinimumRange->SetValue(0.0);
           pLrf->m_pMaximumRange->SetValue(80.0);
 
-          // 180 degree range, 75 Hz 
-          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-90)); 
-          pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(90)); 
+          // 180 degree range, 75 Hz
+          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-90));
+          pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(90));
 
           // 0.5 degree angular resolution
-          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.5)); 
+          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.5));
 
           pLrf->m_NumberOfRangeReadings = 361;
         }
@@ -3967,12 +3967,12 @@ namespace karto
           pLrf->m_pMinimumRange->SetValue(0.0);
           pLrf->m_pMaximumRange->SetValue(80.0);
 
-          // 180 degree range, 75 Hz 
-          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-90)); 
-          pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(90)); 
+          // 180 degree range, 75 Hz
+          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-90));
+          pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(90));
 
           // 0.5 degree angular resolution
-          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.5)); 
+          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.5));
 
           pLrf->m_NumberOfRangeReadings = 361;
         }
@@ -3988,12 +3988,12 @@ namespace karto
           pLrf->m_pMinimumRange->SetValue(0.1);
           pLrf->m_pMaximumRange->SetValue(30.0);
 
-          // 270 degree range, 40 Hz 
+          // 270 degree range, 40 Hz
           pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-135));
-          pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(135)); 
+          pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(135));
 
           // 0.25 degree angular resolution
-          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.25)); 
+          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.25));
 
           pLrf->m_NumberOfRangeReadings = 1081;
         }
@@ -4005,16 +4005,16 @@ namespace karto
         {
           pLrf = new LaserRangeFinder((rName.GetName() != "") ? rName : Name("Hokuyo URG-04LX"));
 
-          // Sensing range is 4 meters. It has detection problems when scanning absorptive surfaces (such as black trimming). 
+          // Sensing range is 4 meters. It has detection problems when scanning absorptive surfaces (such as black trimming).
           pLrf->m_pMinimumRange->SetValue(0.02);
           pLrf->m_pMaximumRange->SetValue(4.0);
 
-          // 240 degree range, 10 Hz 
-          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-120)); 
+          // 240 degree range, 10 Hz
+          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-120));
           pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(120));
 
           // 0.352 degree angular resolution
-          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.352)); 
+          pLrf->m_pAngularResolution->SetValue(math::DegreesToRadians(0.352));
 
           pLrf->m_NumberOfRangeReadings = 751;
         }
@@ -4029,7 +4029,7 @@ namespace karto
           pLrf->m_pMaximumRange->SetValue(80.0);
 
           // 180 degree range
-          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-90)); 
+          pLrf->m_pMinimumAngle->SetValue(math::DegreesToRadians(-90));
           pLrf->m_pMaximumAngle->SetValue(math::DegreesToRadians(90));
 
           // 1.0 degree angular resolution
@@ -4077,7 +4077,7 @@ namespace karto
       m_pType->DefineEnumValue(LaserRangeFinder_Hokuyo_UTM_30LX, "Hokuyo_UTM_30LX");
       m_pType->DefineEnumValue(LaserRangeFinder_Hokuyo_URG_04LX, "Hokuyo_URG_04LX");
     }
-    
+
     /**
      * Set the number of range readings based on the minimum and maximum angles of the sensor and the angular resolution
      */
@@ -4104,8 +4104,8 @@ namespace karto
 
     ParameterEnum* m_pType;
 
-    kt_int32u m_NumberOfRangeReadings;    
-    
+    kt_int32u m_NumberOfRangeReadings;
+
     //static std::string LaserRangeFinderTypeNames[6];
   }; // LaserRangeFinder
 
@@ -4135,7 +4135,7 @@ namespace karto
   class CoordinateConverter
   {
   public:
-    /** 
+    /**
      * Default constructor
      */
     CoordinateConverter()
@@ -4187,7 +4187,7 @@ namespace karto
     {
       kt_double worldX = m_Offset.GetX() + rGrid.GetX() / m_Scale;
       kt_double worldY = 0.0;
-      
+
       if (flipY == false)
       {
         worldY = m_Offset.GetY() + rGrid.GetY() / m_Scale;
@@ -4208,7 +4208,7 @@ namespace karto
     {
       return m_Scale;
     }
-    
+
     /**
      * Sets the scale
      * @param scale
@@ -4235,7 +4235,7 @@ namespace karto
     {
       m_Offset = rOffset;
     }
-    
+
     /**
      * Sets the size
      * @param rSize
@@ -4271,7 +4271,7 @@ namespace karto
     {
       m_Scale = 1.0 / resolution;
     }
-    
+
     /**
      * Gets the bounding box
      * @return bounding box
@@ -4279,17 +4279,17 @@ namespace karto
     inline BoundingBox2 GetBoundingBox() const
     {
       BoundingBox2 box;
-      
+
       kt_double minX = GetOffset().GetX();
       kt_double minY = GetOffset().GetY();
       kt_double maxX = minX + GetSize().GetWidth() * GetResolution();
       kt_double maxY = minY + GetSize().GetHeight() * GetResolution();
-      
+
       box.SetMinimum(GetOffset());
       box.SetMaximum(Vector2<kt_double>(maxX, maxY));
       return box;
     }
-    
+
   private:
     Size2<kt_int32s> m_Size;
     kt_double m_Scale;
@@ -4318,12 +4318,12 @@ namespace karto
     static Grid* CreateGrid(kt_int32s width, kt_int32s height, kt_double resolution)
     {
       Grid* pGrid = new Grid(width, height);
-      
+
       pGrid->GetCoordinateConverter()->SetScale(1.0 / resolution);
-      
+
       return pGrid;
     }
-    
+
     /**
      * Destructor
      */
@@ -4341,7 +4341,7 @@ namespace karto
     {
       memset(m_pData, 0, GetDataSize() * sizeof(T));
     }
-    
+
     /**
      * Returns a clone of this grid
      * @return grid clone
@@ -4350,12 +4350,12 @@ namespace karto
     {
       Grid* pGrid = CreateGrid(GetWidth(), GetHeight(), GetResolution());
       pGrid->GetCoordinateConverter()->SetOffset(GetCoordinateConverter()->GetOffset());
-      
+
       memcpy(pGrid->GetDataPointer(), GetDataPointer(), GetDataSize());
-      
+
       return pGrid;
     }
-    
+
     /**
      * Resizes the grid (deletes all old data)
      * @param width
@@ -4366,7 +4366,7 @@ namespace karto
       m_Width = width;
       m_Height = height;
       m_WidthStep = math::AlignValue<kt_int32s>(width, 8);
-      
+
       if (m_pData != NULL)
       {
         delete[] m_pData;
@@ -4392,10 +4392,10 @@ namespace karto
         m_Height = 0;
         m_WidthStep = 0;
       }
-      
+
       Clear();
     }
-    
+
     /**
      * Checks whether the given coordinates are valid grid indices
      * @param rGrid
@@ -4404,7 +4404,7 @@ namespace karto
     {
       return (math::IsUpTo(rGrid.GetX(), m_Width) && math::IsUpTo(rGrid.GetY(), m_Height));
     }
-    
+
     /**
      * Gets the index into the data pointer of the given grid coordinate
      * @param rGrid
@@ -4414,26 +4414,26 @@ namespace karto
     virtual kt_int32s GridIndex(const Vector2<kt_int32s>& rGrid, kt_bool boundaryCheck = true) const
     {
       if (boundaryCheck == true)
-      { 
+      {
         if (IsValidGridIndex(rGrid) == false)
         {
           std::stringstream error;
           error << "Index " << rGrid << " out of range.  Index must be between [0; " << m_Width << ") and [0; " << m_Height << ")";
-          throw Exception(error.str());          
+          throw Exception(error.str());
         }
       }
 
       kt_int32s index = rGrid.GetX() + (rGrid.GetY() * m_WidthStep);
-      
+
       if (boundaryCheck == true)
       {
         assert(math::IsUpTo(index, GetDataSize()));
       }
-      
+
       return index;
     }
 
-    /** 
+    /**
      * Gets the grid coordinate from an index
      * @param index
      * @return grid coordinate
@@ -4447,7 +4447,7 @@ namespace karto
 
       return grid;
     }
-    
+
     /**
      * Converts the point from world coordinates to grid coordinates
      * @param rWorld world coordinate
@@ -4458,7 +4458,7 @@ namespace karto
     {
       return GetCoordinateConverter()->WorldToGrid(rWorld, flipY);
     }
-    
+
     /**
      * Converts the point from grid coordinates to world coordinates
      * @param rGrid world coordinate
@@ -4466,9 +4466,9 @@ namespace karto
      * @return world coordinate
      */
     inline Vector2<kt_double> GridToWorld(const Vector2<kt_int32s>& rGrid, kt_bool flipY = false) const
-    {      
+    {
       return GetCoordinateConverter()->GridToWorld(rGrid, flipY);
-    }    
+    }
 
     /**
      * Gets pointer to data at given grid coordinate
@@ -4477,7 +4477,7 @@ namespace karto
      */
     T* GetDataPointer(const Vector2<kt_int32s>& rGrid)
     {
-      kt_int32s index = GridIndex(rGrid, true);      
+      kt_int32s index = GridIndex(rGrid, true);
       return m_pData + index;
     }
 
@@ -4488,7 +4488,7 @@ namespace karto
      */
     T* GetDataPointer(const Vector2<kt_int32s>& rGrid) const
     {
-      kt_int32s index = GridIndex(rGrid, true);      
+      kt_int32s index = GridIndex(rGrid, true);
       return m_pData + index;
     }
 
@@ -4583,7 +4583,7 @@ namespace karto
     {
       return GetCoordinateConverter()->GetResolution();
     }
-    
+
     /**
      * Gets the grids bounding box
      * @return bounding box
@@ -4592,7 +4592,7 @@ namespace karto
     {
       return GetCoordinateConverter()->GetBoundingBox();
     }
-    
+
     /**
      * Increments all the grid cells from (x0, y0) to (x1, y1);
      * if applicable, apply f to each cell traced
@@ -4660,10 +4660,10 @@ namespace karto
           kt_int32s index = GridIndex(gridIndex, false);
           T* pGridPointer = GetDataPointer();
           pGridPointer[index]++;
-          
+
           if (f != NULL)
           {
-            (*f)(index); 
+            (*f)(index);
           }
         }
       }
@@ -4681,7 +4681,7 @@ namespace karto
     {
       Resize(width, height);
     }
-    
+
   private:
     kt_int32s m_Width;       // width of grid
     kt_int32s m_Height;      // height of grid
@@ -4690,7 +4690,7 @@ namespace karto
 
     CoordinateConverter* m_pCoordinateConverter; // coordinate converter to convert between world coordinates and grid coordinates
   }; // Grid
- 
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -4727,7 +4727,7 @@ namespace karto
      * @return string representation of this data object
      */
     virtual const std::string Write() const = 0;
-    
+
     /**
      * Read in this custom data from a string
      * @param rValue string representation of this data object
@@ -4776,7 +4776,7 @@ namespace karto
 
     /**
      * Sets sensor data id
-     * @param stateId id 
+     * @param stateId id
      */
     inline void SetStateId(kt_int32s stateId)
     {
@@ -4794,13 +4794,13 @@ namespace karto
 
     /**
      * Sets sensor unique id
-     * @param uniqueId 
+     * @param uniqueId
      */
     inline void SetUniqueId(kt_int32u uniqueId)
     {
       m_UniqueId = uniqueId;
     }
-    
+
     /**
      * Gets sensor data time
      * @return time
@@ -4830,7 +4830,7 @@ namespace karto
 
     /**
      * Add a CustomData object to sensor data
-     * @param pCustomData 
+     * @param pCustomData
      */
     inline void AddCustomData(CustomData* pCustomData)
     {
@@ -4851,7 +4851,7 @@ namespace karto
      * Construct a SensorData object with a sensor name
      */
     SensorData(const Name& rSensorName);
-    
+
   private:
     /**
      * Restrict the copy constructor
@@ -4873,7 +4873,7 @@ namespace karto
      * ID unique across all sensor data
      */
     kt_int32s m_UniqueId;
-    
+
     /**
      * Sensor that created this sensor data
      */
@@ -4951,6 +4951,11 @@ namespace karto
       return m_pRangeReadings;
     }
 
+    inline RangeReadingsVector GetRangeReadingsVector() const
+    {
+      return RangeReadingsVector(m_pRangeReadings, m_pRangeReadings + m_NumberOfRangeReadings);
+    }
+
     /**
      * Sets the range readings for this scan
      * @param rRangeReadings
@@ -4965,7 +4970,7 @@ namespace karto
       //  throw Exception(error.str());
       //}
 
-      if (rRangeReadings.size() > 0)
+      if (!rRangeReadings.empty())
       {
         if (rRangeReadings.size() != m_NumberOfRangeReadings)
         {
@@ -4992,7 +4997,7 @@ namespace karto
         m_pRangeReadings = NULL;
       }
     }
-   
+
     /**
      * Gets the laser range finder sensor that generated this scan
      * @return laser range finder sensor of this scan
@@ -5056,7 +5061,7 @@ namespace karto
      * Gets the odometric pose of this scan
      * @return odometric pose of this scan
      */
-    inline const Pose3& GetOdometricPose() const 
+    inline const Pose3& GetOdometricPose() const
     {
       return m_OdometricPose;
     }
@@ -5087,7 +5092,7 @@ namespace karto
 
   /**
    * The LocalizedRangeScan contains range data from a single sweep of a laser range finder sensor
-   * in a two-dimensional space and position information. The odometer position is the position 
+   * in a two-dimensional space and position information. The odometer position is the position
    * reported by the robot when the range data was recorded. The corrected position is the position
    * calculated by the mapper (or localizer)
    */
@@ -5115,12 +5120,15 @@ namespace karto
     {
     }
 
+  private:
+    mutable boost::shared_mutex m_Lock;
+
   public:
     /**
      * Gets the odometric pose of this scan
      * @return odometric pose of this scan
      */
-    inline const Pose2& GetOdometricPose() const 
+    inline const Pose2& GetOdometricPose() const
     {
       return m_OdometricPose;
     }
@@ -5142,7 +5150,7 @@ namespace karto
      * a call to this method returns the same pose as GetOdometricPose().
      * @return corrected pose
      */
-    inline const Pose2& GetCorrectedPose() const 
+    inline const Pose2& GetCorrectedPose() const
     {
       return m_CorrectedPose;
     }
@@ -5161,32 +5169,38 @@ namespace karto
     /**
      * Gets barycenter of point readings
      */
-    inline const Pose2& GetBarycenterPose() const 
+    inline const Pose2& GetBarycenterPose() const
     {
+      boost::shared_lock<boost::shared_mutex> lock(m_Lock);
       if (m_IsDirty)
       {
         // throw away constness and do an update!
+        lock.unlock();
+        boost::unique_lock<boost::shared_mutex> uniqueLock(m_Lock);
         const_cast<LocalizedRangeScan*>(this)->Update();
       }
 
       return m_BarycenterPose;
     }
-    
+
     /**
      * Gets barycenter if the given parameter is true, otherwise returns the scanner pose
      * @param useBarycenter
      * @return barycenter if parameter is true, otherwise scanner pose
      */
-    inline Pose2 GetReferencePose(kt_bool useBarycenter) const 
+    inline Pose2 GetReferencePose(kt_bool useBarycenter) const
     {
+      boost::shared_lock<boost::shared_mutex> lock(m_Lock);
       if (m_IsDirty)
       {
         // throw away constness and do an update!
+        lock.unlock();
+        boost::unique_lock<boost::shared_mutex> uniqueLock(m_Lock);
         const_cast<LocalizedRangeScan*>(this)->Update();
       }
 
       return useBarycenter ? GetBarycenterPose() : GetSensorPose();
-    }    
+    }
 
     /**
      * Computes the position of the sensor
@@ -5196,7 +5210,7 @@ namespace karto
     {
       return GetSensorAt(m_CorrectedPose);
     }
-       
+
     /**
      * Computes the robot pose given the corrected scan pose
      * @param rScanPose pose of the sensor
@@ -5216,7 +5230,7 @@ namespace karto
 
       Update();
     }
-    
+
     /**
      * Computes the position of the sensor if the robot were at the given pose
      * @param rPose
@@ -5225,7 +5239,7 @@ namespace karto
     inline Pose2 GetSensorAt(const Pose2& rPose) const
     {
       return Transform(rPose).TransformPose(GetLaserRangeFinder()->GetOffsetPose());
-    }    
+    }
 
     /**
      * Gets the bounding box of this scan
@@ -5233,9 +5247,12 @@ namespace karto
      */
     inline const BoundingBox2& GetBoundingBox() const
     {
+      boost::shared_lock<boost::shared_mutex> lock(m_Lock);
       if (m_IsDirty)
       {
         // throw away constness and do an update!
+        lock.unlock();
+        boost::unique_lock<boost::shared_mutex> uniqueLock(m_Lock);
         const_cast<LocalizedRangeScan*>(this)->Update();
       }
 
@@ -5247,15 +5264,18 @@ namespace karto
      */
     inline const PointVectorDouble& GetPointReadings(kt_bool wantFiltered = false) const
     {
+      boost::shared_lock<boost::shared_mutex> lock(m_Lock);
       if (m_IsDirty)
       {
         // throw away constness and do an update!
+        lock.unlock();
+        boost::unique_lock<boost::shared_mutex> uniqueLock(m_Lock);
         const_cast<LocalizedRangeScan*>(this)->Update();
       }
 
       if (wantFiltered == true)
       {
-        return m_PointReadings; 
+        return m_PointReadings;
       }
       else
       {
@@ -5263,7 +5283,7 @@ namespace karto
       }
     }
 
-  private:    
+  private:
     /**
      * Compute point readings based on range readings
      * Only range readings within [minimum range; range threshold] are returned
@@ -5291,11 +5311,11 @@ namespace karto
           if (!math::InRange(rangeReading, pLaserRangeFinder->GetMinimumRange(), rangeThreshold))
           {
             kt_double angle = scanPose.GetHeading() + minimumAngle + beamNum * angularResolution;
-            
+
             Vector2<kt_double> point;
             point.SetX(scanPose.GetX() + (rangeReading * cos(angle)));
             point.SetY(scanPose.GetY() + (rangeReading * sin(angle)));
-            
+
             m_UnfilteredPointReadings.push_back(point);
             continue;
           }
@@ -5308,7 +5328,7 @@ namespace karto
 
           m_PointReadings.push_back(point);
           m_UnfilteredPointReadings.push_back(point);
-          
+
           rangePointsSum += point;
         }
 
@@ -5330,7 +5350,7 @@ namespace karto
         forEach(PointVectorDouble, &m_PointReadings)
         {
           m_BoundingBox.Add(*iter);
-        }    
+        }
       }
 
       m_IsDirty = false;
@@ -5345,7 +5365,7 @@ namespace karto
      * Odometric pose of robot
      */
     Pose2 m_OdometricPose;
-        
+
     /**
      * Corrected pose of robot calculated by mapper (or localizer)
      */
@@ -5365,7 +5385,7 @@ namespace karto
      * Vector of unfiltered point readings
      */
     PointVectorDouble m_UnfilteredPointReadings;
-    
+
     /**
      * Bounding box of localized range scan
      */
@@ -5385,9 +5405,9 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
-  
+
   class OccupancyGrid;
-  
+
   class KARTO_EXPORT CellUpdater : public Functor
   {
   public:
@@ -5395,17 +5415,17 @@ namespace karto
       : m_pOccupancyGrid(pGrid)
     {
     }
-    
+
     /**
      * Updates the cell at the given index based on the grid's hits and pass counters
      * @param index
-     */    
+     */
     virtual void operator() (kt_int32u index);
-    
+
   private:
     OccupancyGrid* m_pOccupancyGrid;
   }; // CellUpdater
-  
+
   /**
    * Occupancy grid definition. See GridStates for possible grid values.
    */
@@ -5413,7 +5433,7 @@ namespace karto
   {
     friend class CellUpdater;
     friend class IncrementalOccupancyGrid;
-    
+
   public:
     /**
      * Constructs an occupancy grid of given size
@@ -5422,7 +5442,7 @@ namespace karto
      * @param rOffset
      * @param resolution
      */
-    OccupancyGrid(kt_int32s width, kt_int32s height, const Vector2<kt_double>& rOffset, kt_double resolution) 
+    OccupancyGrid(kt_int32s width, kt_int32s height, const Vector2<kt_double>& rOffset, kt_double resolution)
       : Grid<kt_int8u>(width, height)
       , m_pCellPassCnt(Grid<kt_int32u>::CreateGrid(0, 0, resolution))
       , m_pCellHitsCnt(Grid<kt_int32u>::CreateGrid(0, 0, resolution))
@@ -5434,14 +5454,14 @@ namespace karto
       {
         throw Exception("Resolution cannot be 0");
       }
-      
+
       m_pMinPassThrough = new Parameter<kt_int32u>("MinPassThrough", 2);
       m_pOccupancyThreshold = new Parameter<kt_double>("OccupancyThreshold", 0.1);
-      
+
       GetCoordinateConverter()->SetScale(1.0 / resolution);
       GetCoordinateConverter()->SetOffset(rOffset);
     }
-    
+
     /**
      * Destructor
      */
@@ -5450,7 +5470,7 @@ namespace karto
       delete m_pCellUpdater;
 
       delete m_pCellPassCnt;
-      delete m_pCellHitsCnt;   
+      delete m_pCellHitsCnt;
 
       delete m_pMinPassThrough;
       delete m_pOccupancyThreshold;
@@ -5464,20 +5484,20 @@ namespace karto
      */
     static OccupancyGrid* CreateFromScans(const LocalizedRangeScanVector& rScans, kt_double resolution)
     {
-      if (rScans.size() == 0)
+      if (rScans.empty())
       {
         return NULL;
       }
- 
+
       kt_int32s width, height;
       Vector2<kt_double> offset;
-      OccupancyGrid::ComputeDimensions(rScans, resolution, width, height, offset);
+      ComputeDimensions(rScans, resolution, width, height, offset);
       OccupancyGrid* pOccupancyGrid = new OccupancyGrid(width, height, offset, resolution);
       pOccupancyGrid->CreateFromScans(rScans);
 
-      return pOccupancyGrid;      
+      return pOccupancyGrid;
     }
-    
+
     /**
      * Make a clone
      * @return occupancy grid clone
@@ -5490,11 +5510,11 @@ namespace karto
       pOccupancyGrid->GetCoordinateConverter()->SetSize(GetCoordinateConverter()->GetSize());
       pOccupancyGrid->m_pCellPassCnt = m_pCellPassCnt->Clone();
       pOccupancyGrid->m_pCellHitsCnt = m_pCellHitsCnt->Clone();
-      
+
       return pOccupancyGrid;
     }
 
-    /** 
+    /**
      * Check if grid point is free
      * @param rPose
      * @return whether the cell at the given point is free space
@@ -5509,7 +5529,7 @@ namespace karto
 
       return false;
     }
-    
+
     /**
      * Casts a ray from the given point (up to the given max range)
      * and returns the distance to the closest obstacle
@@ -5520,29 +5540,29 @@ namespace karto
     virtual kt_double RayCast(const Pose2& rPose2, kt_double maxRange) const
     {
       double scale = GetCoordinateConverter()->GetScale();
-      
+
       kt_double x = rPose2.GetX();
       kt_double y = rPose2.GetY();
       kt_double theta = rPose2.GetHeading();
-      
+
       kt_double sinTheta = sin(theta);
       kt_double cosTheta = cos(theta);
-      
+
       kt_double xStop = x + maxRange * cosTheta;
       kt_double xSteps = 1 + fabs(xStop - x) * scale;
-      
+
       kt_double yStop = y + maxRange * sinTheta;
       kt_double ySteps = 1 + fabs(yStop - y) * scale;
-      
+
       kt_double steps = math::Maximum(xSteps, ySteps);
       kt_double delta = maxRange / steps;
       kt_double distance = delta;
-      
+
       for (kt_int32u i = 1; i < steps; i++)
       {
         kt_double x1 = x + distance * cosTheta;
         kt_double y1 = y + distance * sinTheta;
-        
+
         Vector2<kt_int32s> gridIndex = WorldToGrid(Vector2<kt_double>(x1, y1));
         if (IsValidGridIndex(gridIndex) && IsFree(gridIndex))
         {
@@ -5553,13 +5573,13 @@ namespace karto
           break;
         }
       }
-      
+
       return (distance < maxRange)? distance : maxRange;
     }
 
     /**
-     * Sets the minimum number of beams that must pass through a cell before it 
-     * will be considered to be occupied or unoccupied.  
+     * Sets the minimum number of beams that must pass through a cell before it
+     * will be considered to be occupied or unoccupied.
      * This prevents stray beams from messing up the map.
      */
     void SetMinPassThrough(kt_int32u count)
@@ -5568,7 +5588,7 @@ namespace karto
     }
 
     /**
-     * Sets the minimum ratio of beams hitting cell to beams passing through 
+     * Sets the minimum ratio of beams hitting cell to beams passing through
      * cell for cell to be marked as occupied.
      */
     void SetOccupancyThreshold(kt_double thresh)
@@ -5594,7 +5614,7 @@ namespace karto
     {
       return m_pCellPassCnt;
     }
-    
+
   protected:
     /**
      * Calculate grid dimensions from localized range scans
@@ -5611,7 +5631,7 @@ namespace karto
       {
         boundingBox.Add((*iter)->GetBoundingBox());
       }
-      
+
       kt_double scale = 1.0 / resolution;
       Size2<kt_double> size = boundingBox.GetSize();
 
@@ -5619,28 +5639,28 @@ namespace karto
       rHeight = static_cast<kt_int32s>(math::Round(size.GetHeight() * scale));
       rOffset = boundingBox.GetMinimum();
     }
-    
+
     /**
-     * Create grid using scans 
+     * Create grid using scans
      * @param rScans
      */
     virtual void CreateFromScans(const LocalizedRangeScanVector& rScans)
     {
       m_pCellPassCnt->Resize(GetWidth(), GetHeight());
       m_pCellPassCnt->GetCoordinateConverter()->SetOffset(GetCoordinateConverter()->GetOffset());
-      
+
       m_pCellHitsCnt->Resize(GetWidth(), GetHeight());
       m_pCellHitsCnt->GetCoordinateConverter()->SetOffset(GetCoordinateConverter()->GetOffset());
-      
+
       const_forEach(LocalizedRangeScanVector, &rScans)
       {
         LocalizedRangeScan* pScan = *iter;
         AddScan(pScan);
       }
-      
+
       Update();
     }
-        
+
     /**
      * Adds the scan's information to this grid's counters (optionally
      * update the grid's cells' occupancy status)
@@ -5652,22 +5672,22 @@ namespace karto
     {
       kt_double rangeThreshold = pScan->GetLaserRangeFinder()->GetRangeThreshold();
       kt_double maxRange = pScan->GetLaserRangeFinder()->GetMaximumRange();
-      
+
       Vector2<kt_double> scanPosition = pScan->GetSensorPose().GetPosition();
-      
-      // get scan point readings 
-      const PointVectorDouble& rPointReadings = pScan->GetPointReadings(false);      
-      
+
+      // get scan point readings
+      const PointVectorDouble& rPointReadings = pScan->GetPointReadings(false);
+
       kt_bool isAllInMap = true;
-      
-      // draw lines from scan position to all point readings 
+
+      // draw lines from scan position to all point readings
       int pointIndex = 0;
       const_forEachAs(PointVectorDouble, &rPointReadings, pointsIter)
       {
         Vector2<kt_double> point = *pointsIter;
         kt_double rangeReading = pScan->GetRangeReadings()[pointIndex];
         kt_bool isEndPointValid = rangeReading < (rangeThreshold - KT_TOLERANCE);
-        
+
         if (rangeReading >= maxRange || isnan(rangeReading))
         {
           // ignore max range readings
@@ -5683,19 +5703,19 @@ namespace karto
           point.SetX(scanPosition.GetX() + ratio * dx);
           point.SetY(scanPosition.GetY() + ratio * dy);
         }
-        
+
         kt_bool isInMap = RayTrace(scanPosition, point, isEndPointValid, doUpdate);
         if (!isInMap)
         {
           isAllInMap = false;
         }
-        
+
         pointIndex++;
       }
-      
+
       return isAllInMap;
     }
-    
+
     /**
      * Traces a beam from the start position to the end position marking
      * the bookkeeping arrays accordingly.
@@ -5713,8 +5733,8 @@ namespace karto
       Vector2<kt_int32s> gridTo = m_pCellPassCnt->WorldToGrid(rWorldTo);
 
       CellUpdater* pCellUpdater = doUpdate ? m_pCellUpdater : NULL;
-      m_pCellPassCnt->TraceLine(gridFrom.GetX(), gridFrom.GetY(), gridTo.GetX(), gridTo.GetY(), pCellUpdater);        
-      
+      m_pCellPassCnt->TraceLine(gridFrom.GetX(), gridFrom.GetY(), gridTo.GetX(), gridTo.GetY(), pCellUpdater);
+
       // for the end point
       if (isEndPointValid)
       {
@@ -5724,21 +5744,21 @@ namespace karto
 
           kt_int32u* pCellPassCntPtr = m_pCellPassCnt->GetDataPointer();
           kt_int32u* pCellHitCntPtr = m_pCellHitsCnt->GetDataPointer();
-  
+
           // increment cell pass through and hit count
           pCellPassCntPtr[index]++;
           pCellHitCntPtr[index]++;
-          
+
           if (doUpdate)
           {
             (*m_pCellUpdater)(index);
           }
         }
-      }      
-      
+      }
+
       return m_pCellPassCnt->IsValidGridIndex(gridTo);
     }
-    
+
     /**
      * Updates a single cell's value based on the given counters
      * @param pCell
@@ -5750,7 +5770,7 @@ namespace karto
       if (cellPassCnt > m_pMinPassThrough->GetValue())
       {
         kt_double hitRatio = static_cast<kt_double>(cellHitCnt) / static_cast<kt_double>(cellPassCnt);
-        
+
         if (hitRatio > m_pOccupancyThreshold->GetValue())
         {
           *pCell = GridStates_Occupied;
@@ -5759,16 +5779,16 @@ namespace karto
         {
           *pCell = GridStates_Free;
         }
-      }      
+      }
     }
-    
+
     /**
      * Update the grid based on the values in m_pCellHitsCnt and m_pCellPassCnt
      */
     virtual void Update()
     {
       assert(m_pCellPassCnt != NULL && m_pCellHitsCnt != NULL);
-      
+
       // clear grid
       Clear();
 
@@ -5783,7 +5803,7 @@ namespace karto
         UpdateCell(pDataPtr, *pCellPassCntPtr, *pCellHitCntPtr);
       }
     }
-    
+
     /**
      * Resizes the grid (deletes all old data)
      * @param width
@@ -5795,15 +5815,15 @@ namespace karto
       m_pCellPassCnt->Resize(width, height);
       m_pCellHitsCnt->Resize(width, height);
     }
-    
+
   protected:
     /**
      * Counters of number of times a beam passed through a cell
      */
     Grid<kt_int32u>* m_pCellPassCnt;
-    
+
     /**
-     * Counters of number of times a beam ended at a cell    
+     * Counters of number of times a beam ended at a cell
      */
     Grid<kt_int32u>* m_pCellHitsCnt;
 
@@ -5832,7 +5852,7 @@ namespace karto
     // Minimum ratio of beams hitting cell to beams passing through cell for cell to be marked as occupied
     Parameter<kt_double>* m_pOccupancyThreshold;
   }; // OccupancyGrid
-  
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -5911,7 +5931,7 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Karto dataset. Stores LaserRangeFinders and LocalizedRangeScans and manages memory of allocated LaserRangeFinders 
+   * Karto dataset. Stores LaserRangeFinders and LocalizedRangeScans and manages memory of allocated LaserRangeFinders
    * and LocalizedRangeScans
    */
   class Dataset
@@ -5993,7 +6013,7 @@ namespace karto
      */
     virtual void Clear()
     {
-      for (std::map<Name, Sensor*>::iterator iter = m_SensorNameLookup.begin(); iter != m_SensorNameLookup.end(); iter++)
+      for (std::map<Name, Sensor*>::iterator iter = m_SensorNameLookup.begin(); iter != m_SensorNameLookup.end(); ++iter)
       {
         karto::SensorManager::GetInstance()->UnregisterSensor(iter->second);
       }
@@ -6045,7 +6065,7 @@ namespace karto
     virtual ~LookupArray()
     {
       assert(m_pArray != NULL);
-      
+
       delete[] m_pArray;
       m_pArray = NULL;
     }
@@ -6075,7 +6095,7 @@ namespace karto
     void SetSize(kt_int32u size)
     {
       assert(size != 0);
-      
+
       if (size > m_Capacity)
       {
         if (m_pArray != NULL)
@@ -6085,7 +6105,7 @@ namespace karto
         m_Capacity = size;
         m_pArray = new kt_int32s[m_Capacity];
       }
-      
+
       m_Size = size;
     }
 
@@ -6094,11 +6114,11 @@ namespace karto
      * @param index
      * @return reference to value at index
      */
-    inline kt_int32s& operator [] (kt_int32u index) 
+    inline kt_int32s& operator [] (kt_int32u index)
     {
       assert(index < m_Size);
 
-      return m_pArray[index]; 
+      return m_pArray[index];
     }
 
     /**
@@ -6106,11 +6126,11 @@ namespace karto
      * @param index
      * @return value at index
      */
-    inline kt_int32s operator [] (kt_int32u index) const 
+    inline kt_int32s operator [] (kt_int32u index) const
     {
       assert(index < m_Size);
 
-      return m_pArray[index]; 
+      return m_pArray[index];
     }
 
     /**
@@ -6145,14 +6165,14 @@ namespace karto
    * Create lookup tables for point readings at varying angles in grid.
    * For each angle, grid indexes are calculated for each range reading.
    * This is to speed up finding best angle/position for a localized range scan
-   * 
-   * Used heavily in mapper and localizer. 
-   * 
+   *
+   * Used heavily in mapper and localizer.
+   *
    * In the localizer, this is a huge speed up for calculating possible position.  For each particle,
    * a probability is calculated.  The range scan is the same, but all grid indexes at all possible angles are
    * calculated.  So when calculating the particle probability at a specific angle, the index table is used
    * to look up probability in probability grid!
-   * 
+   *
    */
   template<typename T>
   class GridIndexLookup
@@ -6169,7 +6189,7 @@ namespace karto
       , m_ppLookupArray(NULL)
     {
     }
-    
+
     /**
      * Destructor
      */
@@ -6187,19 +6207,19 @@ namespace karto
     const LookupArray* GetLookupArray(kt_int32u index) const
     {
       assert(math::IsUpTo(index, m_Size));
-      
+
       return m_ppLookupArray[index];
     }
-    
+
     /**
-     * Get angles 
+     * Get angles
      * @return std::vector<kt_double>& angles
      */
     const std::vector<kt_double>& GetAngles() const
     {
       return m_Angles;
     }
-    
+
     /**
      * Compute lookup table of the points of the given scan for the given angular space
      * @param pScan the scan
@@ -6211,7 +6231,7 @@ namespace karto
     {
       assert(angleOffset != 0.0);
       assert(angleResolution != 0.0);
- 
+
       kt_int32u nAngles = static_cast<kt_int32u>(math::Round(angleOffset * 2.0 / angleResolution) + 1);
       SetSize(nAngles);
 
@@ -6254,15 +6274,15 @@ namespace karto
     {
       m_ppLookupArray[angleIndex]->SetSize(static_cast<kt_int32u>(rLocalPoints.size()));
       m_Angles.at(angleIndex) = angle;
-      
+
       // set up point array by computing relative offsets to points readings
       // when rotated by given angle
-      
+
       const Vector2<kt_double>& rGridOffset = m_pGrid->GetCoordinateConverter()->GetOffset();
-      
+
       kt_double cosine = cos(angle);
       kt_double sine = sin(angle);
-      
+
       kt_int32u readingIndex = 0;
 
       kt_int32s* pAngleIndexPointer = m_ppLookupArray[angleIndex]->GetArrayPointer();
@@ -6270,16 +6290,16 @@ namespace karto
       const_forEach(Pose2Vector, &rLocalPoints)
       {
         const Vector2<kt_double>& rPosition = iter->GetPosition();
-        
+
         // counterclockwise rotation and that rotation is about the origin (0, 0).
         Vector2<kt_double> offset;
         offset.SetX(cosine * rPosition.GetX() -   sine * rPosition.GetY());
         offset.SetY(  sine * rPosition.GetX() + cosine * rPosition.GetY());
-        
+
         // have to compensate for the grid offset when getting the grid index
         Vector2<kt_int32s> gridPoint = m_pGrid->WorldToGrid(offset + rGridOffset);
-        
-        // use base GridIndex to ignore ROI 
+
+        // use base GridIndex to ignore ROI
         kt_int32s lookupIndex = m_pGrid->Grid<T>::GridIndex(gridPoint, false);
 
         pAngleIndexPointer[readingIndex] = lookupIndex;
@@ -6288,7 +6308,7 @@ namespace karto
       }
       assert(readingIndex == rLocalPoints.size());
     }
-        
+
     /**
      * Sets size of lookup table (resize if not big enough)
      * @param size
@@ -6296,24 +6316,24 @@ namespace karto
     void SetSize(kt_int32u size)
     {
       assert(size != 0);
-      
+
       if (size > m_Capacity)
       {
         if (m_ppLookupArray != NULL)
         {
           DestroyArrays();
         }
-        
+
         m_Capacity = size;
         m_ppLookupArray = new LookupArray*[m_Capacity];
         for (kt_int32u i = 0; i < m_Capacity; i++)
         {
           m_ppLookupArray[i] = new LookupArray();
-        }        
+        }
       }
-      
+
       m_Size = size;
-      
+
       m_Angles.resize(size);
     }
 
@@ -6326,17 +6346,17 @@ namespace karto
       {
         delete m_ppLookupArray[i];
       }
-      
+
       delete[] m_ppLookupArray;
-      m_ppLookupArray = NULL;      
+      m_ppLookupArray = NULL;
     }
-    
+
   private:
-    Grid<T>* m_pGrid; 
+    Grid<T>* m_pGrid;
 
     kt_int32u m_Capacity;
     kt_int32u m_Size;
-    
+
     LookupArray **m_ppLookupArray;
 
     // for sanity check
@@ -6355,7 +6375,7 @@ namespace karto
     // calculates heading from orientation
     rPose.GetOrientation().ToEulerAngles(m_Heading, t1, t2);
   }
- 
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -6377,7 +6397,7 @@ namespace karto
       throw Exception("Parameter does not exist:  " + rName);
     }
   }
-  
+
   template<>
   inline void Object::SetParameter(const std::string& rName, kt_bool value)
   {
