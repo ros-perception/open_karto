@@ -896,7 +896,7 @@ namespace karto
     {
       Vector2<kt_double> currentPoint = *iter;
 
-      if (firstTime)
+      if (firstTime && !isnan(currentPoint.GetX()) && !isnan(currentPoint.GetY()))
       {
         firstPoint = currentPoint;
         firstTime = false;
