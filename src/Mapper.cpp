@@ -1799,7 +1799,249 @@ namespace karto
         "found.",
         false, GetParameterManager());
   }
+  /* Adding in getters and setters here for easy parameter access */
+  
+  // General Parameters
 
+  bool Mapper::getParamUseScanMatching(){
+    return (bool)m_pUseScanMatching->GetValue();
+  }
+
+  bool Mapper::getParamUseScanBarycenter(){
+    return (bool)m_pUseScanBarycenter->GetValue();
+  }
+
+  double Mapper::getParamMinimumTravelDistance(){
+    return (double)m_pMinimumTravelDistance->GetValue();
+  }
+
+  double Mapper::getParamMinimumTravelHeading(){
+    return math::RadiansToDegrees((double)m_pMinimumTravelHeading->GetValue());
+  }
+
+  int Mapper::getParamScanBufferSize(){
+    return (int)m_pScanBufferSize->GetValue();
+  }
+
+  double Mapper::getParamScanBufferMaximumScanDistance(){
+    return (double)m_pScanBufferMaximumScanDistance->GetValue();
+  }
+
+  double Mapper::getParamLinkMatchMinimumResponseFine(){
+    return (double)m_pLinkMatchMinimumResponseFine->GetValue();
+  }
+
+  double Mapper::getParamLinkScanMaximumDistance(){
+    return (double)m_pLinkScanMaximumDistance->GetValue();
+  }
+
+  double Mapper::getParamLoopSearchMaximumDistance(){
+    return (double)m_pLoopSearchMaximumDistance->GetValue();
+  }
+
+  bool Mapper::getParamDoLoopClosing(){
+    return (bool)m_pDoLoopClosing->GetValue();
+  }
+
+  int Mapper::getParamLoopMatchMinimumChainSize(){
+    return (int)m_pLoopMatchMinimumChainSize->GetValue();
+  }
+
+  double Mapper::getParamLoopMatchMaximumVarianceCoarse(){
+    return (double)std::sqrt(m_pLoopMatchMaximumVarianceCoarse->GetValue());
+  }
+
+  double Mapper::getParamLoopMatchMinimumResponseCoarse(){
+    return (double)m_pLoopMatchMinimumResponseCoarse->GetValue();
+  }
+  
+  double Mapper::getParamLoopMatchMinimumResponseFine(){
+    return (double)m_pLoopMatchMinimumResponseFine->GetValue();
+  }
+
+  // Correlation Parameters - Correlation Parameters
+
+  double Mapper::getParamCorrelationSearchSpaceDimension(){
+    return (double)m_pCorrelationSearchSpaceDimension->GetValue();
+  }
+
+  double Mapper::getParamCorrelationSearchSpaceResolution(){
+    return (double)m_pCorrelationSearchSpaceResolution->GetValue();
+  }
+
+  double Mapper::getParamCorrelationSearchSpaceSmearDeviation(){
+    return (double)m_pCorrelationSearchSpaceSmearDeviation->GetValue();
+  }
+
+  // Correlation Parameters - Loop Correlation Parameters 
+  
+  double Mapper::getParamLoopSearchSpaceDimension(){
+    return (double)m_pLoopSearchSpaceDimension->GetValue();
+  }
+
+  double Mapper::getParamLoopSearchSpaceResolution(){
+    return (double)m_pLoopSearchSpaceResolution->GetValue();
+  }
+
+  double Mapper::getParamLoopSearchSpaceSmearDeviation(){
+    return (double)m_pLoopSearchSpaceSmearDeviation->GetValue();
+  }
+
+  // ScanMatcher Parameters
+
+  double Mapper::getParamDistanceVariancePenalty(){
+    return std::sqrt((double)m_pDistanceVariancePenalty->GetValue());
+  }
+
+  double Mapper::getParamAngleVariancePenalty(){
+    return std::sqrt((double)m_pAngleVariancePenalty->GetValue());
+  }
+
+  double Mapper::getParamFineSearchAngleOffset(){
+    return (double)m_pFineSearchAngleOffset->GetValue();
+  }
+
+  double Mapper::getParamCoarseSearchAngleOffset(){
+    return (double)m_pCoarseSearchAngleOffset->GetValue();
+  }
+
+  double Mapper::getParamCoarseAngleResolution(){
+    return (double)m_pCoarseAngleResolution->GetValue();
+  }
+
+  double Mapper::getParamMinimumAnglePenalty(){
+    return (double)m_pMinimumAnglePenalty->GetValue();
+  }
+
+  double Mapper::getParamMinimumDistancePenalty(){
+    return (double)m_pMinimumDistancePenalty->GetValue();
+  }
+
+  bool Mapper::getParamUseResponseExpansion(){
+    return (bool)m_pUseResponseExpansion->GetValue(); 
+  }
+
+  /* Setters for parameters */
+  //General Parameters
+  void Mapper::setParamUseScanMatching(bool b){
+    m_pUseScanMatching->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamUseScanBarycenter(bool b){
+    m_pUseScanBarycenter->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamMinimumTravelDistance(double d){
+    m_pMinimumTravelDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamMinimumTravelHeading(double d){
+    m_pMinimumTravelHeading->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamScanBufferSize(int i){
+    m_pScanBufferSize->SetValue((kt_int32u)i);
+  }
+
+  void Mapper::setParamScanBufferMaximumScanDistance(double d){
+    m_pScanBufferMaximumScanDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLinkMatchMinimumResponseFine(double d){
+    m_pLinkMatchMinimumResponseFine->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLinkScanMaximumDistance(double d){
+    m_pLinkScanMaximumDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopSearchMaximumDistance(double d){
+    m_pLoopSearchMaximumDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamDoLoopClosing(bool b){
+    m_pDoLoopClosing->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamLoopMatchMinimumChainSize(int i){
+    m_pLoopMatchMinimumChainSize->SetValue((kt_int32u)i);
+  }
+
+  void Mapper::setParamLoopMatchMaximumVarianceCoarse(double d){
+    m_pLoopMatchMaximumVarianceCoarse->SetValue((kt_double)math::Square(d));
+  }
+
+  void Mapper::setParamLoopMatchMinimumResponseCoarse(double d){
+    m_pLoopMatchMinimumResponseCoarse->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopMatchMinimumResponseFine(double d){
+    m_pLoopMatchMinimumResponseFine->SetValue((kt_double)d);
+  }
+
+  //Correlation Parameters - Correlation Parameters
+  void Mapper::setParamCorrelationSearchSpaceDimension(double d){
+    m_pCorrelationSearchSpaceDimension->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCorrelationSearchSpaceResolution(double d){
+    m_pCorrelationSearchSpaceResolution->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCorrelationSearchSpaceSmearDeviation(double d){
+    m_pCorrelationSearchSpaceSmearDeviation->SetValue((kt_double)d);
+  }
+
+
+  //Correlation Parameters - Loop Closure Parameters
+  void Mapper::setParamLoopSearchSpaceDimension(double d){
+    m_pLoopSearchSpaceDimension->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopSearchSpaceResolution(double d){
+    m_pLoopSearchSpaceResolution->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopSearchSpaceSmearDeviation(double d){
+    m_pLoopSearchSpaceSmearDeviation->SetValue((kt_double)d);
+  }
+
+
+  //Scan Matcher Parameters
+  void Mapper::setParamDistanceVariancePenalty(double d){
+    m_pDistanceVariancePenalty->SetValue((kt_double)math::Square(d));
+  }
+
+  void Mapper::setParamAngleVariancePenalty(double d){
+    m_pAngleVariancePenalty->SetValue((kt_double)math::Square(d));
+  }
+
+  void Mapper::setParamFineSearchAngleOffset(double d){
+    m_pFineSearchAngleOffset->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCoarseSearchAngleOffset(double d){
+    m_pCoarseSearchAngleOffset->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCoarseAngleResolution(double d){
+    m_pCoarseAngleResolution->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamMinimumAnglePenalty(double d){
+    m_pMinimumAnglePenalty->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamMinimumDistancePenalty(double d){
+    m_pMinimumDistancePenalty->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamUseResponseExpansion(bool b){
+    m_pUseResponseExpansion->SetValue((kt_bool)b);
+  }
+
+
+  
   void Mapper::Initialize(kt_double rangeThreshold)
   {
     if (m_Initialized == false)
