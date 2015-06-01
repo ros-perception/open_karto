@@ -1816,7 +1816,7 @@ namespace karto
   }
 
   double Mapper::getParamMinimumTravelHeading(){
-    return (double)m_pMinimumTravelHeading->GetValue();
+    return math::RadiansToDegrees((double)m_pMinimumTravelHeading->GetValue());
   }
 
   int Mapper::getParamScanBufferSize(){
@@ -1848,7 +1848,7 @@ namespace karto
   }
 
   double Mapper::getParamLoopMatchMaximumVarianceCoarse(){
-    return (double)m_pLoopMatchMaximumVarianceCoarse->GetValue();
+    return std::sqrt((double)m_pLoopMatchMaximumVarianceCoarse->GetValue());
   }
 
   double Mapper::getParamLoopMatchMinimumResponseCoarse(){
@@ -1890,23 +1890,23 @@ namespace karto
   // ScanMatcher Parameters
 
   double Mapper::getParamDistanceVariancePenalty(){
-    return (double)m_pDistanceVariancePenalty->GetValue();
+    return std::sqrt((double)m_pDistanceVariancePenalty->GetValue());
   }
 
   double Mapper::getParamAngleVariancePenalty(){
-    return (double)m_pAngleVariancePenalty->GetValue();
+    return math::RadiansToDegrees(std::sqrt((double)m_pAngleVariancePenalty->GetValue()));
   }
 
   double Mapper::getParamFineSearchAngleOffset(){
-    return (double)m_pFineSearchAngleOffset->GetValue();
+    return math::RadiansToDegrees((double)m_pFineSearchAngleOffset->GetValue());
   }
 
   double Mapper::getParamCoarseSearchAngleOffset(){
-    return (double)m_pCoarseSearchAngleOffset->GetValue();
+    return math::RadiansToDegrees((double)m_pCoarseSearchAngleOffset->GetValue());
   }
 
   double Mapper::getParamCoarseAngleResolution(){
-    return (double)m_pCoarseAngleResolution->GetValue();
+    return math::RadiansToDegrees((double)m_pCoarseAngleResolution->GetValue());
   }
 
   double Mapper::getParamMinimumAnglePenalty(){
@@ -1936,7 +1936,7 @@ namespace karto
   }
 
   void Mapper::setParamMinimumTravelHeading(double d){
-    m_pMinimumTravelHeading->SetValue((kt_double)d);
+    m_pMinimumTravelHeading->SetValue((kt_double)math::DegreesToRadians(d));
   }
 
   void Mapper::setParamScanBufferSize(int i){
@@ -1968,11 +1968,11 @@ namespace karto
   }
 
   void Mapper::setParamLoopMatchMaximumVarianceCoarse(double d){
-    m_pLoopMatchMaximumVarianceCoarse->SetValue((kt_double)d);
+    m_pLoopMatchMaximumVarianceCoarse->SetValue((kt_double)math::Square(d));
   }
 
   void Mapper::setParamLoopMatchMinimumResponseCoarse(double d){
-    m_pLoopMatchMaximumVarianceCoarse->SetValue((kt_double)d);
+    m_pLoopMatchMinimumResponseCoarse->SetValue((kt_double)d);
   }
 
   void Mapper::setParamLoopMatchMinimumResponseFine(double d){
@@ -2009,23 +2009,23 @@ namespace karto
 
   //Scan Matcher Parameters
   void Mapper::setParamDistanceVariancePenalty(double d){
-    m_pDistanceVariancePenalty->SetValue((kt_double)d);
+    m_pDistanceVariancePenalty->SetValue((kt_double)math::Square(d));
   }
 
   void Mapper::setParamAngleVariancePenalty(double d){
-    m_pAngleVariancePenalty->SetValue((kt_double)d);
+    m_pAngleVariancePenalty->SetValue((kt_double)math::Square(math::DegreesToRadians(d)));
   }
 
   void Mapper::setParamFineSearchAngleOffset(double d){
-    m_pFineSearchAngleOffset->SetValue((kt_double)d);
+    m_pFineSearchAngleOffset->SetValue((kt_double)math::DegreesToRadians(d));
   }
 
   void Mapper::setParamCoarseSearchAngleOffset(double d){
-    m_pCoarseSearchAngleOffset->SetValue((kt_double)d);
+    m_pCoarseSearchAngleOffset->SetValue((kt_double)math::DegreesToRadians(d));
   }
 
   void Mapper::setParamCoarseAngleResolution(double d){
-    m_pCoarseAngleResolution->SetValue((kt_double)d);
+    m_pCoarseAngleResolution->SetValue((kt_double)math::DegreesToRadians(d));
   }
 
   void Mapper::setParamMinimumAnglePenalty(double d){
