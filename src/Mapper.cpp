@@ -1800,6 +1800,132 @@ namespace karto
         false, GetParameterManager());
   }
 
+
+  /* Adding in getters and setters here for easy parameter access */
+  
+  // General Parameters
+
+  Parameter<kt_bool> getParamUseScanMatching(){
+    return m_pUseScanMatching;
+  }
+
+  Parameter<kt_bool> getParamUseScanBarycenter(){
+    return m_pUseScanBarycenter;
+  }
+
+  Parameter<kt_double> getParamMinimumTravelDistance(){
+    return m_pMinimumTravelDistance;
+  }
+
+  Parameter<kt_double> getParamMinimumTravelHeading(){
+    return m_pMinimumTravelHeading;
+  }
+
+  Parameter<kt_int32u> getParamScanBufferSize(){
+    return m_pScanBufferSize;
+  }
+
+  Parameter<kt_double> getParamScanBufferMaximumScanDistance(){
+    return m_pScanBufferMaximumScanDistance;
+  }
+
+  Parameter<kt_double> getParamLinkMatchMinimumResponseFine(){
+    return m_pLinkMatchMinimumResponseFine;
+  }
+
+  Parameter<kt_double> getParamLinkScanMaximumDistance(){
+    return m_pLinkScanMaximumDistance;
+  }
+
+  Parameter<kt_double> getParamLoopSearchMaximumDistance(){
+    return m_pLoopSearchMaximumDistance;
+  }
+
+  Parameter<kt_bool> getParamDoLoopClosing(){
+    return m_pDoLoopClosing;
+  }
+
+  Parameter<kt_int32u> getParamLoopMatchMinimumChainSize(){
+    return m_pLoopMatchMinimumChainSize;
+  }
+
+  Parameter<kt_double> getParamLoopMatchMaximumVarianceCoarse(){
+    return m_pLoopMatchMaximumVarianceCoarse;
+  }
+
+  Parameter<kt_double> getParamLoopMatchMinimumResponseCoarse(){
+    return m_pLoopMatchMinimumResponseCoarse;
+  }
+  
+  
+  Parameter<kt_double> getParamLoopMatchMinimumResponseFine(){
+    return m_pLoopMatchMinimumResponseFine;
+  }
+
+  // Correlation Parameters - Correlation Parameters
+
+  Parameter<kt_double> getParamCorrelationSearchSpaceDimension(){
+    return m_pCorrelationSearchSpaceDimension;
+  }
+
+  Parameter<kt_double> getParamCorrelationSearchSpaceResolution(){
+    return m_pCorrelationSearchSpaceResolution;
+  }
+
+  Parameter<kt_double> getParamCorrelationSearchSpaceSmearDeviation(){
+    return m_pCorrelationSearchSpaceSmearDeviation;
+  }
+
+  // Correlation Parameters - Loop Correlation Parameters 
+  
+  Parameter<kt_double> getParamLoopSearchSpaceDimension(){
+    return m_pLoopSearchSpaceDimension;
+  }
+
+  Parameter<kt_double> getParamLoopSearchSpaceResolution(){
+    return m_pLoopSearchSpaceResolution;
+  }
+
+  Parameter<kt_double> getParamLoopSearchSpaceSmearDeviation(){
+    return m_pLoopSearchSpaceSmearDeviation;
+  }
+
+  // ScanMatcher Parameters
+
+  Parameter<kt_double> getParamDistanceVariancePenalty(){
+    return m_pDistanceVariancePenalty;
+  }
+
+  Parameter<kt_double> getParamAngleVariancePenalty(){
+    return m_pAngleVariancePenalty;
+  }
+
+  Parameter<kt_double> getParamFineSearchAngleOffset(){
+    return m_pFineSearchAngleOffset;
+  }
+
+  Parameter<kt_double> getParamCoarseSearchAngleOffset(){
+    return m_pCoarseAngleOffset;
+  }
+
+  Parameter<kt_double> getParamCoarseAngleResolution(){
+    return m_pCoarseAngleResolution;
+  }
+
+  Parameter<kt_double> getParamMinimumAnglePenalty(){
+    return m_pMinimumAnglePenalty;
+  }
+
+  Parameter<kt_double> getParamMinimumDistancePenalty(){
+    return m_pMinimumDistancePenalty;
+  }
+
+  Parameter<kt_bool> getParamUseResponseExpansion(){ //Is this a good naming convention?
+    return m_pUseResponseExpansion; //Do I want to return this Parameter thing?  Should I return the actual value set into it?
+  }
+
+  /* Setters for parameters */
+
   void Mapper::Initialize(kt_double rangeThreshold)
   {
     if (m_Initialized == false)
