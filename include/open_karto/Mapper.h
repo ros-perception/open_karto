@@ -1826,6 +1826,47 @@ namespace karto
 
     // whether to increase the search space if no good matches are initially found
     Parameter<kt_bool>* m_pUseResponseExpansion;
+  
+  public:
+    ///////////////////////////////////////////////////////
+    // Abstract methods for parameter setters and getters
+
+    //General Parameters
+    bool getParamUseScanMatching();
+    bool getParamUseScanBarycenter();
+    double getParamMinimumTravelDistance();
+    double getParamMinimumTravelHeading();
+    int getParamScanBufferSize();
+    double getParamScanBufferMaximumScanDistance();
+    double getParamLinkMatchMinimumResponseFine();
+    double getParamLinkScanMaximumDistance();
+    double getParamLoopSearchMaximumDistance();
+    bool getParamDoLoopClosing();
+    int getParamLoopMatchMinimumChainSize();
+    double getParamLoopMatchMaximumVarianceCoarse();
+    double getParamLoopMatchMinimumResponseCoarse();
+    double getParamLoopMatchMinimumResponseFine();
+
+    //Correlation Parameters - Correlation Parameters
+    double getParamCorrelationSearchSpaceDimension();
+    double getParamCorrelationSearchSpaceResolution();
+    double getParamCorrelationSearchSpaceSmearDeviation();
+
+    //Correlation Parameters - Loop Closure Parameters
+    double getParamLoopSearchSpaceDimension();
+    double getParamLoopSearchSpaceResolution();
+    double getParamLoopSearchSpaceSmearDeviation();
+
+    //Scan Matcher Parameters
+    double getParamDistanceVariancePenalty();
+    double getParamAngleVariancePenalty();
+    double getParamFineSearchAngleOffset();
+    double getParamCoarseSearchAngleOffset();
+    double getParamCoarseAngleResolution();
+    double getParamMinimumAnglePenalty();
+    double getParamMinimumDistancePenalty();
+    bool getParamUseResponseExpansion();
+
 
   };
 

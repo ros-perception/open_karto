@@ -1799,133 +1799,132 @@ namespace karto
         "found.",
         false, GetParameterManager());
   }
-
-
   /* Adding in getters and setters here for easy parameter access */
   
   // General Parameters
 
-  Parameter<kt_bool> getParamUseScanMatching(){
-    return m_pUseScanMatching;
+  bool Mapper::getParamUseScanMatching(){
+    return (bool)m_pUseScanMatching->GetValue();
   }
 
-  Parameter<kt_bool> getParamUseScanBarycenter(){
-    return m_pUseScanBarycenter;
+  bool Mapper::getParamUseScanBarycenter(){
+    return (bool)m_pUseScanBarycenter->GetValue();
   }
 
-  Parameter<kt_double> getParamMinimumTravelDistance(){
-    return m_pMinimumTravelDistance;
+  double Mapper::getParamMinimumTravelDistance(){
+    return (double)m_pMinimumTravelDistance->GetValue();
   }
 
-  Parameter<kt_double> getParamMinimumTravelHeading(){
-    return m_pMinimumTravelHeading;
+  double Mapper::getParamMinimumTravelHeading(){
+    return (double)m_pMinimumTravelHeading->GetValue();
   }
 
-  Parameter<kt_int32u> getParamScanBufferSize(){
-    return m_pScanBufferSize;
+  int Mapper::getParamScanBufferSize(){
+    return (int)m_pScanBufferSize->GetValue();
   }
 
-  Parameter<kt_double> getParamScanBufferMaximumScanDistance(){
-    return m_pScanBufferMaximumScanDistance;
+  double Mapper::getParamScanBufferMaximumScanDistance(){
+    return (double)m_pScanBufferMaximumScanDistance->GetValue();
   }
 
-  Parameter<kt_double> getParamLinkMatchMinimumResponseFine(){
-    return m_pLinkMatchMinimumResponseFine;
+  double Mapper::getParamLinkMatchMinimumResponseFine(){
+    return (double)m_pLinkMatchMinimumResponseFine->GetValue();
   }
 
-  Parameter<kt_double> getParamLinkScanMaximumDistance(){
-    return m_pLinkScanMaximumDistance;
+  double Mapper::getParamLinkScanMaximumDistance(){
+    return (double)m_pLinkScanMaximumDistance->GetValue();
   }
 
-  Parameter<kt_double> getParamLoopSearchMaximumDistance(){
-    return m_pLoopSearchMaximumDistance;
+  double Mapper::getParamLoopSearchMaximumDistance(){
+    return (double)m_pLoopSearchMaximumDistance->GetValue();
   }
 
-  Parameter<kt_bool> getParamDoLoopClosing(){
-    return m_pDoLoopClosing;
+  bool Mapper::getParamDoLoopClosing(){
+    return (bool)m_pDoLoopClosing->GetValue();
   }
 
-  Parameter<kt_int32u> getParamLoopMatchMinimumChainSize(){
-    return m_pLoopMatchMinimumChainSize;
+  int Mapper::getParamLoopMatchMinimumChainSize(){
+    return (int)m_pLoopMatchMinimumChainSize->GetValue();
   }
 
-  Parameter<kt_double> getParamLoopMatchMaximumVarianceCoarse(){
-    return m_pLoopMatchMaximumVarianceCoarse;
+  double Mapper::getParamLoopMatchMaximumVarianceCoarse(){
+    return (double)m_pLoopMatchMaximumVarianceCoarse->GetValue();
   }
 
-  Parameter<kt_double> getParamLoopMatchMinimumResponseCoarse(){
-    return m_pLoopMatchMinimumResponseCoarse;
+  double Mapper::getParamLoopMatchMinimumResponseCoarse(){
+    return (double)m_pLoopMatchMinimumResponseCoarse->GetValue();
   }
   
-  
-  Parameter<kt_double> getParamLoopMatchMinimumResponseFine(){
-    return m_pLoopMatchMinimumResponseFine;
+  double Mapper::getParamLoopMatchMinimumResponseFine(){
+    return (double)m_pLoopMatchMinimumResponseFine->GetValue();
   }
 
   // Correlation Parameters - Correlation Parameters
 
-  Parameter<kt_double> getParamCorrelationSearchSpaceDimension(){
-    return m_pCorrelationSearchSpaceDimension;
+  double Mapper::getParamCorrelationSearchSpaceDimension(){
+    return (double)m_pCorrelationSearchSpaceDimension->GetValue();
   }
 
-  Parameter<kt_double> getParamCorrelationSearchSpaceResolution(){
-    return m_pCorrelationSearchSpaceResolution;
+  double Mapper::getParamCorrelationSearchSpaceResolution(){
+    return (double)m_pCorrelationSearchSpaceResolution->GetValue();
   }
 
-  Parameter<kt_double> getParamCorrelationSearchSpaceSmearDeviation(){
-    return m_pCorrelationSearchSpaceSmearDeviation;
+  double Mapper::getParamCorrelationSearchSpaceSmearDeviation(){
+    return (double)m_pCorrelationSearchSpaceSmearDeviation->GetValue();
   }
 
   // Correlation Parameters - Loop Correlation Parameters 
   
-  Parameter<kt_double> getParamLoopSearchSpaceDimension(){
-    return m_pLoopSearchSpaceDimension;
+  double Mapper::getParamLoopSearchSpaceDimension(){
+    return (double)m_pLoopSearchSpaceDimension->GetValue();
   }
 
-  Parameter<kt_double> getParamLoopSearchSpaceResolution(){
-    return m_pLoopSearchSpaceResolution;
+  double Mapper::getParamLoopSearchSpaceResolution(){
+    return (double)m_pLoopSearchSpaceResolution->GetValue();
   }
 
-  Parameter<kt_double> getParamLoopSearchSpaceSmearDeviation(){
-    return m_pLoopSearchSpaceSmearDeviation;
+  double Mapper::getParamLoopSearchSpaceSmearDeviation(){
+    return (double)m_pLoopSearchSpaceSmearDeviation->GetValue();
   }
 
   // ScanMatcher Parameters
 
-  Parameter<kt_double> getParamDistanceVariancePenalty(){
-    return m_pDistanceVariancePenalty;
+  double Mapper::getParamDistanceVariancePenalty(){
+    return (double)m_pDistanceVariancePenalty->GetValue();
   }
 
-  Parameter<kt_double> getParamAngleVariancePenalty(){
-    return m_pAngleVariancePenalty;
+  double Mapper::getParamAngleVariancePenalty(){
+    return (double)m_pAngleVariancePenalty->GetValue();
   }
 
-  Parameter<kt_double> getParamFineSearchAngleOffset(){
-    return m_pFineSearchAngleOffset;
+  double Mapper::getParamFineSearchAngleOffset(){
+    return (double)m_pFineSearchAngleOffset->GetValue();
   }
 
-  Parameter<kt_double> getParamCoarseSearchAngleOffset(){
-    return m_pCoarseAngleOffset;
+  double Mapper::getParamCoarseSearchAngleOffset(){
+    return (double)m_pCoarseSearchAngleOffset->GetValue();
   }
 
-  Parameter<kt_double> getParamCoarseAngleResolution(){
-    return m_pCoarseAngleResolution;
+  double Mapper::getParamCoarseAngleResolution(){
+    return (double)m_pCoarseAngleResolution->GetValue();
   }
 
-  Parameter<kt_double> getParamMinimumAnglePenalty(){
-    return m_pMinimumAnglePenalty;
+  double Mapper::getParamMinimumAnglePenalty(){
+    return (double)m_pMinimumAnglePenalty->GetValue();
   }
 
-  Parameter<kt_double> getParamMinimumDistancePenalty(){
-    return m_pMinimumDistancePenalty;
+  double Mapper::getParamMinimumDistancePenalty(){
+    return (double)m_pMinimumDistancePenalty->GetValue();
   }
 
-  Parameter<kt_bool> getParamUseResponseExpansion(){ //Is this a good naming convention?
-    return m_pUseResponseExpansion; //Do I want to return this Parameter thing?  Should I return the actual value set into it?
+  bool Mapper::getParamUseResponseExpansion(){
+    return (bool)m_pUseResponseExpansion->GetValue(); 
   }
 
   /* Setters for parameters */
 
+
+  
   void Mapper::Initialize(kt_double rangeThreshold)
   {
     if (m_Initialized == false)
