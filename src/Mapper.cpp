@@ -1922,6 +1922,123 @@ namespace karto
   }
 
   /* Setters for parameters */
+  //General Parameters
+  void Mapper::setParamUseScanMatching(bool b){
+    m_pUseScanMatching->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamUseScanBarycenter(bool b){
+    m_pUseScanBarycenter->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamMinimumTravelDistance(double d){
+    m_pMinimumTravelDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamMinimumTravelHeading(double d){
+    m_pMinimumTravelHeading->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamScanBufferSize(int i){
+    m_pScanBufferSize->SetValue((kt_int32u)i);
+  }
+
+  void Mapper::setParamScanBufferMaximumScanDistance(double d){
+    m_pScanBufferMaximumScanDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLinkMatchMinimumResponseFine(double d){
+    m_pLinkMatchMinimumResponseFine->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLinkScanMaximumDistance(double d){
+    m_pLinkScanMaximumDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopSearchMaximumDistance(double d){
+    m_pLoopSearchMaximumDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamDoLoopClosing(bool b){
+    m_pDoLoopClosing->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamLoopMatchMinimumChainSize(int i){
+    m_pLoopMatchMinimumChainSize->SetValue((kt_int32u)i);
+  }
+
+  void Mapper::setParamLoopMatchMaximumVarianceCoarse(double d){
+    m_pLoopMatchMaximumVarianceCoarse->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopMatchMinimumResponseCoarse(double d){
+    m_pLoopMatchMaximumVarianceCoarse->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopMatchMinimumResponseFine(double d){
+    m_pLoopMatchMinimumResponseFine->SetValue((kt_double)d);
+  }
+
+  //Correlation Parameters - Correlation Parameters
+  void Mapper::setParamCorrelationSearchSpaceDimension(double d){
+    m_pCorrelationSearchSpaceDimension->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCorrelationSearchSpaceResolution(double d){
+    m_pCorrelationSearchSpaceResolution->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCorrelationSearchSpaceSmearDeviation(double d){
+    m_pCorrelationSearchSpaceSmearDeviation->SetValue((kt_double)d);
+  }
+
+
+  //Correlation Parameters - Loop Closure Parameters
+  void Mapper::setParamLoopSearchSpaceDimension(double d){
+    m_pLoopSearchSpaceDimension->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopSearchSpaceResolution(double d){
+    m_pLoopSearchSpaceResolution->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopSearchSpaceSmearDeviation(double d){
+    m_pLoopSearchSpaceSmearDeviation->SetValue((kt_double)d);
+  }
+
+
+  //Scan Matcher Parameters
+  void Mapper::setParamDistanceVariancePenalty(double d){
+    m_pDistanceVariancePenalty->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamAngleVariancePenalty(double d){
+    m_pAngleVariancePenalty->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamFineSearchAngleOffset(double d){
+    m_pFineSearchAngleOffset->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCoarseSearchAngleOffset(double d){
+    m_pCoarseSearchAngleOffset->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCoarseAngleResolution(double d){
+    m_pCoarseAngleResolution->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamMinimumAnglePenalty(double d){
+    m_pMinimumAnglePenalty->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamMinimumDistancePenalty(double d){
+    m_pMinimumDistancePenalty->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamUseResponseExpansion(bool b){
+    m_pUseResponseExpansion->SetValue((kt_bool)b);
+  }
 
 
   

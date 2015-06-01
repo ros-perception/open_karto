@@ -1828,9 +1828,9 @@ namespace karto
     Parameter<kt_bool>* m_pUseResponseExpansion;
   
   public:
-    ///////////////////////////////////////////////////////
-    // Abstract methods for parameter setters and getters
+    /* Abstract methods for parameter setters and getters */
 
+    /* Getters */
     //General Parameters
     bool getParamUseScanMatching();
     bool getParamUseScanBarycenter();
@@ -1866,6 +1866,45 @@ namespace karto
     double getParamMinimumAnglePenalty();
     double getParamMinimumDistancePenalty();
     bool getParamUseResponseExpansion();
+
+    /* Setters */
+    //General Parameters
+    void setParamUseScanMatching(bool b);
+    void setParamUseScanBarycenter(bool b);
+    void setParamMinimumTravelDistance(double d);
+    void setParamMinimumTravelHeading(double d);
+    void setParamScanBufferSize(int i);
+    void setParamScanBufferMaximumScanDistance(double d);
+    void setParamLinkMatchMinimumResponseFine(double d);
+    void setParamLinkScanMaximumDistance(double d);
+    void setParamLoopSearchMaximumDistance(double d);
+    void setParamDoLoopClosing(bool b);
+    void setParamLoopMatchMinimumChainSize(int i);
+    void setParamLoopMatchMaximumVarianceCoarse(double d);
+    void setParamLoopMatchMinimumResponseCoarse(double d);
+    void setParamLoopMatchMinimumResponseFine(double d);
+
+    //Correlation Parameters - Correlation Parameters
+    void setParamCorrelationSearchSpaceDimension(double d);
+    void setParamCorrelationSearchSpaceResolution(double d);
+    void setParamCorrelationSearchSpaceSmearDeviation(double d);
+
+    //Correlation Parameters - Loop Closure Parameters
+    void setParamLoopSearchSpaceDimension(double d);
+    void setParamLoopSearchSpaceResolution(double d);
+    void setParamLoopSearchSpaceSmearDeviation(double d);
+
+    //Scan Matcher Parameters
+    void setParamDistanceVariancePenalty(double d);
+    void setParamAngleVariancePenalty(double d);
+    void setParamFineSearchAngleOffset(double d);
+    void setParamCoarseSearchAngleOffset(double d);
+    void setParamCoarseAngleResolution(double d);
+    void setParamMinimumAnglePenalty(double d);
+    void setParamMinimumDistancePenalty(double d);
+    void setParamUseResponseExpansion(bool b);
+    
+
 
 
   };
