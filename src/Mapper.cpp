@@ -1925,6 +1925,7 @@ namespace karto
   //General Parameters
   void Mapper::setParamUseScanMatching(bool b){
     m_pUseScanMatching->SetValue((kt_bool)b);
+    std::cout << b << std::endl;
   }
 
   void Mapper::setParamUseScanBarycenter(bool b){
