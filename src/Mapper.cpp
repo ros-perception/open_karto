@@ -1848,7 +1848,7 @@ namespace karto
   }
 
   double Mapper::getParamLoopMatchMaximumVarianceCoarse(){
-    return std::sqrt((double)m_pLoopMatchMaximumVarianceCoarse->GetValue());
+    return (double)std::sqrt(m_pLoopMatchMaximumVarianceCoarse->GetValue());
   }
 
   double Mapper::getParamLoopMatchMinimumResponseCoarse(){
@@ -1925,7 +1925,6 @@ namespace karto
   //General Parameters
   void Mapper::setParamUseScanMatching(bool b){
     m_pUseScanMatching->SetValue((kt_bool)b);
-    std::cout << b << std::endl;
   }
 
   void Mapper::setParamUseScanBarycenter(bool b){
