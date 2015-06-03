@@ -1894,19 +1894,19 @@ namespace karto
   }
 
   double Mapper::getParamAngleVariancePenalty(){
-    return math::RadiansToDegrees(std::sqrt((double)m_pAngleVariancePenalty->GetValue()));
+    return std::sqrt((double)m_pAngleVariancePenalty->GetValue());
   }
 
   double Mapper::getParamFineSearchAngleOffset(){
-    return math::RadiansToDegrees((double)m_pFineSearchAngleOffset->GetValue());
+    return (double)m_pFineSearchAngleOffset->GetValue();
   }
 
   double Mapper::getParamCoarseSearchAngleOffset(){
-    return math::RadiansToDegrees((double)m_pCoarseSearchAngleOffset->GetValue());
+    return (double)m_pCoarseSearchAngleOffset->GetValue();
   }
 
   double Mapper::getParamCoarseAngleResolution(){
-    return math::RadiansToDegrees((double)m_pCoarseAngleResolution->GetValue());
+    return (double)m_pCoarseAngleResolution->GetValue();
   }
 
   double Mapper::getParamMinimumAnglePenalty(){
@@ -1936,7 +1936,7 @@ namespace karto
   }
 
   void Mapper::setParamMinimumTravelHeading(double d){
-    m_pMinimumTravelHeading->SetValue((kt_double)math::DegreesToRadians(d));
+    m_pMinimumTravelHeading->SetValue((kt_double)d);
   }
 
   void Mapper::setParamScanBufferSize(int i){
@@ -2013,19 +2013,19 @@ namespace karto
   }
 
   void Mapper::setParamAngleVariancePenalty(double d){
-    m_pAngleVariancePenalty->SetValue((kt_double)math::Square(math::DegreesToRadians(d)));
+    m_pAngleVariancePenalty->SetValue((kt_double)math::Square(d));
   }
 
   void Mapper::setParamFineSearchAngleOffset(double d){
-    m_pFineSearchAngleOffset->SetValue((kt_double)math::DegreesToRadians(d));
+    m_pFineSearchAngleOffset->SetValue((kt_double)d);
   }
 
   void Mapper::setParamCoarseSearchAngleOffset(double d){
-    m_pCoarseSearchAngleOffset->SetValue((kt_double)math::DegreesToRadians(d));
+    m_pCoarseSearchAngleOffset->SetValue((kt_double)d);
   }
 
   void Mapper::setParamCoarseAngleResolution(double d){
-    m_pCoarseAngleResolution->SetValue((kt_double)math::DegreesToRadians(d));
+    m_pCoarseAngleResolution->SetValue((kt_double)d);
   }
 
   void Mapper::setParamMinimumAnglePenalty(double d){
