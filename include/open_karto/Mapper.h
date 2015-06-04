@@ -25,6 +25,16 @@
 
 namespace karto
 {
+    //Point struct to constitute an edge.
+  struct point {
+    double x;
+    double y;
+  };
+  // Edge struct for defining visualization lines.
+  struct edge {
+    point a;
+    point b;
+  };
   ////////////////////////////////////////////////////////////////////////////////////////
   // Listener classes
 
@@ -1905,9 +1915,12 @@ namespace karto
     void setParamUseResponseExpansion(bool b);
     
 
-
+    std::vector<edge> getAttemptedLoopClosures();
 
   };
+
+
+
 
 }
 

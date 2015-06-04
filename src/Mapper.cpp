@@ -38,6 +38,13 @@ namespace karto
   #define DISTANCE_PENALTY_GAIN   0.2
   #define ANGLE_PENALTY_GAIN      0.2
 
+  /*
+  *   Global variables for exporting scan matching successes and failures
+  */
+
+  // Global vector of Edge structs for pushing back attempted loop closures
+  std::vector<edge> attemptedLoopClosures_;
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -1188,6 +1195,14 @@ namespace karto
     }
   }
 
+
+  /*
+  *   Going to change some stuff in here to try to mark the edge of the vertex as red, or maybe
+  *   make a list of bad loop closes that can be published out and then visualized for debugging.
+  *   
+  *   
+  *
+  */
   kt_bool MapperGraph::TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName)
   {
     kt_bool loopClosed = false;
@@ -1226,6 +1241,9 @@ namespace karto
         if (fineResponse < m_pMapper->m_pLoopMatchMinimumResponseFine->GetValue())
         {
           m_pMapper->FireLoopClosureCheck("REJECTED!");
+          // pScan ain't good.
+          std::cout << "This scan ain't good.  We should add it to the bad list. " << std::endl;
+
         }
         else
         {
@@ -1508,6 +1526,7 @@ namespace karto
     // path of links to the scan of interest
     const LocalizedRangeScanVector nearLinkedScans = FindNearLinkedScans(pScan, m_pMapper->m_pLoopSearchMaximumDistance->GetValue());
 
+    // Gonna steal this code and put it down below
     kt_int32u nScans = static_cast<kt_int32u>(m_pMapper->m_pMapperSensorManager->GetScans(rSensorName).size());
     for (; rStartNum < nScans; rStartNum++)
     {
@@ -2077,6 +2096,8 @@ namespace karto
     return true;
   }
 
+
+
   kt_bool Mapper::Process(LocalizedRangeScan* pScan)
   {
     if(pScan != NULL)
@@ -2136,9 +2157,37 @@ namespace karto
         if (m_pDoLoopClosing->GetValue())
         {
           std::vector<Name> deviceNames = m_pMapperSensorManager->GetSensorNames();
-          const_forEach(std::vector<Name>, &deviceNames)
+          const_forEach(std::vector<Name>, &deviceNames) //Weird for each loop.  iter is the iterator through the loop of deviceNames.
           {
-            m_pGraph->TryCloseLoop(pScan, *iter);
+            std::cout << "About to try to close a loop." << std::endl;
+            if(m_pGraph->TryCloseLoop(pScan, *iter)) {
+              // The loop was closed.  No need to do anything here since it should be visualized externally nice and green.
+
+
+            } else {
+              // The loop failed to be closed.
+              // Visualize this.  pScan is the node in question.  Values from *iter
+              // is the Name of the sensor from which the LocalizedRangeScans are gotten from
+              kt_int32u num_scans = static_cast<kt_int32u>(m_pMapperSensorManager->GetScans(*iter).size());
+
+              for (uint scan_iterator = 0; scan_iterator < num_scans; scan_iterator++) {
+                LocalizedRangeScan* pCandidateScan = m_pMapperSensorManager->GetScan(*iter, scan_iterator);
+                // Should this be LocalizedRangeScan* or without the star?  What does this mean again?
+              
+              edge e;    //Edge is comprised of point A and point B.
+                                //Point A and B have an x and a y which are doubles
+
+              e.a.x = (double) pScan->GetCorrectedPose().GetX();
+              e.a.y = (double) pScan->GetCorrectedPose().GetY();
+              e.b.x = (double) pCandidateScan->GetCorrectedPose().GetX();
+              e.b.y = (double) pCandidateScan->GetCorrectedPose().GetY();
+              
+              attemptedLoopClosures_.push_back(e);
+
+              delete &e;
+              }
+            }
+            // std::cout << "Just finished trying to close a loop." std::endl;
           }
         }
       }
@@ -2301,5 +2350,9 @@ namespace karto
   ScanMatcher* Mapper::GetLoopScanMatcher() const
   {
     return m_pGraph->GetLoopScanMatcher();
+  }
+
+  std::vector<edge> Mapper::getAttemptedLoopClosures(){
+    return attemptedLoopClosures_;
   }
 }
