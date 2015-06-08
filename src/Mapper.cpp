@@ -38,6 +38,13 @@ namespace karto
   #define DISTANCE_PENALTY_GAIN   0.2
   #define ANGLE_PENALTY_GAIN      0.2
 
+  /*
+  *   Global variables for exporting scan matching successes and failures
+  */
+
+  // Global vector of Edge structs for pushing back attempted loop closures
+  std::vector<edge> attemptedLoopClosures_;
+
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -1188,6 +1195,14 @@ namespace karto
     }
   }
 
+
+  /*
+  *   Going to change some stuff in here to try to mark the edge of the vertex as red, or maybe
+  *   make a list of bad loop closes that can be published out and then visualized for debugging.
+  *   
+  *   
+  *
+  */
   kt_bool MapperGraph::TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName)
   {
     kt_bool loopClosed = false;
@@ -1226,6 +1241,9 @@ namespace karto
         if (fineResponse < m_pMapper->m_pLoopMatchMinimumResponseFine->GetValue())
         {
           m_pMapper->FireLoopClosureCheck("REJECTED!");
+          // pScan ain't good.
+          std::cout << "This scan ain't good.  We should add it to the bad list. " << std::endl;
+
         }
         else
         {
@@ -1508,6 +1526,7 @@ namespace karto
     // path of links to the scan of interest
     const LocalizedRangeScanVector nearLinkedScans = FindNearLinkedScans(pScan, m_pMapper->m_pLoopSearchMaximumDistance->GetValue());
 
+    // Gonna steal this code and put it down below
     kt_int32u nScans = static_cast<kt_int32u>(m_pMapper->m_pMapperSensorManager->GetScans(rSensorName).size());
     for (; rStartNum < nScans; rStartNum++)
     {
@@ -1799,7 +1818,249 @@ namespace karto
         "found.",
         false, GetParameterManager());
   }
+  /* Adding in getters and setters here for easy parameter access */
+  
+  // General Parameters
 
+  bool Mapper::getParamUseScanMatching(){
+    return (bool)m_pUseScanMatching->GetValue();
+  }
+
+  bool Mapper::getParamUseScanBarycenter(){
+    return (bool)m_pUseScanBarycenter->GetValue();
+  }
+
+  double Mapper::getParamMinimumTravelDistance(){
+    return (double)m_pMinimumTravelDistance->GetValue();
+  }
+
+  double Mapper::getParamMinimumTravelHeading(){
+    return math::RadiansToDegrees((double)m_pMinimumTravelHeading->GetValue());
+  }
+
+  int Mapper::getParamScanBufferSize(){
+    return (int)m_pScanBufferSize->GetValue();
+  }
+
+  double Mapper::getParamScanBufferMaximumScanDistance(){
+    return (double)m_pScanBufferMaximumScanDistance->GetValue();
+  }
+
+  double Mapper::getParamLinkMatchMinimumResponseFine(){
+    return (double)m_pLinkMatchMinimumResponseFine->GetValue();
+  }
+
+  double Mapper::getParamLinkScanMaximumDistance(){
+    return (double)m_pLinkScanMaximumDistance->GetValue();
+  }
+
+  double Mapper::getParamLoopSearchMaximumDistance(){
+    return (double)m_pLoopSearchMaximumDistance->GetValue();
+  }
+
+  bool Mapper::getParamDoLoopClosing(){
+    return (bool)m_pDoLoopClosing->GetValue();
+  }
+
+  int Mapper::getParamLoopMatchMinimumChainSize(){
+    return (int)m_pLoopMatchMinimumChainSize->GetValue();
+  }
+
+  double Mapper::getParamLoopMatchMaximumVarianceCoarse(){
+    return (double)std::sqrt(m_pLoopMatchMaximumVarianceCoarse->GetValue());
+  }
+
+  double Mapper::getParamLoopMatchMinimumResponseCoarse(){
+    return (double)m_pLoopMatchMinimumResponseCoarse->GetValue();
+  }
+  
+  double Mapper::getParamLoopMatchMinimumResponseFine(){
+    return (double)m_pLoopMatchMinimumResponseFine->GetValue();
+  }
+
+  // Correlation Parameters - Correlation Parameters
+
+  double Mapper::getParamCorrelationSearchSpaceDimension(){
+    return (double)m_pCorrelationSearchSpaceDimension->GetValue();
+  }
+
+  double Mapper::getParamCorrelationSearchSpaceResolution(){
+    return (double)m_pCorrelationSearchSpaceResolution->GetValue();
+  }
+
+  double Mapper::getParamCorrelationSearchSpaceSmearDeviation(){
+    return (double)m_pCorrelationSearchSpaceSmearDeviation->GetValue();
+  }
+
+  // Correlation Parameters - Loop Correlation Parameters 
+  
+  double Mapper::getParamLoopSearchSpaceDimension(){
+    return (double)m_pLoopSearchSpaceDimension->GetValue();
+  }
+
+  double Mapper::getParamLoopSearchSpaceResolution(){
+    return (double)m_pLoopSearchSpaceResolution->GetValue();
+  }
+
+  double Mapper::getParamLoopSearchSpaceSmearDeviation(){
+    return (double)m_pLoopSearchSpaceSmearDeviation->GetValue();
+  }
+
+  // ScanMatcher Parameters
+
+  double Mapper::getParamDistanceVariancePenalty(){
+    return std::sqrt((double)m_pDistanceVariancePenalty->GetValue());
+  }
+
+  double Mapper::getParamAngleVariancePenalty(){
+    return std::sqrt((double)m_pAngleVariancePenalty->GetValue());
+  }
+
+  double Mapper::getParamFineSearchAngleOffset(){
+    return (double)m_pFineSearchAngleOffset->GetValue();
+  }
+
+  double Mapper::getParamCoarseSearchAngleOffset(){
+    return (double)m_pCoarseSearchAngleOffset->GetValue();
+  }
+
+  double Mapper::getParamCoarseAngleResolution(){
+    return (double)m_pCoarseAngleResolution->GetValue();
+  }
+
+  double Mapper::getParamMinimumAnglePenalty(){
+    return (double)m_pMinimumAnglePenalty->GetValue();
+  }
+
+  double Mapper::getParamMinimumDistancePenalty(){
+    return (double)m_pMinimumDistancePenalty->GetValue();
+  }
+
+  bool Mapper::getParamUseResponseExpansion(){
+    return (bool)m_pUseResponseExpansion->GetValue(); 
+  }
+
+  /* Setters for parameters */
+  //General Parameters
+  void Mapper::setParamUseScanMatching(bool b){
+    m_pUseScanMatching->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamUseScanBarycenter(bool b){
+    m_pUseScanBarycenter->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamMinimumTravelDistance(double d){
+    m_pMinimumTravelDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamMinimumTravelHeading(double d){
+    m_pMinimumTravelHeading->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamScanBufferSize(int i){
+    m_pScanBufferSize->SetValue((kt_int32u)i);
+  }
+
+  void Mapper::setParamScanBufferMaximumScanDistance(double d){
+    m_pScanBufferMaximumScanDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLinkMatchMinimumResponseFine(double d){
+    m_pLinkMatchMinimumResponseFine->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLinkScanMaximumDistance(double d){
+    m_pLinkScanMaximumDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopSearchMaximumDistance(double d){
+    m_pLoopSearchMaximumDistance->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamDoLoopClosing(bool b){
+    m_pDoLoopClosing->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamLoopMatchMinimumChainSize(int i){
+    m_pLoopMatchMinimumChainSize->SetValue((kt_int32u)i);
+  }
+
+  void Mapper::setParamLoopMatchMaximumVarianceCoarse(double d){
+    m_pLoopMatchMaximumVarianceCoarse->SetValue((kt_double)math::Square(d));
+  }
+
+  void Mapper::setParamLoopMatchMinimumResponseCoarse(double d){
+    m_pLoopMatchMinimumResponseCoarse->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopMatchMinimumResponseFine(double d){
+    m_pLoopMatchMinimumResponseFine->SetValue((kt_double)d);
+  }
+
+  //Correlation Parameters - Correlation Parameters
+  void Mapper::setParamCorrelationSearchSpaceDimension(double d){
+    m_pCorrelationSearchSpaceDimension->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCorrelationSearchSpaceResolution(double d){
+    m_pCorrelationSearchSpaceResolution->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCorrelationSearchSpaceSmearDeviation(double d){
+    m_pCorrelationSearchSpaceSmearDeviation->SetValue((kt_double)d);
+  }
+
+
+  //Correlation Parameters - Loop Closure Parameters
+  void Mapper::setParamLoopSearchSpaceDimension(double d){
+    m_pLoopSearchSpaceDimension->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopSearchSpaceResolution(double d){
+    m_pLoopSearchSpaceResolution->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamLoopSearchSpaceSmearDeviation(double d){
+    m_pLoopSearchSpaceSmearDeviation->SetValue((kt_double)d);
+  }
+
+
+  //Scan Matcher Parameters
+  void Mapper::setParamDistanceVariancePenalty(double d){
+    m_pDistanceVariancePenalty->SetValue((kt_double)math::Square(d));
+  }
+
+  void Mapper::setParamAngleVariancePenalty(double d){
+    m_pAngleVariancePenalty->SetValue((kt_double)math::Square(d));
+  }
+
+  void Mapper::setParamFineSearchAngleOffset(double d){
+    m_pFineSearchAngleOffset->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCoarseSearchAngleOffset(double d){
+    m_pCoarseSearchAngleOffset->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamCoarseAngleResolution(double d){
+    m_pCoarseAngleResolution->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamMinimumAnglePenalty(double d){
+    m_pMinimumAnglePenalty->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamMinimumDistancePenalty(double d){
+    m_pMinimumDistancePenalty->SetValue((kt_double)d);
+  }
+
+  void Mapper::setParamUseResponseExpansion(bool b){
+    m_pUseResponseExpansion->SetValue((kt_bool)b);
+  }
+
+
+  
   void Mapper::Initialize(kt_double rangeThreshold)
   {
     if (m_Initialized == false)
@@ -1834,6 +2095,8 @@ namespace karto
   {
     return true;
   }
+
+
 
   kt_bool Mapper::Process(LocalizedRangeScan* pScan)
   {
@@ -1894,9 +2157,37 @@ namespace karto
         if (m_pDoLoopClosing->GetValue())
         {
           std::vector<Name> deviceNames = m_pMapperSensorManager->GetSensorNames();
-          const_forEach(std::vector<Name>, &deviceNames)
+          const_forEach(std::vector<Name>, &deviceNames) //Weird for each loop.  iter is the iterator through the loop of deviceNames.
           {
-            m_pGraph->TryCloseLoop(pScan, *iter);
+            std::cout << "About to try to close a loop." << std::endl;
+            if(m_pGraph->TryCloseLoop(pScan, *iter)) {
+              // The loop was closed.  No need to do anything here since it should be visualized externally nice and green.
+
+
+            } else {
+              // The loop failed to be closed.
+              // Visualize this.  pScan is the node in question.  Values from *iter
+              // is the Name of the sensor from which the LocalizedRangeScans are gotten from
+              kt_int32u num_scans = static_cast<kt_int32u>(m_pMapperSensorManager->GetScans(*iter).size());
+
+              for (uint scan_iterator = 0; scan_iterator < num_scans; scan_iterator++) {
+                LocalizedRangeScan* pCandidateScan = m_pMapperSensorManager->GetScan(*iter, scan_iterator);
+                // Should this be LocalizedRangeScan* or without the star?  What does this mean again?
+              
+              edge e;    //Edge is comprised of point A and point B.
+                                //Point A and B have an x and a y which are doubles
+
+              e.a.x = (double) pScan->GetCorrectedPose().GetX();
+              e.a.y = (double) pScan->GetCorrectedPose().GetY();
+              e.b.x = (double) pCandidateScan->GetCorrectedPose().GetX();
+              e.b.y = (double) pCandidateScan->GetCorrectedPose().GetY();
+              
+              attemptedLoopClosures_.push_back(e);
+
+              delete &e;
+              }
+            }
+            // std::cout << "Just finished trying to close a loop." std::endl;
           }
         }
       }
@@ -2059,5 +2350,9 @@ namespace karto
   ScanMatcher* Mapper::GetLoopScanMatcher() const
   {
     return m_pGraph->GetLoopScanMatcher();
+  }
+
+  std::vector<edge> Mapper::getAttemptedLoopClosures(){
+    return attemptedLoopClosures_;
   }
 }
