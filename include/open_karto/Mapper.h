@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KARTO_MAPPER__
-#define __KARTO_MAPPER__
+#ifndef OPEN_KARTO_MAPPER_H
+#define OPEN_KARTO_MAPPER_H
 
 #include <map>
 #include <vector>
 
-#include "Karto.h"
+#include <open_karto/Karto.h>
 
 namespace karto
 {
@@ -72,7 +72,7 @@ namespace karto
      * Called when loop closure is over
      */
     virtual void EndLoopClosure(const std::string& /*rInfo*/) {};
-  }; // MapperListener
+  };  // MapperListener
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ namespace karto
     virtual ~EdgeLabel()
     {
     }
-  }; // EdgeLabel
+  };  // EdgeLabel
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ namespace karto
     Pose2 m_Pose2;
     Pose2 m_PoseDifference;
     Matrix3 m_Covariance;
-  }; // LinkInfo
+  };  // LinkInfo
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -282,7 +282,7 @@ namespace karto
 
     T* m_pObject;
     std::vector<Edge<T>*> m_Edges;
-  }; // Vertex<T>
+  };  // Vertex<T>
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -365,7 +365,7 @@ namespace karto
     Vertex<T>* m_pSource;
     Vertex<T>* m_pTarget;
     EdgeLabel* m_pLabel;
-  }; // class Edge<T>
+  };  // class Edge<T>
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -384,7 +384,7 @@ namespace karto
      * @return true if the visitor accepted the vertex, false otherwise
      */
     virtual kt_bool Visit(Vertex<T>* pVertex) = 0;
-  }; // Visitor<T>
+  };  // Visitor<T>
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -429,7 +429,7 @@ namespace karto
      * Graph being traversed
      */
     Graph<T>* m_pGraph;
-  }; // GraphTraversal<T>
+  };  // GraphTraversal<T>
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -533,7 +533,7 @@ namespace karto
      * Edges of this graph
      */
     std::vector<Edge<T>*> m_Edges;
-  }; // Graph<T>
+  };  // Graph<T>
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -575,7 +575,9 @@ namespace karto
      * @param rIsNewEdge set to true if the edge is new
      * @return edge between source and target scan vertices
      */
-    Edge<LocalizedRangeScan>* AddEdge(LocalizedRangeScan* pSourceScan, LocalizedRangeScan* pTargetScan, kt_bool& rIsNewEdge);
+    Edge<LocalizedRangeScan>* AddEdge(LocalizedRangeScan* pSourceScan,
+                                      LocalizedRangeScan* pTargetScan,
+                                      kt_bool& rIsNewEdge);
 
     /**
      * Link scan to last scan and nearby chains of scans
@@ -632,7 +634,10 @@ namespace karto
      * @param rMean
      * @param rCovariance
      */
-    void LinkScans(LocalizedRangeScan* pFromScan, LocalizedRangeScan* pToScan, const Pose2& rMean, const Matrix3& rCovariance);
+    void LinkScans(LocalizedRangeScan* pFromScan,
+                   LocalizedRangeScan* pToScan,
+                   const Pose2& rMean,
+                   const Matrix3& rCovariance);
 
     /**
      * Find nearby chains of scans and link them to scan if response is high enough
@@ -649,7 +654,10 @@ namespace karto
      * @param rMean
      * @param rCovariance
      */
-    void LinkChainToScan(const LocalizedRangeScanVector& rChain, LocalizedRangeScan* pScan, const Pose2& rMean, const Matrix3& rCovariance);
+    void LinkChainToScan(const LocalizedRangeScanVector& rChain,
+                         LocalizedRangeScan* pScan,
+                         const Pose2& rMean,
+                         const Matrix3& rCovariance);
 
     /**
      * Find chains of scans that are close to given scan
@@ -674,7 +682,9 @@ namespace karto
      * @param rStartNum
      * @return chain that can possibly close a loop with given scan
      */
-    LocalizedRangeScanVector FindPossibleLoopClosure(LocalizedRangeScan* pScan, const Name& rSensorName, kt_int32u& rStartNum);
+    LocalizedRangeScanVector FindPossibleLoopClosure(LocalizedRangeScan* pScan,
+                                                     const Name& rSensorName,
+                                                     kt_int32u& rStartNum);
 
     /**
      * Optimizes scan poses
@@ -696,7 +706,7 @@ namespace karto
      * Traversal algorithm to find near linked scans
      */
     GraphTraversal<LocalizedRangeScan>* m_pTraversal;
-  }; // MapperGraph
+  };  // MapperGraph
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -771,7 +781,7 @@ namespace karto
      * Resets the solver
      */
     virtual void Clear() {};
-  }; // ScanSolver
+  };  // ScanSolver
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -800,7 +810,10 @@ namespace karto
      * @param smearDeviation
      * @return correlation grid
      */
-    static CorrelationGrid* CreateGrid(kt_int32s width, kt_int32s height, kt_double resolution, kt_double smearDeviation)
+    static CorrelationGrid* CreateGrid(kt_int32s width,
+                                       kt_int32s height,
+                                       kt_double resolution,
+                                       kt_double smearDeviation)
     {
       assert(resolution != 0.0);
 
@@ -893,7 +906,8 @@ namespace karto
      * @param resolution
      * @param smearDeviation
      */
-    CorrelationGrid(kt_int32u width, kt_int32u height, kt_int32u borderSize, kt_double resolution, kt_double smearDeviation)
+    CorrelationGrid(kt_int32u width, kt_int32u height, kt_int32u borderSize,
+                    kt_double resolution, kt_double smearDeviation)
       : Grid<kt_int8u>(width + borderSize * 2, height + borderSize * 2)
       , m_SmearDeviation(smearDeviation)
       , m_pKernel(NULL)
@@ -926,7 +940,10 @@ namespace karto
       if (!math::InRange(m_SmearDeviation, MIN_SMEAR_DISTANCE_DEVIATION, MAX_SMEAR_DISTANCE_DEVIATION))
       {
         std::stringstream error;
-        error << "Mapper Error:  Smear deviation too small:  Must be between " << MIN_SMEAR_DISTANCE_DEVIATION << " and " << MAX_SMEAR_DISTANCE_DEVIATION;
+        error << "Mapper Error:  Smear deviation too small:  Must be between "
+              << MIN_SMEAR_DISTANCE_DEVIATION
+              << " and "
+              << MAX_SMEAR_DISTANCE_DEVIATION;
         throw std::runtime_error(error.str());
       }
 
@@ -993,7 +1010,7 @@ namespace karto
 
     // region of interest
     Rectangle2<kt_int32s> m_Roi;
-  }; // CorrelationGrid
+  };  // CorrelationGrid
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -1014,7 +1031,11 @@ namespace karto
     /**
      * Create a scan matcher with the given parameters
      */
-    static ScanMatcher* Create(Mapper* pMapper, kt_double searchSize, kt_double resolution, kt_double smearDeviation, kt_double rangeThreshold);
+    static ScanMatcher* Create(Mapper* pMapper,
+                               kt_double searchSize,
+                               kt_double resolution,
+                               kt_double smearDeviation,
+                               kt_double rangeThreshold);
 
     /**
      * Match given scan against set of scans
@@ -1026,8 +1047,11 @@ namespace karto
      * @param doRefineMatch whether to do finer-grained matching if coarse match is good (default is true)
      * @return strength of response
      */
-    kt_double MatchScan(LocalizedRangeScan* pScan, const LocalizedRangeScanVector& rBaseScans, Pose2& rMean, Matrix3& rCovariance,
-                        kt_bool doPenalize = true, kt_bool doRefineMatch = true);
+    kt_double MatchScan(LocalizedRangeScan* pScan,
+                        const LocalizedRangeScanVector& rBaseScans,
+                        Pose2& rMean, Matrix3& rCovariance,
+                        kt_bool doPenalize = true,
+                        kt_bool doRefineMatch = true);
 
     /**
      * Finds the best pose for the scan centering the search in the correlation grid
@@ -1045,8 +1069,16 @@ namespace karto
      * @param doingFineMatch whether to do a finer search after coarse search
      * @return strength of response
      */
-    kt_double CorrelateScan(LocalizedRangeScan* pScan, const Pose2& rSearchCenter, const Vector2<kt_double>& rSearchSpaceOffset, const Vector2<kt_double>& rSearchSpaceResolution,
-                            kt_double searchAngleOffset, kt_double searchAngleResolution,	kt_bool doPenalize, Pose2& rMean, Matrix3& rCovariance, kt_bool doingFineMatch);
+    kt_double CorrelateScan(LocalizedRangeScan* pScan,
+                            const Pose2& rSearchCenter,
+                            const Vector2<kt_double>& rSearchSpaceOffset,
+                            const Vector2<kt_double>& rSearchSpaceResolution,
+                            kt_double searchAngleOffset,
+                            kt_double searchAngleResolution,
+                            kt_bool doPenalize,
+                            Pose2& rMean,
+                            Matrix3& rCovariance,
+                            kt_bool doingFineMatch);
 
     /**
      * Computes the positional covariance of the best pose
@@ -1058,9 +1090,13 @@ namespace karto
      * @param searchAngleResolution
      * @param rCovariance
      */
-    void ComputePositionalCovariance(const Pose2& rBestPose, kt_double bestResponse, const Pose2& rSearchCenter,
-                                     const Vector2<kt_double>& rSearchSpaceOffset, const Vector2<kt_double>& rSearchSpaceResolution,
-                                     kt_double searchAngleResolution, Matrix3& rCovariance);
+    void ComputePositionalCovariance(const Pose2& rBestPose,
+                                     kt_double bestResponse,
+                                     const Pose2& rSearchCenter,
+                                     const Vector2<kt_double>& rSearchSpaceOffset,
+                                     const Vector2<kt_double>& rSearchSpaceResolution,
+                                     kt_double searchAngleResolution,
+                                     Matrix3& rCovariance);
 
     /**
      * Computes the angular covariance of the best pose
@@ -1071,8 +1107,12 @@ namespace karto
      * @param searchAngleResolution
      * @param rCovariance
      */
-    void ComputeAngularCovariance(const Pose2& rBestPose, kt_double bestResponse, const Pose2& rSearchCenter,
-                                  kt_double searchAngleOffset, kt_double searchAngleResolution, Matrix3& rCovariance);
+    void ComputeAngularCovariance(const Pose2& rBestPose,
+                                  kt_double bestResponse,
+                                  const Pose2& rSearchCenter,
+                                  kt_double searchAngleOffset,
+                                  kt_double searchAngleResolution,
+                                  Matrix3& rCovariance);
 
     /**
      * Gets the correlation grid data (for debugging)
@@ -1134,8 +1174,7 @@ namespace karto
     Grid<kt_double>* m_pSearchSpaceProbs;
 
     GridIndexLookup<kt_int8u>* m_pGridLookup;
-
-  }; // ScanMatcher
+  };  // ScanMatcher
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -1146,7 +1185,7 @@ namespace karto
   /**
    * Manages the devices for the mapper
    */
-  class KARTO_EXPORT MapperSensorManager// : public SensorManager
+  class KARTO_EXPORT MapperSensorManager  // : public SensorManager
   {
     typedef std::map<Name, ScanManager*> ScanManagerMap;
 
@@ -1279,7 +1318,7 @@ namespace karto
      */
     inline ScanManager* GetScanManager(const Name& rSensorName)
     {
-      if(m_ScanManagers.find(rSensorName) != m_ScanManagers.end())
+      if (m_ScanManagers.find(rSensorName) != m_ScanManagers.end())
       {
         return m_ScanManagers[rSensorName];
       }
@@ -1297,7 +1336,7 @@ namespace karto
     kt_int32s m_NextScanId;
 
     std::vector<LocalizedRangeScan*> m_Scans;
-  }; // MapperSensorManager
+  };  // MapperSensorManager
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -1826,12 +1865,12 @@ namespace karto
 
     // whether to increase the search space if no good matches are initially found
     Parameter<kt_bool>* m_pUseResponseExpansion;
-  
+
   public:
     /* Abstract methods for parameter setters and getters */
 
     /* Getters */
-    //General Parameters
+    // General Parameters
     bool getParamUseScanMatching();
     bool getParamUseScanBarycenter();
     double getParamMinimumTravelDistance();
@@ -1847,17 +1886,17 @@ namespace karto
     double getParamLoopMatchMinimumResponseCoarse();
     double getParamLoopMatchMinimumResponseFine();
 
-    //Correlation Parameters - Correlation Parameters
+    // Correlation Parameters - Correlation Parameters
     double getParamCorrelationSearchSpaceDimension();
     double getParamCorrelationSearchSpaceResolution();
     double getParamCorrelationSearchSpaceSmearDeviation();
 
-    //Correlation Parameters - Loop Closure Parameters
+    // Correlation Parameters - Loop Closure Parameters
     double getParamLoopSearchSpaceDimension();
     double getParamLoopSearchSpaceResolution();
     double getParamLoopSearchSpaceSmearDeviation();
 
-    //Scan Matcher Parameters
+    // Scan Matcher Parameters
     double getParamDistanceVariancePenalty();
     double getParamAngleVariancePenalty();
     double getParamFineSearchAngleOffset();
@@ -1868,7 +1907,7 @@ namespace karto
     bool getParamUseResponseExpansion();
 
     /* Setters */
-    //General Parameters
+    // General Parameters
     void setParamUseScanMatching(bool b);
     void setParamUseScanBarycenter(bool b);
     void setParamMinimumTravelDistance(double d);
@@ -1884,17 +1923,17 @@ namespace karto
     void setParamLoopMatchMinimumResponseCoarse(double d);
     void setParamLoopMatchMinimumResponseFine(double d);
 
-    //Correlation Parameters - Correlation Parameters
+    // Correlation Parameters - Correlation Parameters
     void setParamCorrelationSearchSpaceDimension(double d);
     void setParamCorrelationSearchSpaceResolution(double d);
     void setParamCorrelationSearchSpaceSmearDeviation(double d);
 
-    //Correlation Parameters - Loop Closure Parameters
+    // Correlation Parameters - Loop Closure Parameters
     void setParamLoopSearchSpaceDimension(double d);
     void setParamLoopSearchSpaceResolution(double d);
     void setParamLoopSearchSpaceSmearDeviation(double d);
 
-    //Scan Matcher Parameters
+    // Scan Matcher Parameters
     void setParamDistanceVariancePenalty(double d);
     void setParamAngleVariancePenalty(double d);
     void setParamFineSearchAngleOffset(double d);
@@ -1903,12 +1942,7 @@ namespace karto
     void setParamMinimumAnglePenalty(double d);
     void setParamMinimumDistancePenalty(double d);
     void setParamUseResponseExpansion(bool b);
-    
-
-
-
   };
+}  // namespace karto
 
-}
-
-#endif // __KARTO_MAPPER__
+#endif  // OPEN_KARTO_MAPPER_H

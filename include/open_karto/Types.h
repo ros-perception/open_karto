@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KARTO_TYPES__
-#define __KARTO_TYPES__
+#ifndef OPEN_KARTO_TYPES_H
+#define OPEN_KARTO_TYPES_H
 
 #include <cstddef>
 
@@ -66,4 +66,4 @@ typedef char kt_char;
 typedef float kt_float;
 typedef double kt_double;
 
-#endif // __KARTO_TYPES__
+#endif // OPEN_KARTO_TYPES_H

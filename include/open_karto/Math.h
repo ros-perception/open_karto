@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KARTO_MATH__
-#define __KARTO_MATH__
+#ifndef OPEN_KARTO_MATH_H
+#define OPEN_KARTO_MATH_H
 
 #include <assert.h>
 #include <math.h>
 
-#include "Types.h"
+#include <open_karto/Types.h>
 
 namespace karto
 {
@@ -238,8 +238,8 @@ namespace karto
     {
       return static_cast<T> ((value + (alignValue - 1)) & ~(alignValue - 1));
     }
-  } // Math
+  }  // namespace math
 
-}
+}  // namespace karto
 
-#endif // __KARTO_MATH__
+#endif  // OPEN_KARTO_MATH_H

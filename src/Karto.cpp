@@ -139,7 +139,10 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
-  const PointVectorDouble LaserRangeFinder::GetPointReadings(LocalizedRangeScan* pLocalizedRangeScan, CoordinateConverter* pCoordinateConverter, kt_bool ignoreThresholdPoints, kt_bool flipY) const
+  const PointVectorDouble LaserRangeFinder::GetPointReadings(LocalizedRangeScan* pLocalizedRangeScan,
+                                                             CoordinateConverter* pCoordinateConverter,
+                                                             kt_bool ignoreThresholdPoints,
+                                                             kt_bool flipY) const
   {
     PointVectorDouble pointReadings;
 
@@ -189,9 +192,10 @@ namespace karto
     LaserRangeScan* pLaserRangeScan = dynamic_cast<LaserRangeScan*>(pSensorData);
 
     // verify number of range readings in LaserRangeScan matches the number of expected range readings
-    if(pLaserRangeScan->GetNumberOfRangeReadings() != GetNumberOfRangeReadings())
+    if (pLaserRangeScan->GetNumberOfRangeReadings() != GetNumberOfRangeReadings())
     {
-      std::cout << "LaserRangeScan contains " << pLaserRangeScan->GetNumberOfRangeReadings() << " range readings, expected " << GetNumberOfRangeReadings() << std::endl;
+      std::cout << "LaserRangeScan contains " << pLaserRangeScan->GetNumberOfRangeReadings()
+                << " range readings, expected " << GetNumberOfRangeReadings() << std::endl;
       return false;
     }
 
@@ -250,5 +254,4 @@ namespace karto
     "Hokuyo_URG_04LX"
   };
    */
-}
-
+}  // namespace karto
