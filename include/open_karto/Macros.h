@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KARTO_MACROS__
-#define __KARTO_MACROS__
+#ifndef OPEN_KARTO_MACROS_H
+#define OPEN_KARTO_MACROS_H
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@
  * Karto defines for handling deprecated code
  */
 #ifndef KARTO_DEPRECATED
-#  if defined(__GNUC__) && (__GNUC__ >= 4 || (__GNUC__==3 && __GNUC_MINOR__>=1))
+#  if defined(__GNUC__) && (__GNUC__ >= 4 || (__GNUC__ == 3 && __GNUC_MINOR__>=1))
 #    define KARTO_DEPRECATED __attribute__((deprecated))
 #  elif defined(__INTEL) || defined(_MSC_VER)
 #    define KARTO_DEPRECATED __declspec(deprecated)
@@ -50,7 +50,7 @@
 #    define KARTO_EXPORT __declspec(dllexport)
 #  else
 #    define KARTO_EXPORT __declspec(dllimport)
-#  endif // KARTO_DYNAMIC
+#  endif  // KARTO_DYNAMIC
 # endif
 #else
 #  define KARTO_EXPORT
@@ -122,6 +122,6 @@
 // remark #10121:
 #pragma warning(disable:10121)
 
-#endif // __INTEL_COMPILER
+#endif  // __INTEL_COMPILER
 
-#endif // __KARTO_MACROS__
+#endif  // OPEN_KARTO_MACROS_H
