@@ -2,6 +2,11 @@
 Changelog for package open_karto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added getters and setters for parameters inside Mapper so they can be changed via the ROS param server.
+* Contributors: Luc Bettaieb, Michael Ferguson
+
 1.1.1 (2015-05-07)
 ------------------
 * Makes FindValidPoints robust to the first point in the scan being a NaN
