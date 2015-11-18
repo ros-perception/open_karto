@@ -3,7 +3,10 @@ project(open_karto)
 
 find_package(catkin REQUIRED)
 
+find_package(Boost REQUIRED COMPONENTS thread)
+
 catkin_package(
+  DEPENDS Boost
   INCLUDE_DIRS
     include
   LIBRARIES
@@ -12,6 +15,7 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 add_library(karto SHARED src/Karto.cpp src/Mapper.cpp)
+target_link_libraries(karto ${Boost_LIBRARIES})
 
 install(DIRECTORY include/ DESTINATION include)
 install(TARGETS karto
