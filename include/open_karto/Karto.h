@@ -6430,7 +6430,7 @@ namespace karto
       for (kt_int32u angleIndex = 0; angleIndex < nAngles; angleIndex++)
       {
         angle = startAngle + angleIndex * angleResolution;
-        ComputeOffsets(angleIndex, angle, localPoints);
+        ComputeOffsets(angleIndex, angle, localPoints, pScan);
       }
       // assert(math::DoubleEqual(angle, angleCenter + angleOffset));
     }
@@ -6442,7 +6442,7 @@ namespace karto
      * @param angle
      * @param rLocalPoints
      */
-    void ComputeOffsets(kt_int32u angleIndex, kt_double angle, const Pose2Vector& rLocalPoints)
+    void ComputeOffsets(kt_int32u angleIndex, kt_double angle, const Pose2Vector& rLocalPoints, LocalizedRangeScan* pScan)
     {
       m_ppLookupArray[angleIndex]->SetSize(static_cast<kt_int32u>(rLocalPoints.size()));
       m_Angles.at(angleIndex) = angle;
@@ -6459,9 +6459,19 @@ namespace karto
 
       kt_int32s* pAngleIndexPointer = m_ppLookupArray[angleIndex]->GetArrayPointer();
 
+      kt_double maxRange = pScan->GetLaserRangeFinder()->GetMaximumRange();
+
       const_forEach(Pose2Vector, &rLocalPoints)
       {
         const Vector2<kt_double>& rPosition = iter->GetPosition();
+
+        if (isnan(pScan->GetRangeReadings()[readingIndex]) || isinf(pScan->GetRangeReadings()[readingIndex]))
+        {
+          pAngleIndexPointer[readingIndex] = INVALID_SCAN;
+          readingIndex++;
+          continue;
+        }
+
 
         // counterclockwise rotation and that rotation is about the origin (0, 0).
         Vector2<kt_double> offset;

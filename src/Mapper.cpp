@@ -997,7 +997,7 @@ namespace karto
     {
       // ignore points that fall off the grid
       kt_int32s pointGridIndex = gridPositionIndex + pAngleIndexPointer[i];
-      if (!math::IsUpTo(pointGridIndex, m_pCorrelationGrid->GetDataSize()))
+      if (!math::IsUpTo(pointGridIndex, m_pCorrelationGrid->GetDataSize()) || pAngleIndexPointer[i] == INVALID_SCAN)
       {
         continue;
       }
