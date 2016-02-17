@@ -2,8 +2,8 @@
 Changelog for package open_karto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.3 (2016-02-16)
+------------------
 * Link against, and export depend on, boost
 * Contributors: Hai Nguyen, Michael Ferguson
 
