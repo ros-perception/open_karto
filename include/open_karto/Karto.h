@@ -49,25 +49,26 @@
 
 typedef kt_int32u kt_objecttype;
 
-const kt_objecttype ObjectType_None                 = 0x00000000;
-const kt_objecttype ObjectType_Sensor               = 0x00001000;
-const kt_objecttype ObjectType_SensorData           = 0x00002000;
-const kt_objecttype ObjectType_CustomData           = 0x00004000;
-const kt_objecttype ObjectType_Misc                 = 0x10000000;
+const kt_objecttype ObjectType_None                         = 0x00000000;
+const kt_objecttype ObjectType_Sensor                       = 0x00001000;
+const kt_objecttype ObjectType_SensorData                   = 0x00002000;
+const kt_objecttype ObjectType_CustomData                   = 0x00004000;
+const kt_objecttype ObjectType_Misc                         = 0x10000000;
 
-const kt_objecttype ObjectType_Drive                = ObjectType_Sensor | 0x01;
-const kt_objecttype ObjectType_LaserRangeFinder     = ObjectType_Sensor | 0x02;
-const kt_objecttype ObjectType_Camera               = ObjectType_Sensor | 0x04;
+const kt_objecttype ObjectType_Drive                        = ObjectType_Sensor | 0x01;
+const kt_objecttype ObjectType_LaserRangeFinder             = ObjectType_Sensor | 0x02;
+const kt_objecttype ObjectType_Camera                       = ObjectType_Sensor | 0x04;
 
-const kt_objecttype ObjectType_DrivePose            = ObjectType_SensorData | 0x01;
-const kt_objecttype ObjectType_LaserRangeScan       = ObjectType_SensorData | 0x02;
-const kt_objecttype ObjectType_LocalizedRangeScan   = ObjectType_SensorData | 0x04;
-const kt_objecttype ObjectType_CameraImage          = ObjectType_SensorData | 0x08;
+const kt_objecttype ObjectType_DrivePose                    = ObjectType_SensorData | 0x01;
+const kt_objecttype ObjectType_LaserRangeScan               = ObjectType_SensorData | 0x02;
+const kt_objecttype ObjectType_LocalizedRangeScan           = ObjectType_SensorData | 0x04;
+const kt_objecttype ObjectType_CameraImage                  = ObjectType_SensorData | 0x08;
+const kt_objecttype ObjectType_LocalizedRangeScanWithPoints = ObjectType_SensorData | 0x16;
 
-const kt_objecttype ObjectType_Header               = ObjectType_Misc | 0x01;
-const kt_objecttype ObjectType_Parameters           = ObjectType_Misc | 0x02;
-const kt_objecttype ObjectType_DatasetInfo          = ObjectType_Misc | 0x04;
-const kt_objecttype ObjectType_Module               = ObjectType_Misc | 0x08;
+const kt_objecttype ObjectType_Header                       = ObjectType_Misc | 0x01;
+const kt_objecttype ObjectType_Parameters                   = ObjectType_Misc | 0x02;
+const kt_objecttype ObjectType_DatasetInfo                  = ObjectType_Misc | 0x04;
+const kt_objecttype ObjectType_Module                       = ObjectType_Misc | 0x08;
 
 namespace karto
 {
@@ -719,6 +720,16 @@ namespace karto
   inline kt_bool IsLocalizedRangeScan(Object* pObject)
   {
     return (pObject->GetObjectType() & ObjectType_LocalizedRangeScan) == ObjectType_LocalizedRangeScan;
+  }
+
+  /**
+   * Whether the object is a localized range scan with points
+   * @param pObject object
+   * @return whether the object is a localized range scan with points
+   */
+  inline kt_bool IsLocalizedRangeScanWithPoints(Object* pObject)
+  {
+    return (pObject->GetObjectType() & ObjectType_LocalizedRangeScanWithPoints) == ObjectType_LocalizedRangeScanWithPoints;
   }
 
   /**
@@ -5335,7 +5346,7 @@ namespace karto
      * Compute point readings based on range readings
      * Only range readings within [minimum range; range threshold] are returned
      */
-    void Update()
+    virtual void Update()
     {
       LaserRangeFinder* pLaserRangeFinder = GetLaserRangeFinder();
 
@@ -5418,6 +5429,7 @@ namespace karto
      */
     Pose2 m_CorrectedPose;
 
+  protected:
     /**
      * Average of all the point readings
      */
@@ -5448,6 +5460,106 @@ namespace karto
    * Type declaration of LocalizedRangeScan vector
    */
   typedef std::vector<LocalizedRangeScan*> LocalizedRangeScanVector;
+
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * The LocalizedRangeScanWithPoints is an extension of the LocalizedRangeScan with precomputed points.
+   */
+  class LocalizedRangeScanWithPoints : public LocalizedRangeScan
+  {
+  public:
+    // @cond EXCLUDE
+    KARTO_Object(LocalizedRangeScanWithPoints)
+    // @endcond
+
+  public:
+    /**
+     * Constructs a range scan from the given range finder with the given readings. Precomptued points should be
+     * in the robot frame.
+     */
+    LocalizedRangeScanWithPoints(const Name& rSensorName, const RangeReadingsVector& rReadings,
+        const PointVectorDouble& rPoints)
+        : m_Points(rPoints),
+          LocalizedRangeScan(rSensorName, rReadings)
+    {
+    }
+
+    /**
+     * Destructor
+     */
+    virtual ~LocalizedRangeScanWithPoints()
+    {
+    }
+
+  private:
+    /**
+     * Update the points based on the latest sensor pose.
+     */
+    void Update()
+    {
+      m_PointReadings.clear();
+      m_UnfilteredPointReadings.clear();
+
+      Pose2 scanPose = GetSensorPose();
+      Pose2 robotPose = GetCorrectedPose();
+
+      // update point readings
+      Vector2<kt_double> rangePointsSum;
+      for (kt_int32u i = 0; i < m_Points.size(); i++)
+      {
+        // check if this has a NaN
+        if (!std::isfinite(m_Points[i].GetX()) || !std::isfinite(m_Points[i].GetY()))
+        {
+          Vector2<kt_double> point(m_Points[i].GetX(), m_Points[i].GetY());
+          m_UnfilteredPointReadings.push_back(point);
+
+          continue;
+        }
+
+        // transform into world coords
+        Pose2 pointPose(m_Points[i].GetX(), m_Points[i].GetY(), 0);
+        Pose2 result = Transform(robotPose).TransformPose(pointPose);
+        Vector2<kt_double> point(result.GetX(), result.GetY());
+
+        m_PointReadings.push_back(point);
+        m_UnfilteredPointReadings.push_back(point);
+
+        rangePointsSum += point;
+      }
+
+      // compute barycenter
+      kt_double nPoints = static_cast<kt_double>(m_PointReadings.size());
+      if (nPoints != 0.0)
+      {
+        Vector2<kt_double> averagePosition = Vector2<kt_double>(rangePointsSum / nPoints);
+        m_BarycenterPose = Pose2(averagePosition, 0.0);
+      }
+      else
+      {
+        m_BarycenterPose = scanPose;
+      }
+
+      // calculate bounding box of scan
+      m_BoundingBox = BoundingBox2();
+      m_BoundingBox.Add(scanPose.GetPosition());
+      forEach(PointVectorDouble, &m_PointReadings)
+      {
+        m_BoundingBox.Add(*iter);
+      }
+
+      m_IsDirty = false;
+    }
+
+  private:
+    LocalizedRangeScanWithPoints(const LocalizedRangeScanWithPoints&);
+    const LocalizedRangeScanWithPoints& operator=(const LocalizedRangeScanWithPoints&);
+
+  private:
+    const PointVectorDouble m_Points;
+  };  // LocalizedRangeScanWithPoints
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
