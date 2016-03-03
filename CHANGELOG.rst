@@ -2,8 +2,8 @@
 Changelog for package open_karto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.4 (2016-03-02)
+------------------
 * update build status badges
 * Adds LocalizedRangeScanWithPoints range scan
 * Contributors: Michael Ferguson, Russell Toris
