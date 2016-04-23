@@ -5838,6 +5838,7 @@ namespace karto
     {
       kt_double rangeThreshold = pScan->GetLaserRangeFinder()->GetRangeThreshold();
       kt_double maxRange = pScan->GetLaserRangeFinder()->GetMaximumRange();
+      kt_double minRange = pScan->GetLaserRangeFinder()->GetMinimumRange();
 
       Vector2<kt_double> scanPosition = pScan->GetSensorPose().GetPosition();
 
@@ -5854,9 +5855,9 @@ namespace karto
         kt_double rangeReading = pScan->GetRangeReadings()[pointIndex];
         kt_bool isEndPointValid = rangeReading < (rangeThreshold - KT_TOLERANCE);
 
-        if (rangeReading >= maxRange || isnan(rangeReading))
+        if (rangeReading <= minRange || rangeReading >= maxRange || isnan(rangeReading))
         {
-          // ignore max range readings
+          // ignore these readings
           pointIndex++;
           continue;
         }
