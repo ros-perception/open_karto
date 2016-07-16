@@ -5855,7 +5855,7 @@ namespace karto
         kt_double rangeReading = pScan->GetRangeReadings()[pointIndex];
         kt_bool isEndPointValid = rangeReading < (rangeThreshold - KT_TOLERANCE);
 
-        if (rangeReading <= minRange || rangeReading >= maxRange || isnan(rangeReading))
+        if (rangeReading <= minRange || rangeReading >= maxRange || std::isnan(rangeReading))
         {
           // ignore these readings
           pointIndex++;
@@ -6466,7 +6466,7 @@ namespace karto
       {
         const Vector2<kt_double>& rPosition = iter->GetPosition();
 
-        if (isnan(pScan->GetRangeReadings()[readingIndex]) || isinf(pScan->GetRangeReadings()[readingIndex]))
+        if (std::isnan(pScan->GetRangeReadings()[readingIndex]) || std::isinf(pScan->GetRangeReadings()[readingIndex]))
         {
           pAngleIndexPointer[readingIndex] = INVALID_SCAN;
           readingIndex++;
