@@ -2303,6 +2303,13 @@ namespace karto
       return true;
     }
 
+    // test if enough time has passed
+    kt_double timeInterval = pScan->GetTime() - pLastScan->GetTime();
+    if (timeInterval >= m_pMinimumTimeInterval->GetValue())
+    {
+      return true;
+    }
+
     Pose2 lastScannerPose = pLastScan->GetSensorAt(pLastScan->GetOdometricPose());
     Pose2 scannerPose = pScan->GetSensorAt(pScan->GetOdometricPose());
 
