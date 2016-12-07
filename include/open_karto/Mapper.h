@@ -1037,13 +1037,15 @@ namespace karto
      * @param rCovariance output parameter of covariance of match
      * @param doPenalize whether to penalize matches further from the search center
      * @param doRefineMatch whether to do finer-grained matching if coarse match is good (default is true)
+     * @param useOdometry whether to use odometry for ambiguous scan matches (default is true)
      * @return strength of response
      */
     kt_double MatchScan(LocalizedRangeScan* pScan,
                         const LocalizedRangeScanVector& rBaseScans,
                         Pose2& rMean, Matrix3& rCovariance,
                         kt_bool doPenalize = true,
-                        kt_bool doRefineMatch = true);
+                        kt_bool doRefineMatch = true,
+                        kt_bool useOdometry = true);
 
     /**
      * Finds the best pose for the scan centering the search in the correlation grid

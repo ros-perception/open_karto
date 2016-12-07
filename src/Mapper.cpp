@@ -416,10 +416,11 @@ namespace karto
    * @param rCovariance output parameter of covariance of match
    * @param doPenalize whether to penalize matches further from the search center
    * @param doRefineMatch whether to do finer-grained matching if coarse match is good (default is true)
+   * @param useOdometry whether to use odometry for ambiguous scan matches (default is true)
    * @return strength of response
    */
   kt_double ScanMatcher::MatchScan(LocalizedRangeScan* pScan, const LocalizedRangeScanVector& rBaseScans, Pose2& rMean,
-                                   Matrix3& rCovariance, kt_bool doPenalize, kt_bool doRefineMatch)
+                                   Matrix3& rCovariance, kt_bool doPenalize, kt_bool doRefineMatch, kt_bool useOdometry)
   {
     ///////////////////////////////////////
     // set scan pose to be center of grid
@@ -519,6 +520,24 @@ namespace karto
               << rCovariance(0, 0) << ", " << rCovariance(1, 1) << std::endl;
 #endif
     assert(math::InRange(rMean.GetHeading(), -KT_PI, KT_PI));
+    
+    // if we should use odometry and a valid estimated covariance for odometry is given, we use pose from scan match and odometry information
+    if( doRefineMatch && useOdometry && m_pMapper->m_pOdometryCovarianceDistance->GetValue()>0 && m_pMapper->m_pOdometryCovarianceAngular->GetValue()>0) {
+      Pose2Vector means;
+      std::vector<Matrix3> covariances;
+		
+      Matrix3 odomC;
+      odomC(0, 0) = odomC(1, 1) = math::Square(m_pMapper->m_pOdometryCovarianceDistance->GetValue());
+      odomC(2, 2) = math::Square(m_pMapper->m_pOdometryCovarianceAngular->GetValue());
+
+      means.push_back(scanPose);
+      covariances.push_back(odomC);
+      
+      means.push_back(rMean);
+      covariances.push_back(rCovariance);
+			
+      rMean = ComputeWeightedMean(means, covariances);
+    }
 
     return bestResponse;
   }
@@ -639,7 +658,6 @@ namespace karto
                                                                            math::NormalizeAngle(angle)));
           poseResponseCounter++;
         }
-
         assert(math::DoubleEqual(angle, rSearchCenter.GetHeading() + searchAngleOffset));
       }
     }
@@ -1335,7 +1353,7 @@ namespace karto
       Pose2 bestPose;
       Matrix3 covariance;
       kt_double coarseResponse = m_pLoopScanMatcher->MatchScan(pScan, candidateChain,
-                                                               bestPose, covariance, false, false);
+                                                               bestPose, covariance, false, false, false);
 
       std::stringstream stream;
       stream << "COARSE RESPONSE: " << coarseResponse
@@ -1357,7 +1375,7 @@ namespace karto
         tmpScan.SetCorrectedPose(pScan->GetCorrectedPose());
         tmpScan.SetSensorPose(bestPose);  // This also updates OdometricPose.
         kt_double fineResponse = m_pMapper->m_pSequentialScanMatcher->MatchScan(&tmpScan, candidateChain,
-                                                                                bestPose, covariance, false);
+                                                                                bestPose, covariance, false, true, false);
 
         std::stringstream stream1;
         stream1 << "FINE RESPONSE: " << fineResponse << " (>"
@@ -1467,7 +1485,7 @@ namespace karto
       Pose2 mean;
       Matrix3 covariance;
       // match scan against "near" chain
-      kt_double response = m_pMapper->m_pSequentialScanMatcher->MatchScan(pScan, *iter, mean, covariance, false);
+      kt_double response = m_pMapper->m_pSequentialScanMatcher->MatchScan(pScan, *iter, mean, covariance, false, true, false);
       if (response > m_pMapper->m_pLinkMatchMinimumResponseFine->GetValue() - KT_TOLERANCE)
       {
         rMeans.push_back(mean);
