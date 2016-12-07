@@ -667,14 +667,6 @@ namespace karto
     std::vector<LocalizedRangeScanVector> FindNearChains(LocalizedRangeScan* pScan);
 
     /**
-     * Compute mean of poses weighted by covariances
-     * @param rMeans
-     * @param rCovariances
-     * @return weighted mean
-     */
-    Pose2 ComputeWeightedMean(const Pose2Vector& rMeans, const std::vector<Matrix3>& rCovariances) const;
-
-    /**
      * Tries to find a chain of scan from the given device starting at the
      * given scan index that could possibly close a loop with the given scan
      * @param pScan
