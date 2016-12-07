@@ -1858,6 +1858,10 @@ namespace karto
     // whether to increase the search space if no good matches are initially found
     Parameter<kt_bool>* m_pUseResponseExpansion;
 
+	// Estimated covariance of odometry for angular and translational part
+    Parameter<kt_double>* m_pOdometryCovarianceDistance;
+    Parameter<kt_double>* m_pOdometryCovarianceAngular;
+
   public:
     /* Abstract methods for parameter setters and getters */
 
@@ -1897,6 +1901,8 @@ namespace karto
     double getParamMinimumAnglePenalty();
     double getParamMinimumDistancePenalty();
     bool getParamUseResponseExpansion();
+    double getParamOdometryCovarianceDistance();
+    double getParamOdometryCovarianceAngular();
 
     /* Setters */
     // General Parameters
@@ -1934,6 +1940,8 @@ namespace karto
     void setParamMinimumAnglePenalty(double d);
     void setParamMinimumDistancePenalty(double d);
     void setParamUseResponseExpansion(bool b);
+    void setParamOdometryCovarianceDistance(double d);
+    void setParamOdometryCovarianceAngular(double d);
   };
 }  // namespace karto
 
