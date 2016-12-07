@@ -2569,6 +2569,26 @@ namespace karto
 
       return product;
     }
+    
+    /**
+     * Matrix3 and scalar multiplication - matrix * scalar [3x3 * 1x1 = 3x3]
+     * @param double scalar
+     * @return Matrix3 product
+     */
+    Matrix3 operator * (const double& scale) const
+    {
+      Matrix3 product;
+
+      for (size_t row = 0; row < 3; row++)
+      {
+        for (size_t col = 0; col < 3; col++)
+        {
+          product.m_Matrix[row][col] = scale*m_Matrix[row][col];
+        }
+      }
+
+      return product;
+    }
 
     /**
      * Matrix3 and Pose2 multiplication - matrix * pose [3x3 * 3x1 = 3x1]
