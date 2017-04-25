@@ -2293,8 +2293,10 @@ namespace karto
     return true;
   }
 
-  kt_bool Mapper::Process(LocalizedRangeScan* pScan)
+  kt_bool Mapper::Process(LocalizedRangeScan* pScan, kt_double &response)
   {
+    response = 0;
+    
     if (pScan != NULL)
     {
       karto::LaserRangeFinder* pLaserRangeFinder = pScan->GetLaserRangeFinder();
@@ -2334,7 +2336,7 @@ namespace karto
       if (m_pUseScanMatching->GetValue() && pLastScan != NULL)
       {
         Pose2 bestPose;
-        m_pSequentialScanMatcher->MatchScan(pScan,
+        response = m_pSequentialScanMatcher->MatchScan(pScan,
                                             m_pMapperSensorManager->GetRunningScans(pScan->GetSensorName()),
                                                                                     bestPose,
                                                                                     covariance);

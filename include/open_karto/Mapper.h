@@ -1539,7 +1539,7 @@ namespace karto
      *
      * @return true if the scan was added successfully, false otherwise
      */
-    virtual kt_bool Process(LocalizedRangeScan* pScan);
+    virtual kt_bool Process(LocalizedRangeScan* pScan, kt_double &response);
 
     /**
      * Process an Object
