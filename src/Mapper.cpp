@@ -1676,6 +1676,18 @@ namespace karto
         "scans.",
         true, GetParameterManager());
 
+    m_pMinimumTimeInterval = new Parameter<kt_double>(
+        "MinimumTimeInterval",
+        "Sets the minimum time between scans. If a new scan's time stamp is "
+        "longer than MinimumTimeInterval from the previously processed scan, "
+        "the mapper will use the data from the new scan. Otherwise, it will "
+        "discard the new scan if it also does not meet the minimum travel "
+        "distance and heading requirements. For performance reasons, it is "
+        "generally it is a good idea to only process scans if a reasonable "
+        "amount of time has passed. This parameter is particularly useful "
+        "when there is a need to process scans while the robot is stationary.",
+        3600, GetParameterManager());
+
     m_pMinimumTravelDistance = new Parameter<kt_double>(
         "MinimumTravelDistance",
         "Sets the minimum travel between scans.  If a new scan's position is "
@@ -1865,6 +1877,11 @@ namespace karto
     return static_cast<bool>(m_pUseScanBarycenter->GetValue());
   }
 
+  double Mapper::getParamMinimumTimeInterval()
+  {
+    return static_cast<double>(m_pMinimumTimeInterval->GetValue());
+  }
+
   double Mapper::getParamMinimumTravelDistance()
   {
     return static_cast<double>(m_pMinimumTravelDistance->GetValue());
@@ -2011,6 +2028,11 @@ namespace karto
   void Mapper::setParamUseScanBarycenter(bool b)
   {
     m_pUseScanBarycenter->SetValue((kt_bool)b);
+  }
+
+  void Mapper::setParamMinimumTimeInterval(double d)
+  {
+    m_pMinimumTimeInterval->SetValue((kt_double)d);
   }
 
   void Mapper::setParamMinimumTravelDistance(double d)
@@ -2277,6 +2299,13 @@ namespace karto
   {
     // test if first scan
     if (pLastScan == NULL)
+    {
+      return true;
+    }
+
+    // test if enough time has passed
+    kt_double timeInterval = pScan->GetTime() - pLastScan->GetTime();
+    if (timeInterval >= m_pMinimumTimeInterval->GetValue())
     {
       return true;
     }

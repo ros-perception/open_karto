@@ -1710,6 +1710,19 @@ namespace karto
     Parameter<kt_bool>* m_pUseScanBarycenter;
 
     /**
+     * Sets the minimum time between scans. If a new scan's time stamp is
+     * longer than MinimumTimeInterval from the previously processed scan,
+     * the mapper will use the data from the new scan. Otherwise, it will
+     * discard the new scan if it also does not meet the minimum travel
+     * distance and heading requirements. For performance reasons, it is
+     * generally it is a good idea to only process scans if a reasonable
+     * amount of time has passed. This parameter is particularly useful
+     * when there is a need to process scans while the robot is stationary.
+     * Default value is 3600 (seconds), effectively disabling this parameter.
+     */
+    Parameter<kt_double>* m_pMinimumTimeInterval;
+
+    /**
      * Sets the minimum travel between scans.  If a new scan's position is more than minimumTravelDistance
      * from the previous scan, the mapper will use the data from the new scan. Otherwise, it will discard the
      * new scan if it also does not meet the minimum change in heading requirement.
@@ -1873,6 +1886,7 @@ namespace karto
     // General Parameters
     bool getParamUseScanMatching();
     bool getParamUseScanBarycenter();
+    double getParamMinimumTimeInterval();
     double getParamMinimumTravelDistance();
     double getParamMinimumTravelHeading();
     int getParamScanBufferSize();
@@ -1910,6 +1924,7 @@ namespace karto
     // General Parameters
     void setParamUseScanMatching(bool b);
     void setParamUseScanBarycenter(bool b);
+    void setParamMinimumTimeInterval(double d);
     void setParamMinimumTravelDistance(double d);
     void setParamMinimumTravelHeading(double d);
     void setParamScanBufferSize(int i);
