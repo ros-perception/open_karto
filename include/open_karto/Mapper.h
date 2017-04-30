@@ -667,14 +667,6 @@ namespace karto
     std::vector<LocalizedRangeScanVector> FindNearChains(LocalizedRangeScan* pScan);
 
     /**
-     * Compute mean of poses weighted by covariances
-     * @param rMeans
-     * @param rCovariances
-     * @return weighted mean
-     */
-    Pose2 ComputeWeightedMean(const Pose2Vector& rMeans, const std::vector<Matrix3>& rCovariances) const;
-
-    /**
      * Tries to find a chain of scan from the given device starting at the
      * given scan index that could possibly close a loop with the given scan
      * @param pScan
@@ -1045,13 +1037,15 @@ namespace karto
      * @param rCovariance output parameter of covariance of match
      * @param doPenalize whether to penalize matches further from the search center
      * @param doRefineMatch whether to do finer-grained matching if coarse match is good (default is true)
+     * @param useOdometry whether to use odometry for ambiguous scan matches (default is true)
      * @return strength of response
      */
     kt_double MatchScan(LocalizedRangeScan* pScan,
                         const LocalizedRangeScanVector& rBaseScans,
                         Pose2& rMean, Matrix3& rCovariance,
                         kt_bool doPenalize = true,
-                        kt_bool doRefineMatch = true);
+                        kt_bool doRefineMatch = true,
+                        kt_bool useOdometry = true);
 
     /**
      * Finds the best pose for the scan centering the search in the correlation grid
@@ -1545,7 +1539,7 @@ namespace karto
      *
      * @return true if the scan was added successfully, false otherwise
      */
-    virtual kt_bool Process(LocalizedRangeScan* pScan);
+    virtual kt_bool Process(LocalizedRangeScan* pScan, kt_double &response);
 
     /**
      * Process an Object
@@ -1879,6 +1873,10 @@ namespace karto
     // whether to increase the search space if no good matches are initially found
     Parameter<kt_bool>* m_pUseResponseExpansion;
 
+	// Estimated covariance of odometry for angular and translational part
+    Parameter<kt_double>* m_pOdometryCovarianceDistance;
+    Parameter<kt_double>* m_pOdometryCovarianceAngular;
+
   public:
     /* Abstract methods for parameter setters and getters */
 
@@ -1919,6 +1917,8 @@ namespace karto
     double getParamMinimumAnglePenalty();
     double getParamMinimumDistancePenalty();
     bool getParamUseResponseExpansion();
+    double getParamOdometryCovarianceDistance();
+    double getParamOdometryCovarianceAngular();
 
     /* Setters */
     // General Parameters
@@ -1957,6 +1957,8 @@ namespace karto
     void setParamMinimumAnglePenalty(double d);
     void setParamMinimumDistancePenalty(double d);
     void setParamUseResponseExpansion(bool b);
+    void setParamOdometryCovarianceDistance(double d);
+    void setParamOdometryCovarianceAngular(double d);
   };
 }  // namespace karto
 
