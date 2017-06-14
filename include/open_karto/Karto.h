@@ -36,6 +36,17 @@
 #include <string.h>
 #include <boost/thread.hpp>
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/type_traits/is_abstract.hpp> 
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/string.hpp>
+
 #ifdef USE_POCO
 #include <Poco/Mutex.h>
 #endif
@@ -177,7 +188,15 @@ namespace karto
     virtual ~NonCopyable()
     {
     }
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+	}
   };  // class NonCopyable
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -332,6 +351,41 @@ namespace karto
       return Get(rName);
     }
 
+    /**
+     * Serialization: class ParameterManager 
+     */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		//ar & BOOST_SERIALIZATION_NVP(m_Parameters);
+		for(size_t i = 0; i < m_Parameters.size(); ++i)
+		{
+			std::stringstream ss;
+			ss << "m_Parameters_" << i;
+			std::string tag_mParameters = ss.str();
+			ar & boost::serialization::make_nvp(tag_mParameters.c_str(), *m_Parameters[i]);
+		}
+
+		int idx = 0;
+		for (std::map<std::string,AbstractParameter*>::iterator it=m_ParameterLookup.begin(); it!=m_ParameterLookup.end(); ++it)
+		{
+			std::cout << it->first << " => " << it->second << '\n';
+
+			std::stringstream ss1;
+			std::stringstream ss2;
+			ss1 << "m_ParameterLookup_" << idx << "_String";
+			ss2 << "m_ParameterLookup" << idx << "_AbstractParameter";
+			std::string tag1 = ss1.str();
+			std::string tag2 = ss2.str();
+			ar & boost::serialization::make_nvp(tag1.c_str(), it->first);
+			ar & boost::serialization::make_nvp(tag2.c_str(), *it->second);
+			idx++;
+		}
+
+	}
+
+
   private:
     ParameterManager(const ParameterManager&);
     const ParameterManager& operator=(const ParameterManager&);
@@ -384,6 +438,17 @@ namespace karto
     virtual ~Name()
     {
     }
+
+    /**
+     * Serialization: class Name 
+     */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_NVP(m_Name);
+		ar & BOOST_SERIALIZATION_NVP(m_Scope);
+	}
 
   public:
     /**
@@ -664,6 +729,19 @@ namespace karto
       return m_pParameterManager->GetParameterVector();
     }
 
+    /**
+     * Serialization: class Object 
+     */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NonCopyable); 
+		ar & BOOST_SERIALIZATION_NVP(m_Name);
+		ar & BOOST_SERIALIZATION_NVP(m_pParameterManager);
+	    //ar & boost::serialization::make_nvp("m_pParameterManager",*m_pParameterManager);
+	}
+
   private:
     Object(const Object&);
     const Object& operator=(const Object&);
@@ -672,6 +750,7 @@ namespace karto
     Name m_Name;
     ParameterManager* m_pParameterManager;
   };
+
 
   /**
    * Type declaration of Object vector
@@ -1193,6 +1272,14 @@ namespace karto
       // Implement me!!  TODO(lucbettaieb): What the what?  Do I need to implement this?
       return rStream;
     }
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & boost::serialization::make_nvp("m_Values_0", m_Values[0]);
+		ar & boost::serialization::make_nvp("m_Values_1", m_Values[1]);
+	}
 
   private:
     T m_Values[2];
@@ -2162,6 +2249,14 @@ namespace karto
       return rStream;
     }
 
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_NVP(m_Position);
+		ar & BOOST_SERIALIZATION_NVP(m_Heading);
+	}
+
   private:
     Vector2<kt_double> m_Position;
 
@@ -2847,6 +2942,17 @@ namespace karto
               math::InRange(rPoint.GetY(), m_Minimum.GetY(), m_Maximum.GetY()));
     }
 
+    /**
+     * Serialization: class BoundingBox2 
+     */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_NVP(m_Minimum);
+		ar & BOOST_SERIALIZATION_NVP(m_Maximum);
+	}
+
   private:
     Vector2<kt_double> m_Minimum;
     Vector2<kt_double> m_Maximum;
@@ -2979,6 +3085,18 @@ namespace karto
    */
   class AbstractParameter
   {
+
+    /**
+     * Serialization: class AbstractParameter 
+     */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_NVP(m_Name);
+		ar & BOOST_SERIALIZATION_NVP(m_Description);
+	}
+
   public:
     /**
      * Constructs a parameter with the given name
@@ -3195,6 +3313,17 @@ namespace karto
       return m_Value;
     }
 
+    /**
+     * Serialization: class Parameter 
+     */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(AbstractParameter); 
+		ar & BOOST_SERIALIZATION_NVP(m_Value);
+	}
+
   protected:
     /**
      * Parameter value
@@ -3409,6 +3538,11 @@ namespace karto
     {
     }
 
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+	}
+
   private:
     Parameters(const Parameters&);
     const Parameters& operator=(const Parameters&);
@@ -3425,6 +3559,19 @@ namespace karto
    */
   class KARTO_EXPORT Sensor : public Object
   {
+
+  	/**
+  	 * Serialization: class Sensor 
+  	 */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Object); 
+		//ar & BOOST_SERIALIZATION_NVP(m_pOffsetPose);
+		ar & boost::serialization::make_nvp("m_pOffsetPose", *m_pOffsetPose);
+	}
+
   public:
     // @cond EXCLUDE
     KARTO_Object(Sensor)
@@ -4816,6 +4963,8 @@ namespace karto
     // @endcond
 
   public:
+
+	SensorData(){}
     /**
      * Destructor
      */
@@ -4974,6 +5123,8 @@ namespace karto
       , m_NumberOfRangeReadings(0)
     {
     }
+
+	LaserRangeScan(){}
 
     /**
      * Constructs a scan from the given sensor with the given readings
@@ -5170,6 +5321,9 @@ namespace karto
       , m_IsDirty(true)
     {
     }
+
+	LocalizedRangeScan()
+	{}
 
     /**
      * Destructor
@@ -5413,6 +5567,23 @@ namespace karto
 
       m_IsDirty = false;
     }
+
+    /**
+     * Serialization: class LocalizedRangeScan 
+     */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_NVP(m_OdometricPose);
+		ar & BOOST_SERIALIZATION_NVP(m_CorrectedPose);
+		ar & BOOST_SERIALIZATION_NVP(m_BarycenterPose);
+		ar & BOOST_SERIALIZATION_NVP(m_PointReadings);
+		ar & BOOST_SERIALIZATION_NVP(m_UnfilteredPointReadings);
+		ar & BOOST_SERIALIZATION_NVP(m_BoundingBox);
+		ar & BOOST_SERIALIZATION_NVP(m_IsDirty);
+	}
+
 
   private:
     LocalizedRangeScan(const LocalizedRangeScan&);
@@ -6085,6 +6256,19 @@ namespace karto
       return m_pCopyright->GetValue();
     }
 
+    /**
+     * Serialization: class DatasetInfo 
+     */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_NVP(*m_pTitle);
+		ar & BOOST_SERIALIZATION_NVP(*m_pAuthor);
+		ar & BOOST_SERIALIZATION_NVP(*m_pDescription);
+		ar & BOOST_SERIALIZATION_NVP(*m_pCopyright);
+	}
+
   private:
     DatasetInfo(const DatasetInfo&);
     const DatasetInfo& operator=(const DatasetInfo&);
@@ -6202,10 +6386,43 @@ namespace karto
       }
     }
 
+    /**
+     * Serialization: class Dataset 
+     */
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		int idx = 0;
+		for (std::map<Name,Sensor*>::iterator it=m_SensorNameLookup.begin(); it!=m_SensorNameLookup.end(); ++it)
+		{
+			std::cout << it->first << " => " << it->second << '\n';
+
+			std::stringstream ss1;
+			std::stringstream ss2;
+			ss1 << "m_SensorNameLookup_" << idx << "_Name";
+			ss2 << "m_SensorNameLookup_" << idx << "_Sensor";
+			std::string tag1 = ss1.str();
+			std::string tag2 = ss2.str();
+			ar & boost::serialization::make_nvp(tag1.c_str(), it->first);
+			ar & boost::serialization::make_nvp(tag2.c_str(), *it->second);
+			idx++;
+		}
+
+		for(size_t i = 0; i < m_Objects.size(); ++i)
+		{
+			std::stringstream ss;
+			ss << "m_Objects_" << i;
+			std::string tag_mObjects = ss.str();
+			ar & boost::serialization::make_nvp(tag_mObjects.c_str(), *m_Objects[i]);
+		}
+		ar & BOOST_SERIALIZATION_NVP(m_pDatasetInfo);
+	}
+
   private:
-    std::map<Name, Sensor*> m_SensorNameLookup;
-    ObjectVector m_Objects;
-    DatasetInfo* m_pDatasetInfo;
+	std::map<Name, Sensor*> m_SensorNameLookup;
+	ObjectVector m_Objects;
+	DatasetInfo* m_pDatasetInfo;
   };  // Dataset
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -6218,113 +6435,113 @@ namespace karto
    */
   class LookupArray
   {
-  public:
-    /**
-     * Constructs lookup array
-     */
-    LookupArray()
-      : m_pArray(NULL)
-      , m_Capacity(0)
-      , m_Size(0)
-    {
-    }
+	  public:
+		  /**
+		   * Constructs lookup array
+		   */
+		  LookupArray()
+			  : m_pArray(NULL)
+				, m_Capacity(0)
+				   , m_Size(0)
+	  {
+	  }
 
-    /**
-     * Destructor
-     */
-    virtual ~LookupArray()
-    {
-      assert(m_pArray != NULL);
+		  /**
+		   * Destructor
+		   */
+		  virtual ~LookupArray()
+		  {
+			  assert(m_pArray != NULL);
 
-      delete[] m_pArray;
-      m_pArray = NULL;
-    }
+			  delete[] m_pArray;
+			  m_pArray = NULL;
+		  }
 
-  public:
-    /**
-     * Clear array
-     */
-    void Clear()
-    {
-      memset(m_pArray, 0, sizeof(kt_int32s) * m_Capacity);
-    }
+	  public:
+		  /**
+		   * Clear array
+		   */
+		  void Clear()
+		  {
+			  memset(m_pArray, 0, sizeof(kt_int32s) * m_Capacity);
+		  }
 
-    /**
-     * Gets size of array
-     * @return array size
-     */
-    kt_int32u GetSize() const
-    {
-      return m_Size;
-    }
+		  /**
+		   * Gets size of array
+		   * @return array size
+		   */
+		  kt_int32u GetSize() const
+		  {
+			  return m_Size;
+		  }
 
-    /**
-     * Sets size of array (resize if not big enough)
-     * @param size
-     */
-    void SetSize(kt_int32u size)
-    {
-      assert(size != 0);
+		  /**
+		   * Sets size of array (resize if not big enough)
+		   * @param size
+		   */
+		  void SetSize(kt_int32u size)
+		  {
+			  assert(size != 0);
 
-      if (size > m_Capacity)
-      {
-        if (m_pArray != NULL)
-        {
-          delete [] m_pArray;
-        }
-        m_Capacity = size;
-        m_pArray = new kt_int32s[m_Capacity];
-      }
+			  if (size > m_Capacity)
+			  {
+				  if (m_pArray != NULL)
+				  {
+					  delete [] m_pArray;
+				  }
+				  m_Capacity = size;
+				  m_pArray = new kt_int32s[m_Capacity];
+			  }
 
-      m_Size = size;
-    }
+			  m_Size = size;
+		  }
 
-    /**
-     * Gets reference to value at given index
-     * @param index
-     * @return reference to value at index
-     */
-    inline kt_int32s& operator [] (kt_int32u index)
-    {
-      assert(index < m_Size);
+		  /**
+		   * Gets reference to value at given index
+		   * @param index
+		   * @return reference to value at index
+		   */
+		  inline kt_int32s& operator [] (kt_int32u index)
+		  {
+			  assert(index < m_Size);
 
-      return m_pArray[index];
-    }
+			  return m_pArray[index];
+		  }
 
-    /**
-     * Gets value at given index
-     * @param index
-     * @return value at index
-     */
-    inline kt_int32s operator [] (kt_int32u index) const
-    {
-      assert(index < m_Size);
+		  /**
+		   * Gets value at given index
+		   * @param index
+		   * @return value at index
+		   */
+		  inline kt_int32s operator [] (kt_int32u index) const
+		  {
+			  assert(index < m_Size);
 
-      return m_pArray[index];
-    }
+			  return m_pArray[index];
+		  }
 
-    /**
-     * Gets array pointer
-     * @return array pointer
-     */
-    inline kt_int32s* GetArrayPointer()
-    {
-      return m_pArray;
-    }
+		  /**
+		   * Gets array pointer
+		   * @return array pointer
+		   */
+		  inline kt_int32s* GetArrayPointer()
+		  {
+			  return m_pArray;
+		  }
 
-    /**
-     * Gets array pointer
-     * @return array pointer
-     */
-    inline kt_int32s* GetArrayPointer() const
-    {
-      return m_pArray;
-    }
+		  /**
+		   * Gets array pointer
+		   * @return array pointer
+		   */
+		  inline kt_int32s* GetArrayPointer() const
+		  {
+			  return m_pArray;
+		  }
 
-  private:
-    kt_int32s* m_pArray;
-    kt_int32u m_Capacity;
-    kt_int32u m_Size;
+	  private:
+		  kt_int32s* m_pArray;
+		  kt_int32u m_Capacity;
+		  kt_int32u m_Size;
   };  // LookupArray
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -6345,218 +6562,218 @@ namespace karto
    *
    */
   template<typename T>
-  class GridIndexLookup
-  {
-  public:
-    /**
-     * Construct a GridIndexLookup with a grid
-     * @param pGrid
-     */
-    GridIndexLookup(Grid<T>* pGrid)
-      : m_pGrid(pGrid)
-      , m_Capacity(0)
-      , m_Size(0)
-      , m_ppLookupArray(NULL)
-    {
-    }
+	  class GridIndexLookup
+	  {
+		  public:
+			  /**
+			   * Construct a GridIndexLookup with a grid
+			   * @param pGrid
+			   */
+			  GridIndexLookup(Grid<T>* pGrid)
+				  : m_pGrid(pGrid)
+					, m_Capacity(0)
+					   , m_Size(0)
+					   , m_ppLookupArray(NULL)
+		  {
+		  }
 
-    /**
-     * Destructor
-     */
-    virtual ~GridIndexLookup()
-    {
-      DestroyArrays();
-    }
+			  /**
+			   * Destructor
+			   */
+			  virtual ~GridIndexLookup()
+			  {
+				  DestroyArrays();
+			  }
 
-  public:
-    /**
-     * Gets the lookup array for a particular angle index
-     * @param index
-     * @return lookup array
-     */
-    const LookupArray* GetLookupArray(kt_int32u index) const
-    {
-      assert(math::IsUpTo(index, m_Size));
+		  public:
+			  /**
+			   * Gets the lookup array for a particular angle index
+			   * @param index
+			   * @return lookup array
+			   */
+			  const LookupArray* GetLookupArray(kt_int32u index) const
+			  {
+				  assert(math::IsUpTo(index, m_Size));
 
-      return m_ppLookupArray[index];
-    }
+				  return m_ppLookupArray[index];
+			  }
 
-    /**
-     * Get angles
-     * @return std::vector<kt_double>& angles
-     */
-    const std::vector<kt_double>& GetAngles() const
-    {
-      return m_Angles;
-    }
+			  /**
+			   * Get angles
+			   * @return std::vector<kt_double>& angles
+			   */
+			  const std::vector<kt_double>& GetAngles() const
+			  {
+				  return m_Angles;
+			  }
 
-    /**
-     * Compute lookup table of the points of the given scan for the given angular space
-     * @param pScan the scan
-     * @param angleCenter
-     * @param angleOffset computes lookup arrays for the angles within this offset around angleStart
-     * @param angleResolution how fine a granularity to compute lookup arrays in the angular space
-     */
-    void ComputeOffsets(LocalizedRangeScan* pScan,
-                        kt_double angleCenter,
-                        kt_double angleOffset,
-                        kt_double angleResolution)
-    {
-      assert(angleOffset != 0.0);
-      assert(angleResolution != 0.0);
+			  /**
+			   * Compute lookup table of the points of the given scan for the given angular space
+			   * @param pScan the scan
+			   * @param angleCenter
+			   * @param angleOffset computes lookup arrays for the angles within this offset around angleStart
+			   * @param angleResolution how fine a granularity to compute lookup arrays in the angular space
+			   */
+			  void ComputeOffsets(LocalizedRangeScan* pScan,
+					  kt_double angleCenter,
+					  kt_double angleOffset,
+					  kt_double angleResolution)
+			  {
+				  assert(angleOffset != 0.0);
+				  assert(angleResolution != 0.0);
 
-      kt_int32u nAngles = static_cast<kt_int32u>(math::Round(angleOffset * 2.0 / angleResolution) + 1);
-      SetSize(nAngles);
+				  kt_int32u nAngles = static_cast<kt_int32u>(math::Round(angleOffset * 2.0 / angleResolution) + 1);
+				  SetSize(nAngles);
 
-      //////////////////////////////////////////////////////
-      // convert points into local coordinates of scan pose
+				  //////////////////////////////////////////////////////
+				  // convert points into local coordinates of scan pose
 
-      const PointVectorDouble& rPointReadings = pScan->GetPointReadings();
+				  const PointVectorDouble& rPointReadings = pScan->GetPointReadings();
 
-      // compute transform to scan pose
-      Transform transform(pScan->GetSensorPose());
+				  // compute transform to scan pose
+				  Transform transform(pScan->GetSensorPose());
 
-      Pose2Vector localPoints;
-      const_forEach(PointVectorDouble, &rPointReadings)
-      {
-        // do inverse transform to get points in local coordinates
-        Pose2 vec = transform.InverseTransformPose(Pose2(*iter, 0.0));
-        localPoints.push_back(vec);
-      }
+				  Pose2Vector localPoints;
+				  const_forEach(PointVectorDouble, &rPointReadings)
+				  {
+					  // do inverse transform to get points in local coordinates
+					  Pose2 vec = transform.InverseTransformPose(Pose2(*iter, 0.0));
+					  localPoints.push_back(vec);
+				  }
 
-      //////////////////////////////////////////////////////
-      // create lookup array for different angles
-      kt_double angle = 0.0;
-      kt_double startAngle = angleCenter - angleOffset;
-      for (kt_int32u angleIndex = 0; angleIndex < nAngles; angleIndex++)
-      {
-        angle = startAngle + angleIndex * angleResolution;
-        ComputeOffsets(angleIndex, angle, localPoints, pScan);
-      }
-      // assert(math::DoubleEqual(angle, angleCenter + angleOffset));
-    }
+				  //////////////////////////////////////////////////////
+				  // create lookup array for different angles
+				  kt_double angle = 0.0;
+				  kt_double startAngle = angleCenter - angleOffset;
+				  for (kt_int32u angleIndex = 0; angleIndex < nAngles; angleIndex++)
+				  {
+					  angle = startAngle + angleIndex * angleResolution;
+					  ComputeOffsets(angleIndex, angle, localPoints, pScan);
+				  }
+				  // assert(math::DoubleEqual(angle, angleCenter + angleOffset));
+			  }
 
-  private:
-    /**
-     * Compute lookup value of points for given angle
-     * @param angleIndex
-     * @param angle
-     * @param rLocalPoints
-     */
-    void ComputeOffsets(kt_int32u angleIndex, kt_double angle, const Pose2Vector& rLocalPoints, LocalizedRangeScan* pScan)
-    {
-      m_ppLookupArray[angleIndex]->SetSize(static_cast<kt_int32u>(rLocalPoints.size()));
-      m_Angles.at(angleIndex) = angle;
+		  private:
+			  /**
+			   * Compute lookup value of points for given angle
+			   * @param angleIndex
+			   * @param angle
+			   * @param rLocalPoints
+			   */
+			  void ComputeOffsets(kt_int32u angleIndex, kt_double angle, const Pose2Vector& rLocalPoints, LocalizedRangeScan* pScan)
+			  {
+				  m_ppLookupArray[angleIndex]->SetSize(static_cast<kt_int32u>(rLocalPoints.size()));
+				  m_Angles.at(angleIndex) = angle;
 
-      // set up point array by computing relative offsets to points readings
-      // when rotated by given angle
+				  // set up point array by computing relative offsets to points readings
+				  // when rotated by given angle
 
-      const Vector2<kt_double>& rGridOffset = m_pGrid->GetCoordinateConverter()->GetOffset();
+				  const Vector2<kt_double>& rGridOffset = m_pGrid->GetCoordinateConverter()->GetOffset();
 
-      kt_double cosine = cos(angle);
-      kt_double sine = sin(angle);
+				  kt_double cosine = cos(angle);
+				  kt_double sine = sin(angle);
 
-      kt_int32u readingIndex = 0;
+				  kt_int32u readingIndex = 0;
 
-      kt_int32s* pAngleIndexPointer = m_ppLookupArray[angleIndex]->GetArrayPointer();
+				  kt_int32s* pAngleIndexPointer = m_ppLookupArray[angleIndex]->GetArrayPointer();
 
-      kt_double maxRange = pScan->GetLaserRangeFinder()->GetMaximumRange();
+				  kt_double maxRange = pScan->GetLaserRangeFinder()->GetMaximumRange();
 
-      const_forEach(Pose2Vector, &rLocalPoints)
-      {
-        const Vector2<kt_double>& rPosition = iter->GetPosition();
+				  const_forEach(Pose2Vector, &rLocalPoints)
+				  {
+					  const Vector2<kt_double>& rPosition = iter->GetPosition();
 
-        if (std::isnan(pScan->GetRangeReadings()[readingIndex]) || std::isinf(pScan->GetRangeReadings()[readingIndex]))
-        {
-          pAngleIndexPointer[readingIndex] = INVALID_SCAN;
-          readingIndex++;
-          continue;
-        }
+					  if (std::isnan(pScan->GetRangeReadings()[readingIndex]) || std::isinf(pScan->GetRangeReadings()[readingIndex]))
+					  {
+						  pAngleIndexPointer[readingIndex] = INVALID_SCAN;
+						  readingIndex++;
+						  continue;
+					  }
 
 
-        // counterclockwise rotation and that rotation is about the origin (0, 0).
-        Vector2<kt_double> offset;
-        offset.SetX(cosine * rPosition.GetX() - sine * rPosition.GetY());
-        offset.SetY(sine * rPosition.GetX() + cosine * rPosition.GetY());
+					  // counterclockwise rotation and that rotation is about the origin (0, 0).
+					  Vector2<kt_double> offset;
+					  offset.SetX(cosine * rPosition.GetX() - sine * rPosition.GetY());
+					  offset.SetY(sine * rPosition.GetX() + cosine * rPosition.GetY());
 
-        // have to compensate for the grid offset when getting the grid index
-        Vector2<kt_int32s> gridPoint = m_pGrid->WorldToGrid(offset + rGridOffset);
+					  // have to compensate for the grid offset when getting the grid index
+					  Vector2<kt_int32s> gridPoint = m_pGrid->WorldToGrid(offset + rGridOffset);
 
-        // use base GridIndex to ignore ROI
-        kt_int32s lookupIndex = m_pGrid->Grid<T>::GridIndex(gridPoint, false);
+					  // use base GridIndex to ignore ROI
+					  kt_int32s lookupIndex = m_pGrid->Grid<T>::GridIndex(gridPoint, false);
 
-        pAngleIndexPointer[readingIndex] = lookupIndex;
+					  pAngleIndexPointer[readingIndex] = lookupIndex;
 
-        readingIndex++;
-      }
-      assert(readingIndex == rLocalPoints.size());
-    }
+					  readingIndex++;
+				  }
+				  assert(readingIndex == rLocalPoints.size());
+			  }
 
-    /**
-     * Sets size of lookup table (resize if not big enough)
-     * @param size
-     */
-    void SetSize(kt_int32u size)
-    {
-      assert(size != 0);
+			  /**
+			   * Sets size of lookup table (resize if not big enough)
+			   * @param size
+			   */
+			  void SetSize(kt_int32u size)
+			  {
+				  assert(size != 0);
 
-      if (size > m_Capacity)
-      {
-        if (m_ppLookupArray != NULL)
-        {
-          DestroyArrays();
-        }
+				  if (size > m_Capacity)
+				  {
+					  if (m_ppLookupArray != NULL)
+					  {
+						  DestroyArrays();
+					  }
 
-        m_Capacity = size;
-        m_ppLookupArray = new LookupArray*[m_Capacity];
-        for (kt_int32u i = 0; i < m_Capacity; i++)
-        {
-          m_ppLookupArray[i] = new LookupArray();
-        }
-      }
+					  m_Capacity = size;
+					  m_ppLookupArray = new LookupArray*[m_Capacity];
+					  for (kt_int32u i = 0; i < m_Capacity; i++)
+					  {
+						  m_ppLookupArray[i] = new LookupArray();
+					  }
+				  }
 
-      m_Size = size;
+				  m_Size = size;
 
-      m_Angles.resize(size);
-    }
+				  m_Angles.resize(size);
+			  }
 
-    /**
-     * Delete the arrays
-     */
-    void DestroyArrays()
-    {
-      for (kt_int32u i = 0; i < m_Capacity; i++)
-      {
-        delete m_ppLookupArray[i];
-      }
+			  /**
+			   * Delete the arrays
+			   */
+			  void DestroyArrays()
+			  {
+				  for (kt_int32u i = 0; i < m_Capacity; i++)
+				  {
+					  delete m_ppLookupArray[i];
+				  }
 
-      delete[] m_ppLookupArray;
-      m_ppLookupArray = NULL;
-    }
+				  delete[] m_ppLookupArray;
+				  m_ppLookupArray = NULL;
+			  }
 
-  private:
-    Grid<T>* m_pGrid;
+		  private:
+			  Grid<T>* m_pGrid;
 
-    kt_int32u m_Capacity;
-    kt_int32u m_Size;
+			  kt_int32u m_Capacity;
+			  kt_int32u m_Size;
 
-    LookupArray **m_ppLookupArray;
+			  LookupArray **m_ppLookupArray;
 
-    // for sanity check
-    std::vector<kt_double> m_Angles;
-  };  // class GridIndexLookup
+			  // for sanity check
+			  std::vector<kt_double> m_Angles;
+	  };  // class GridIndexLookup
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
   inline Pose2::Pose2(const Pose3& rPose)
-    : m_Position(rPose.GetPosition().GetX(), rPose.GetPosition().GetY())
+	  : m_Position(rPose.GetPosition().GetX(), rPose.GetPosition().GetY())
   {
-    kt_double t1, t2;
+	  kt_double t1, t2;
 
-    // calculates heading from orientation
-    rPose.GetOrientation().ToEulerAngles(m_Heading, t1, t2);
+	  // calculates heading from orientation
+	  rPose.GetOrientation().ToEulerAngles(m_Heading, t1, t2);
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -6566,38 +6783,42 @@ namespace karto
   // @cond EXCLUDE
 
   template<typename T>
-  inline void Object::SetParameter(const std::string& rName, T value)
-  {
-    AbstractParameter* pParameter = GetParameter(rName);
-    if (pParameter != NULL)
-    {
-      std::stringstream stream;
-      stream << value;
-      pParameter->SetValueFromString(stream.str());
-    }
-    else
-    {
-      throw Exception("Parameter does not exist:  " + rName);
-    }
-  }
+	  inline void Object::SetParameter(const std::string& rName, T value)
+	  {
+		  AbstractParameter* pParameter = GetParameter(rName);
+		  if (pParameter != NULL)
+		  {
+			  std::stringstream stream;
+			  stream << value;
+			  pParameter->SetValueFromString(stream.str());
+		  }
+		  else
+		  {
+			  throw Exception("Parameter does not exist:  " + rName);
+		  }
+	  }
 
   template<>
-  inline void Object::SetParameter(const std::string& rName, kt_bool value)
-  {
-    AbstractParameter* pParameter = GetParameter(rName);
-    if (pParameter != NULL)
-    {
-      pParameter->SetValueFromString(value ? "true" : "false");
-    }
-    else
-    {
-      throw Exception("Parameter does not exist:  " + rName);
-    }
-  }
+	  inline void Object::SetParameter(const std::string& rName, kt_bool value)
+	  {
+		  AbstractParameter* pParameter = GetParameter(rName);
+		  if (pParameter != NULL)
+		  {
+			  pParameter->SetValueFromString(value ? "true" : "false");
+		  }
+		  else
+		  {
+			  throw Exception("Parameter does not exist:  " + rName);
+		  }
+	  }
 
   // @endcond
 
   /*@}*/
 }  // namespace karto
+//BOOST_CLASS_EXPORT_KEY(karto::NonCopyable);
+//BOOST_CLASS_EXPORT_KEY(karto::Object);
+//BOOST_CLASS_EXPORT_KEY(karto::Sensor);
+//BOOST_CLASS_EXPORT_KEY(karto::Name);
 
 #endif  // OPEN_KARTO_KARTO_H

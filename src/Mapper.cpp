@@ -58,6 +58,8 @@ namespace karto
     {
     }
 
+	ScanManager(){}
+
     /**
      * Destructor
      */
@@ -155,6 +157,19 @@ namespace karto
       m_Scans.clear();
       m_RunningScans.clear();
     }
+
+  private:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		//ar & boost::serialization::make_nvp("m_Values_1", m_Values[1]);
+		ar & BOOST_SERIALIZATION_NVP(m_Scans);
+		ar & BOOST_SERIALIZATION_NVP(m_RunningScans);
+		ar & BOOST_SERIALIZATION_NVP(m_pLastScan);
+		ar & BOOST_SERIALIZATION_NVP(m_RunningBufferMaximumSize);
+		ar & BOOST_SERIALIZATION_NVP(m_RunningBufferMaximumDistance);
+	}
 
   private:
     LocalizedRangeScanVector m_Scans;
@@ -2190,103 +2205,123 @@ namespace karto
       m_pGraph = new MapperGraph(this, rangeThreshold);
 
       m_Initialized = true;
-    }
+	}
   }
+
+  void Mapper::SaveToFile(const std::string& filename) 
+  {
+	  printf("Save To File\n");
+	  std::ofstream ofs(filename.c_str());
+	  assert(ofs.good());
+	  boost::archive::xml_oarchive oa(ofs);
+	  //save class state to archive
+	  oa << BOOST_SERIALIZATION_NVP(m_pMapperSensorManager);
+  }	
+
+  void Mapper::LoadFromFile(const std::string& filename) 
+  {
+	  printf("Load From File\n");
+	  std::ifstream ifs(filename.c_str());
+	  assert(ifs.good());
+	  boost::archive::xml_iarchive ia(ifs);
+	  //read class state from archive
+	  ia >> BOOST_SERIALIZATION_NVP(m_pMapperSensorManager);
+  }	
 
   void Mapper::Reset()
   {
-    delete m_pSequentialScanMatcher;
-    m_pSequentialScanMatcher = NULL;
+	  delete m_pSequentialScanMatcher;
+	  m_pSequentialScanMatcher = NULL;
 
-    delete m_pGraph;
-    m_pGraph = NULL;
+	  delete m_pGraph;
+	  m_pGraph = NULL;
 
-    delete m_pMapperSensorManager;
-    m_pMapperSensorManager = NULL;
+	  delete m_pMapperSensorManager;
+	  m_pMapperSensorManager = NULL;
 
-    m_Initialized = false;
+	  m_Initialized = false;
   }
 
   kt_bool Mapper::Process(Object*  /*pObject*/)
   {
-    return true;
+	  return true;
   }
 
   kt_bool Mapper::Process(LocalizedRangeScan* pScan)
   {
-    if (pScan != NULL)
-    {
-      karto::LaserRangeFinder* pLaserRangeFinder = pScan->GetLaserRangeFinder();
+	  if (pScan != NULL)
+	  {
+		  karto::LaserRangeFinder* pLaserRangeFinder = pScan->GetLaserRangeFinder();
 
-      // validate scan
-      if (pLaserRangeFinder == NULL || pScan == NULL || pLaserRangeFinder->Validate(pScan) == false)
-      {
-        return false;
-      }
+		  // validate scan
+		  if (pLaserRangeFinder == NULL || pScan == NULL || pLaserRangeFinder->Validate(pScan) == false)
+		  {
+			  return false;
+		  }
 
-      if (m_Initialized == false)
-      {
-        // initialize mapper with range threshold from device
-        Initialize(pLaserRangeFinder->GetRangeThreshold());
-      }
+		  if (m_Initialized == false)
+		  {
+			  // initialize mapper with range threshold from device
+			  Initialize(pLaserRangeFinder->GetRangeThreshold());
+		  }
 
-      // get last scan
-      LocalizedRangeScan* pLastScan = m_pMapperSensorManager->GetLastScan(pScan->GetSensorName());
+		  // get last scan
+		  LocalizedRangeScan* pLastScan = m_pMapperSensorManager->GetLastScan(pScan->GetSensorName());
 
-      // update scans corrected pose based on last correction
-      if (pLastScan != NULL)
-      {
-        Transform lastTransform(pLastScan->GetOdometricPose(), pLastScan->GetCorrectedPose());
-        pScan->SetCorrectedPose(lastTransform.TransformPose(pScan->GetOdometricPose()));
-      }
+		  // update scans corrected pose based on last correction
+		  if (pLastScan != NULL)
+		  {
+			  Transform lastTransform(pLastScan->GetOdometricPose(), pLastScan->GetCorrectedPose());
+			  pScan->SetCorrectedPose(lastTransform.TransformPose(pScan->GetOdometricPose()));
+		  }
 
-      // test if scan is outside minimum boundary or if heading is larger then minimum heading
-      if (!HasMovedEnough(pScan, pLastScan))
-      {
-        return false;
-      }
+		  // test if scan is outside minimum boundary or if heading is larger then minimum heading
+		  if (!HasMovedEnough(pScan, pLastScan))
+		  {
+			  return false;
+		  }
 
-      Matrix3 covariance;
-      covariance.SetToIdentity();
+		  Matrix3 covariance;
+		  covariance.SetToIdentity();
 
-      // correct scan (if not first scan)
-      if (m_pUseScanMatching->GetValue() && pLastScan != NULL)
-      {
-        Pose2 bestPose;
-        m_pSequentialScanMatcher->MatchScan(pScan,
-                                            m_pMapperSensorManager->GetRunningScans(pScan->GetSensorName()),
-                                                                                    bestPose,
-                                                                                    covariance);
-        pScan->SetSensorPose(bestPose);
-      }
+		  // correct scan (if not first scan)
+		  if (m_pUseScanMatching->GetValue() && pLastScan != NULL)
+		  {
+			  Pose2 bestPose;
+			  m_pSequentialScanMatcher->MatchScan(pScan,
+					  m_pMapperSensorManager->GetRunningScans(pScan->GetSensorName()),
+					  bestPose,
+					  covariance);
+			  pScan->SetSensorPose(bestPose);
+		  }
 
-      // add scan to buffer and assign id
-      m_pMapperSensorManager->AddScan(pScan);
+		  // add scan to buffer and assign id
+		  m_pMapperSensorManager->AddScan(pScan);
 
-      if (m_pUseScanMatching->GetValue())
-      {
-        // add to graph
-        m_pGraph->AddVertex(pScan);
-        m_pGraph->AddEdges(pScan, covariance);
+		  if (m_pUseScanMatching->GetValue())
+		  {
+			  // add to graph
+			  m_pGraph->AddVertex(pScan);
+			  m_pGraph->AddEdges(pScan, covariance);
 
-        m_pMapperSensorManager->AddRunningScan(pScan);
+			  m_pMapperSensorManager->AddRunningScan(pScan);
 
-        if (m_pDoLoopClosing->GetValue())
-        {
-          std::vector<Name> deviceNames = m_pMapperSensorManager->GetSensorNames();
-          const_forEach(std::vector<Name>, &deviceNames)
-          {
-            m_pGraph->TryCloseLoop(pScan, *iter);
-          }
-        }
-      }
+			  if (m_pDoLoopClosing->GetValue())
+			  {
+				  std::vector<Name> deviceNames = m_pMapperSensorManager->GetSensorNames();
+				  const_forEach(std::vector<Name>, &deviceNames)
+				  {
+					  m_pGraph->TryCloseLoop(pScan, *iter);
+				  }
+			  }
+		  }
 
-      m_pMapperSensorManager->SetLastScan(pScan);
+		  m_pMapperSensorManager->SetLastScan(pScan);
 
-      return true;
-    }
+		  return true;
+	  }
 
-    return false;
+	  return false;
   }
 
   /**
@@ -2297,37 +2332,37 @@ namespace karto
    */
   kt_bool Mapper::HasMovedEnough(LocalizedRangeScan* pScan, LocalizedRangeScan* pLastScan) const
   {
-    // test if first scan
-    if (pLastScan == NULL)
-    {
-      return true;
-    }
+	  // test if first scan
+	  if (pLastScan == NULL)
+	  {
+		  return true;
+	  }
 
-    // test if enough time has passed
-    kt_double timeInterval = pScan->GetTime() - pLastScan->GetTime();
-    if (timeInterval >= m_pMinimumTimeInterval->GetValue())
-    {
-      return true;
-    }
+	  // test if enough time has passed
+	  kt_double timeInterval = pScan->GetTime() - pLastScan->GetTime();
+	  if (timeInterval >= m_pMinimumTimeInterval->GetValue())
+	  {
+		  return true;
+	  }
 
-    Pose2 lastScannerPose = pLastScan->GetSensorAt(pLastScan->GetOdometricPose());
-    Pose2 scannerPose = pScan->GetSensorAt(pScan->GetOdometricPose());
+	  Pose2 lastScannerPose = pLastScan->GetSensorAt(pLastScan->GetOdometricPose());
+	  Pose2 scannerPose = pScan->GetSensorAt(pScan->GetOdometricPose());
 
-    // test if we have turned enough
-    kt_double deltaHeading = math::NormalizeAngle(scannerPose.GetHeading() - lastScannerPose.GetHeading());
-    if (fabs(deltaHeading) >= m_pMinimumTravelHeading->GetValue())
-    {
-      return true;
-    }
+	  // test if we have turned enough
+	  kt_double deltaHeading = math::NormalizeAngle(scannerPose.GetHeading() - lastScannerPose.GetHeading());
+	  if (fabs(deltaHeading) >= m_pMinimumTravelHeading->GetValue())
+	  {
+		  return true;
+	  }
 
-    // test if we have moved enough
-    kt_double squaredTravelDistance = lastScannerPose.GetPosition().SquaredDistance(scannerPose.GetPosition());
-    if (squaredTravelDistance >= math::Square(m_pMinimumTravelDistance->GetValue()) - KT_TOLERANCE)
-    {
-      return true;
-    }
+	  // test if we have moved enough
+	  kt_double squaredTravelDistance = lastScannerPose.GetPosition().SquaredDistance(scannerPose.GetPosition());
+	  if (squaredTravelDistance >= math::Square(m_pMinimumTravelDistance->GetValue()) - KT_TOLERANCE)
+	  {
+		  return true;
+	  }
 
-    return false;
+	  return false;
   }
 
   /**
@@ -2336,14 +2371,14 @@ namespace karto
    */
   const LocalizedRangeScanVector Mapper::GetAllProcessedScans() const
   {
-    LocalizedRangeScanVector allScans;
+	  LocalizedRangeScanVector allScans;
 
-    if (m_pMapperSensorManager != NULL)
-    {
-      allScans = m_pMapperSensorManager->GetAllScans();
-    }
+	  if (m_pMapperSensorManager != NULL)
+	  {
+		  allScans = m_pMapperSensorManager->GetAllScans();
+	  }
 
-    return allScans;
+	  return allScans;
   }
 
   /**
@@ -2352,7 +2387,7 @@ namespace karto
    */
   void Mapper::AddListener(MapperListener* pListener)
   {
-    m_Listeners.push_back(pListener);
+	  m_Listeners.push_back(pListener);
   }
 
   /**
@@ -2361,90 +2396,90 @@ namespace karto
    */
   void Mapper::RemoveListener(MapperListener* pListener)
   {
-    std::vector<MapperListener*>::iterator iter = std::find(m_Listeners.begin(), m_Listeners.end(), pListener);
-    if (iter != m_Listeners.end())
-    {
-      m_Listeners.erase(iter);
-    }
+	  std::vector<MapperListener*>::iterator iter = std::find(m_Listeners.begin(), m_Listeners.end(), pListener);
+	  if (iter != m_Listeners.end())
+	  {
+		  m_Listeners.erase(iter);
+	  }
   }
 
   void Mapper::FireInfo(const std::string& rInfo) const
   {
-    const_forEach(std::vector<MapperListener*>, &m_Listeners)
-    {
-      (*iter)->Info(rInfo);
-    }
+	  const_forEach(std::vector<MapperListener*>, &m_Listeners)
+	  {
+		  (*iter)->Info(rInfo);
+	  }
   }
 
   void Mapper::FireDebug(const std::string& rInfo) const
   {
-    const_forEach(std::vector<MapperListener*>, &m_Listeners)
-    {
-      MapperDebugListener* pListener = dynamic_cast<MapperDebugListener*>(*iter);
+	  const_forEach(std::vector<MapperListener*>, &m_Listeners)
+	  {
+		  MapperDebugListener* pListener = dynamic_cast<MapperDebugListener*>(*iter);
 
-      if (pListener != NULL)
-      {
-        pListener->Debug(rInfo);
-      }
-    }
+		  if (pListener != NULL)
+		  {
+			  pListener->Debug(rInfo);
+		  }
+	  }
   }
 
   void Mapper::FireLoopClosureCheck(const std::string& rInfo) const
   {
-    const_forEach(std::vector<MapperListener*>, &m_Listeners)
-    {
-      MapperLoopClosureListener* pListener = dynamic_cast<MapperLoopClosureListener*>(*iter);
+	  const_forEach(std::vector<MapperListener*>, &m_Listeners)
+	  {
+		  MapperLoopClosureListener* pListener = dynamic_cast<MapperLoopClosureListener*>(*iter);
 
-      if (pListener != NULL)
-      {
-        pListener->LoopClosureCheck(rInfo);
-      }
-    }
+		  if (pListener != NULL)
+		  {
+			  pListener->LoopClosureCheck(rInfo);
+		  }
+	  }
   }
 
   void Mapper::FireBeginLoopClosure(const std::string& rInfo) const
   {
-    const_forEach(std::vector<MapperListener*>, &m_Listeners)
-    {
-      MapperLoopClosureListener* pListener = dynamic_cast<MapperLoopClosureListener*>(*iter);
+	  const_forEach(std::vector<MapperListener*>, &m_Listeners)
+	  {
+		  MapperLoopClosureListener* pListener = dynamic_cast<MapperLoopClosureListener*>(*iter);
 
-      if (pListener != NULL)
-      {
-        pListener->BeginLoopClosure(rInfo);
-      }
-    }
+		  if (pListener != NULL)
+		  {
+			  pListener->BeginLoopClosure(rInfo);
+		  }
+	  }
   }
 
   void Mapper::FireEndLoopClosure(const std::string& rInfo) const
   {
-    const_forEach(std::vector<MapperListener*>, &m_Listeners)
-    {
-      MapperLoopClosureListener* pListener = dynamic_cast<MapperLoopClosureListener*>(*iter);
+	  const_forEach(std::vector<MapperListener*>, &m_Listeners)
+	  {
+		  MapperLoopClosureListener* pListener = dynamic_cast<MapperLoopClosureListener*>(*iter);
 
-      if (pListener != NULL)
-      {
-        pListener->EndLoopClosure(rInfo);
-      }
-    }
+		  if (pListener != NULL)
+		  {
+			  pListener->EndLoopClosure(rInfo);
+		  }
+	  }
   }
 
   void Mapper::SetScanSolver(ScanSolver* pScanOptimizer)
   {
-    m_pScanOptimizer = pScanOptimizer;
+	  m_pScanOptimizer = pScanOptimizer;
   }
 
   MapperGraph* Mapper::GetGraph() const
   {
-    return m_pGraph;
+	  return m_pGraph;
   }
 
   ScanMatcher* Mapper::GetSequentialScanMatcher() const
   {
-    return m_pSequentialScanMatcher;
+	  return m_pSequentialScanMatcher;
   }
 
   ScanMatcher* Mapper::GetLoopScanMatcher() const
   {
-    return m_pGraph->GetLoopScanMatcher();
+	  return m_pGraph->GetLoopScanMatcher();
   }
 }  // namespace karto

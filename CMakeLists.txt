@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(open_karto)
 
+set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0")
 find_package(catkin REQUIRED)
 
-find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost REQUIRED COMPONENTS thread serialization)
 
 catkin_package(
   DEPENDS Boost
