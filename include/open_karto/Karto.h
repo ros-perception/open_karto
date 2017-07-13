@@ -4992,7 +4992,7 @@ namespace karto
   /**
    * Type declaration of range readings vector
    */
-  typedef std::vector<kt_double> RangeReadingsVector;
+  typedef std::vector<Pose2> RangeReadingsVector;
 
   /**
    * LaserRangeScan representing the range readings from a laser range finder sensor.
@@ -5011,7 +5011,7 @@ namespace karto
      */
     LaserRangeScan(const Name& rSensorName)
       : SensorData(rSensorName)
-      , m_pRangeReadings(NULL)
+      , m_p2DReadings(NULL)
       , m_NumberOfRangeReadings(0)
     {
     }
@@ -5023,7 +5023,7 @@ namespace karto
      */
     LaserRangeScan(const Name& rSensorName, const RangeReadingsVector& rRangeReadings)
       : SensorData(rSensorName)
-      , m_pRangeReadings(NULL)
+      , m_p2DReadings(NULL)
       , m_NumberOfRangeReadings(0)
     {
       assert(rSensorName.ToString() != "");
@@ -5036,7 +5036,7 @@ namespace karto
      */
     virtual ~LaserRangeScan()
     {
-      delete [] m_pRangeReadings;
+      delete [] m_p2DReadings;
     }
 
   public:
@@ -5044,14 +5044,14 @@ namespace karto
      * Gets the range readings of this scan
      * @return range readings of this scan
      */
-    inline kt_double* GetRangeReadings() const
+    inline Pose2* GetRangeReadings() const
     {
-      return m_pRangeReadings;
+      return m_p2DReadings;
     }
 
     inline RangeReadingsVector GetRangeReadingsVector() const
     {
-      return RangeReadingsVector(m_pRangeReadings, m_pRangeReadings + m_NumberOfRangeReadings);
+      return RangeReadingsVector(m_p2DReadings, m_p2DReadings + m_NumberOfRangeReadings);
     }
 
     /**
@@ -5074,26 +5074,26 @@ namespace karto
         if (rRangeReadings.size() != m_NumberOfRangeReadings)
         {
           // delete old readings
-          delete [] m_pRangeReadings;
+          delete [] m_p2DReadings;
 
           // store size of array!
           m_NumberOfRangeReadings = static_cast<kt_int32u>(rRangeReadings.size());
 
           // allocate range readings
-          m_pRangeReadings = new kt_double[m_NumberOfRangeReadings];
+          m_p2DReadings = new Pose2[m_NumberOfRangeReadings];
         }
 
         // copy readings
         kt_int32u index = 0;
         const_forEach(RangeReadingsVector, &rRangeReadings)
         {
-          m_pRangeReadings[index++] = *iter;
+          m_p2DReadings[index++] = *iter;
         }
       }
       else
       {
-        delete [] m_pRangeReadings;
-        m_pRangeReadings = NULL;
+        delete [] m_p2DReadings;
+        m_p2DReadings = NULL;
       }
     }
 
@@ -5120,7 +5120,7 @@ namespace karto
     const LaserRangeScan& operator=(const LaserRangeScan&);
 
   private:
-    kt_double* m_pRangeReadings;
+    Pose2 *m_p2DReadings;
     kt_int32u m_NumberOfRangeReadings;
   };  // LaserRangeScan
 
