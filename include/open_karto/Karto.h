@@ -5892,19 +5892,19 @@ namespace karto
       const_forEachAs(PointVectorDouble, &rPointReadings, pointsIter)
       {
         Vector2<kt_double> point = *pointsIter;
-        kt_double rangeReading = pScan->GetRangeReadings()[pointIndex];
-        kt_bool isEndPointValid = rangeReading < (rangeThreshold - KT_TOLERANCE);
+        Pose2 rangeReading = pScan->GetRangeReadings()[pointIndex];
+        kt_bool isEndPointValid = rangeReading.GetHeading() < (rangeThreshold - KT_TOLERANCE);
 
-        if (rangeReading <= minRange || rangeReading >= maxRange || isnan(rangeReading))
+        if (rangeReading.GetHeading() <= minRange || rangeReading.GetHeading() >= maxRange || isnan(rangeReading.GetHeading()))
         {
           // ignore these readings
           pointIndex++;
           continue;
         }
-        else if (rangeReading >= rangeThreshold)
+        else if (rangeReading.GetHeading() >= rangeThreshold)
         {
           // trace up to range reading
-          kt_double ratio = rangeThreshold / rangeReading;
+          kt_double ratio = rangeThreshold / rangeReading.GetHeading();
           kt_double dx = point.GetX() - scanPosition.GetX();
           kt_double dy = point.GetY() - scanPosition.GetY();
           point.SetX(scanPosition.GetX() + ratio * dx);
@@ -6506,7 +6506,7 @@ namespace karto
       {
         const Vector2<kt_double>& rPosition = iter->GetPosition();
 
-        if (isnan(pScan->GetRangeReadings()[readingIndex]) || isinf(pScan->GetRangeReadings()[readingIndex]))
+        if (isnan(pScan->GetRangeReadings()[readingIndex].GetHeading()) || isinf(pScan->GetRangeReadings()[readingIndex].GetHeading()))
         {
           pAngleIndexPointer[readingIndex] = INVALID_SCAN;
           readingIndex++;
