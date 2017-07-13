@@ -1927,12 +1927,12 @@ namespace karto
     m_pOdometryCovarianceDistance = new Parameter<kt_double>(
         "OdometryCovarianceDistance",
         "Estimated covariance for odometry (translational part)",
-        0.15, GetParameterManager());
+        0.0, GetParameterManager());
 
     m_pOdometryCovarianceAngular = new Parameter<kt_double>(
         "OdometryCovarianceAngular",
         "Estimated covariance for odometry (rotational part)",
-        0.15, GetParameterManager());
+        0.0, GetParameterManager());
   }
   /* Adding in getters and setters here for easy parameter access */
 
