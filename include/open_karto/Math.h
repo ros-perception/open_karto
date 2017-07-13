@@ -181,6 +181,9 @@ namespace karto
      */
     inline kt_double NormalizeAngle(kt_double angle)
     {
+      if(!std::isnormal(angle))
+        return angle;
+      
       while (angle < -KT_PI)
       {
         if (angle < -KT_2PI)
@@ -220,6 +223,9 @@ namespace karto
      */
     inline kt_double NormalizeAngleDifference(kt_double minuend, kt_double subtrahend)
     {
+      if(!std::isnormal(minuend) || !std::isnormal(subtrahend))
+        return minuend;
+      
       while (minuend - subtrahend < -KT_PI)
       {
         minuend += KT_2PI;
