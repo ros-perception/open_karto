@@ -1368,7 +1368,7 @@ namespace karto
           (covariance(0, 0) < m_pMapper->m_pLoopMatchMaximumVarianceCoarse->GetValue()) &&
           (covariance(1, 1) < m_pMapper->m_pLoopMatchMaximumVarianceCoarse->GetValue()))
       {
-        LocalizedRangeScan tmpScan(pScan->GetSensorName(), pScan->GetRangeReadingsVector());
+        LocalizedRangeScan tmpScan(pScan->GetSensorName(), pScan->GetRangeReadingsVector(), pScan->GetCorrectedPose());
         tmpScan.SetUniqueId(pScan->GetUniqueId());
         tmpScan.SetTime(pScan->GetTime());
         tmpScan.SetStateId(pScan->GetStateId());

@@ -146,33 +146,28 @@ namespace karto
   {
     PointVectorDouble pointReadings;
 
-    Pose2 scanPose = pLocalizedRangeScan->GetSensorPose();
-
     // compute point readings
     kt_int32u beamNum = 0;
-    kt_double* pRangeReadings = pLocalizedRangeScan->GetRangeReadings();
+    Pose2* pRangeReadings = pLocalizedRangeScan->GetRangeReadings();
     for (kt_int32u i = 0; i < m_NumberOfRangeReadings; i++, beamNum++)
     {
-      kt_double rangeReading = pRangeReadings[i];
+      Pose2 rangeReading = pRangeReadings[i];
 
       if (ignoreThresholdPoints)
       {
-        if (!math::InRange(rangeReading, GetMinimumRange(), GetRangeThreshold()))
+        if (!math::InRange(rangeReading.GetHeading(), GetMinimumRange(), GetRangeThreshold()))
         {
           continue;
         }
       }
       else
       {
-        rangeReading = math::Clip(rangeReading, GetMinimumRange(), GetRangeThreshold());
       }
-
-      kt_double angle = scanPose.GetHeading() + GetMinimumAngle() + beamNum * GetAngularResolution();
-
+      
       Vector2<kt_double> point;
 
-      point.SetX(scanPose.GetX() + (rangeReading * cos(angle)));
-      point.SetY(scanPose.GetY() + (rangeReading * sin(angle)));
+      point.SetX(rangeReading.GetX());
+      point.SetY(rangeReading.GetY());
 
       if (pCoordinateConverter != NULL)
       {
