@@ -5206,8 +5206,9 @@ namespace karto
     /**
      * Constructs a range scan from the given range finder with the given readings
      */
-    LocalizedRangeScan(const Name& rSensorName, const RangeReadingsVector& rReadings)
+    LocalizedRangeScan(const Name& rSensorName, const RangeReadingsVector& rReadings, const Pose2 &corrected_pose)
       : LaserRangeScan(rSensorName, rReadings)
+      , m_LastCorrectedPose(corrected_pose)
       , m_IsDirty(true)
     {
     }
@@ -5397,33 +5398,29 @@ namespace karto
         m_UnfilteredPointReadings.clear();
 
         kt_double rangeThreshold = pLaserRangeFinder->GetRangeThreshold();
-        kt_double minimumAngle = pLaserRangeFinder->GetMinimumAngle();
-        kt_double angularResolution = pLaserRangeFinder->GetAngularResolution();
         Pose2 scanPose = GetSensorPose();
+        Transform deltaTf(m_LastCorrectedPose, scanPose);
+        m_LastCorrectedPose = scanPose;
 
         // compute point readings
         Vector2<kt_double> rangePointsSum;
         kt_int32u beamNum = 0;
         for (kt_int32u i = 0; i < pLaserRangeFinder->GetNumberOfRangeReadings(); i++, beamNum++)
         {
-          kt_double rangeReading = GetRangeReadings()[i];
-          if (!math::InRange(rangeReading, pLaserRangeFinder->GetMinimumRange(), rangeThreshold))
+          Pose2 rangeReading = deltaTf.TransformPose( GetRangeReadings()[i] );
+          rangeReading.SetHeading( GetRangeReadings()[i].GetHeading() );
+          
+          GetRangeReadings()[i] = rangeReading;
+
+          Vector2<kt_double> point;
+          point.SetX(rangeReading.GetX());
+          point.SetY(rangeReading.GetY());
+          
+          if (!math::InRange(rangeReading.GetHeading(), pLaserRangeFinder->GetMinimumRange(), rangeThreshold))
           {
-            kt_double angle = scanPose.GetHeading() + minimumAngle + beamNum * angularResolution;
-
-            Vector2<kt_double> point;
-            point.SetX(scanPose.GetX() + (rangeReading * cos(angle)));
-            point.SetY(scanPose.GetY() + (rangeReading * sin(angle)));
-
             m_UnfilteredPointReadings.push_back(point);
             continue;
           }
-
-          kt_double angle = scanPose.GetHeading() + minimumAngle + beamNum * angularResolution;
-
-          Vector2<kt_double> point;
-          point.SetX(scanPose.GetX() + (rangeReading * cos(angle)));
-          point.SetY(scanPose.GetY() + (rangeReading * sin(angle)));
 
           m_PointReadings.push_back(point);
           m_UnfilteredPointReadings.push_back(point);
@@ -5469,6 +5466,8 @@ namespace karto
      * Corrected pose of robot calculated by mapper (or localizer)
      */
     Pose2 m_CorrectedPose;
+    
+    Pose2 m_LastCorrectedPose;
 
   protected:
     /**
@@ -5521,10 +5520,10 @@ namespace karto
      * Constructs a range scan from the given range finder with the given readings. Precomptued points should be
      * in the robot frame.
      */
-    LocalizedRangeScanWithPoints(const Name& rSensorName, const RangeReadingsVector& rReadings,
+    LocalizedRangeScanWithPoints(const Name& rSensorName, const RangeReadingsVector& rReadings, const Pose2 &corrected_pose,
         const PointVectorDouble& rPoints)
         : m_Points(rPoints),
-          LocalizedRangeScan(rSensorName, rReadings)
+          LocalizedRangeScan(rSensorName, rReadings, corrected_pose)
     {
     }
 
