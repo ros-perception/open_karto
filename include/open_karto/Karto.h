@@ -2949,6 +2949,21 @@ namespace karto
       // components of transform
       return Pose2(newPosition.GetPosition(), angle);
     }
+    
+    inline void MirrorAt(const double alpha)
+    {
+		Matrix3 M;
+		M.SetToIdentity();
+		
+		M(0,0) = cos(2*alpha);
+		M(1,1) = -cos(2*alpha);
+		
+		M(1,0) = sin(2*alpha);
+		M(0,1) = sin(2*alpha);
+		
+		m_Rotation = m_Rotation*M;
+		m_InverseRotation = M*m_InverseRotation;
+	}
 
   private:
     /**
