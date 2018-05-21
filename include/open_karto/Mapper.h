@@ -780,7 +780,12 @@ namespace karto
     /**
      * Resets the solver
      */
-    virtual void Clear() {};
+    virtual void Clear(){};
+
+    /**
+     * Get graph stored
+     */
+    virtual void getGraph(std::vector<float>& ag) {};
   };  // ScanSolver
 
   ////////////////////////////////////////////////////////////////////////////////////////

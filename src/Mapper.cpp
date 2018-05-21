@@ -581,7 +581,7 @@ namespace karto
           poseResponseCounter++;
         }
 
-        assert(math::DoubleEqual(angle, rSearchCenter.GetHeading() + searchAngleOffset));
+        //assert(math::DoubleEqual(angle, rSearchCenter.GetHeading() + searchAngleOffset));
       }
     }
 
