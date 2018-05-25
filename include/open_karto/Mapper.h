@@ -21,6 +21,8 @@
 #include <map>
 #include <vector>
 
+#include <Eigen/Core>
+
 #include <open_karto/Karto.h>
 
 namespace karto
@@ -785,7 +787,7 @@ namespace karto
     /**
      * Get graph stored
      */
-    virtual void getGraph(std::vector<float>& ag) {};
+    virtual void getGraph(std::vector<Eigen::Vector2d>& ag) = 0;
   };  // ScanSolver
 
   ////////////////////////////////////////////////////////////////////////////////////////
