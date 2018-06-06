@@ -596,6 +596,11 @@ namespace karto
     kt_bool TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName);
 
     /**
+     * Optimizes scan poses
+     */
+    void CorrectPoses();
+
+    /**
      * Find "nearby" (no further than given distance away) scans through graph links
      * @param pScan
      * @param maxDistance
@@ -687,11 +692,6 @@ namespace karto
     LocalizedRangeScanVector FindPossibleLoopClosure(LocalizedRangeScan* pScan,
                                                      const Name& rSensorName,
                                                      kt_int32u& rStartNum);
-
-    /**
-     * Optimizes scan poses
-     */
-    void CorrectPoses();
 
   private:
     /**
@@ -787,7 +787,15 @@ namespace karto
     /**
      * Get graph stored
      */
-    virtual void getGraph(std::vector<Eigen::Vector2d>& ag) = 0;
+    virtual void getGraph(std::vector<Eigen::Vector2d>& ag) {};
+
+    /**
+     * Modify a node's pose
+     */
+    virtual void ModifyNode(const int& unique_id, const Eigen::Vector3d& pose)
+    {
+      std::cout << "ModifyNode method not implemented for this solver type. Manual loop closure unavailable." << std::endl;
+    };
   };  // ScanSolver
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -1620,6 +1628,11 @@ namespace karto
     inline kt_bool TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName)
     {
       return m_pGraph->TryCloseLoop(pScan, rSensorName);
+    }
+
+    inline void CorrectPoses()
+    {
+      m_pGraph->CorrectPoses();
     }
 
   private:
