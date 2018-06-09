@@ -792,7 +792,7 @@ namespace karto
     /**
      * Modify a node's pose
      */
-    virtual void ModifyNode(const int& unique_id, const Eigen::Vector3d& pose)
+    virtual void ModifyNode(const int& unique_id, Eigen::Vector3d pose)
     {
       std::cout << "ModifyNode method not implemented for this solver type. Manual loop closure unavailable." << std::endl;
     };
