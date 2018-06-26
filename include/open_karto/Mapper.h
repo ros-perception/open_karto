@@ -796,6 +796,13 @@ namespace karto
     {
       std::cout << "ModifyNode method not implemented for this solver type. Manual loop closure unavailable." << std::endl;
     };
+    /**
+     * Get node's yaw
+     */
+    virtual void GetNodeOrientation(const int& unique_id, double& pose)
+    {
+      std::cout << "GetNodeOrientation method not implemented for this solver type." << std::endl;
+    };
   };  // ScanSolver
 
   ////////////////////////////////////////////////////////////////////////////////////////
