@@ -43,17 +43,6 @@
 #include <open_karto/Math.h>
 #include <open_karto/Macros.h>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/list.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/export.hpp>
-
-
 #define KARTO_Object(name) \
   virtual const char* GetClassName() const { return #name; } \
   virtual kt_objecttype GetObjectType() const { return ObjectType_##name; }
@@ -176,7 +165,6 @@ namespace karto
    */
   class KARTO_EXPORT NonCopyable
   {
-    friend class boost::serialization::access;
   private:
     NonCopyable(const NonCopyable&);
     const NonCopyable& operator=(const NonCopyable&);
@@ -187,11 +175,6 @@ namespace karto
     }
 
     virtual ~NonCopyable()
-    {
-    }
-  public:
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
     {
     }
   };  // class NonCopyable
@@ -284,7 +267,6 @@ namespace karto
    */
   class KARTO_EXPORT ParameterManager : public NonCopyable
   {
-    friend class boost::serialization::access;
   public:
     /**
      * Default constructor
@@ -299,13 +281,6 @@ namespace karto
     virtual ~ParameterManager()
     {
       Clear();
-    }
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      ar & m_Parameters;
-      ar & m_ParameterLookup;
     }
 
   public:
@@ -378,7 +353,6 @@ namespace karto
   //
   class Name
   {
-    friend class boost::serialization::access;
   public:
     /**
      * Constructor
@@ -409,13 +383,6 @@ namespace karto
      */
     virtual ~Name()
     {
-    }
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      ar & m_Name;
-      ar & m_Scope;
     }
 
   public:
@@ -622,7 +589,6 @@ namespace karto
    */
   class KARTO_EXPORT Object : public NonCopyable
   {
-    friend class boost::serialization::access;
   public:
     /**
      * Default constructor
@@ -639,14 +605,6 @@ namespace karto
      * Default constructor
      */
     virtual ~Object();
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      boost::serialization::base_object<NonCopyable>(*this);
-      ar & m_Name;
-      ar & *m_pParameterManager;
-    }
 
   public:
     /**
@@ -970,7 +928,6 @@ namespace karto
   template<typename T>
   class Vector2
   {
-    friend class boost::serialization::access;
   public:
     /**
      * Default constructor
@@ -990,13 +947,6 @@ namespace karto
     {
       m_Values[0] = x;
       m_Values[1] = y;
-    }
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      ar & m_Values[0];
-      ar & m_Values[1];
     }
 
   public:
@@ -2006,7 +1956,6 @@ namespace karto
    */
   class Pose2
   {
-    friend class boost::serialization::access;
   public:
     /**
      * Default Constructor
@@ -2051,13 +2000,6 @@ namespace karto
       : m_Position(rOther.m_Position)
       , m_Heading(rOther.m_Heading)
     {
-    }
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      ar & m_Position;
-      ar & m_Heading;
     }
 
   public:
@@ -2823,7 +2765,6 @@ namespace karto
    */
   class BoundingBox2
   {
-    friend class boost::serialization::access;
   public:
     /*
      * Default constructor
@@ -2833,13 +2774,6 @@ namespace karto
       , m_Maximum(-999999999999999999.99999, -999999999999999999.99999)
     {
     }
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      ar & m_Minimum;
-      ar & m_Maximum;
-    } 
 
   public:
     /**
@@ -3045,7 +2979,6 @@ namespace karto
    */
   class AbstractParameter
   {
-    friend class boost::serialization::access;
   public:
     /**
      * Constructs a parameter with the given name
@@ -3087,15 +3020,6 @@ namespace karto
     virtual ~AbstractParameter()
     {
     }
-
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      ar & m_Name;
-      ar & m_Description;
-    }
-
 
   public:
     /**
@@ -3164,7 +3088,6 @@ namespace karto
   template<typename T>
   class Parameter : public AbstractParameter
   {
-    friend class boost::serialization::access;
   public:
     /**
      * Parameter with given name and value
@@ -3199,13 +3122,6 @@ namespace karto
      */
     virtual ~Parameter()
     {
-    }
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      boost::serialization::base_object<AbstractParameter>(*this);
-      ar & m_Value;
     }
 
   public:
@@ -3509,7 +3425,6 @@ namespace karto
    */
   class KARTO_EXPORT Sensor : public Object
   {
-    friend class boost::serialization::access;
   public:
     // @cond EXCLUDE
     KARTO_Object(Sensor)
@@ -3527,13 +3442,6 @@ namespace karto
      * Destructor
      */
     virtual ~Sensor();
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      boost::serialization::base_object<Object>(*this);
-      ar & *m_pOffsetPose;
-    }
 
   public:
     /**
@@ -4849,7 +4757,6 @@ namespace karto
    */
   class CustomData : public Object
   {
-    friend class boost::serialization::access;
   public:
     // @cond EXCLUDE
     KARTO_Object(CustomData)
@@ -4884,12 +4791,6 @@ namespace karto
      */
     virtual void Read(const std::string& rValue) = 0;
 
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      boost::serialization::base_object<Object>(*this);
-    }
-
   private:
     CustomData(const CustomData&);
     const CustomData& operator=(const CustomData&);
@@ -4909,7 +4810,6 @@ namespace karto
    */
   class KARTO_EXPORT SensorData : public Object
   {
-    friend class boost::serialization::access;
   public:
     // @cond EXCLUDE
     KARTO_Object(SensorData)
@@ -4923,17 +4823,6 @@ namespace karto
 
     SensorData()
     {
-    }
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      boost::serialization::base_object<Object>(*this);
-      ar & m_StateId;
-      ar & m_UniqueId;
-      ar & m_SensorName;
-      ar & m_Time;
-      ar & m_CustomData;
     }
 
   public:
@@ -5073,7 +4962,6 @@ namespace karto
    */
   class LaserRangeScan : public SensorData
   {
-    friend class boost::serialization::access;
   public:
     // @cond EXCLUDE
     KARTO_Object(LaserRangeScan)
@@ -5116,14 +5004,6 @@ namespace karto
     virtual ~LaserRangeScan()
     {
       delete [] m_pRangeReadings;
-    }
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      boost::serialization::base_object<SensorData>(*this);
-      ar & *m_pRangeReadings;
-      ar & m_NumberOfRangeReadings;
     }
 
   public:
@@ -5284,7 +5164,6 @@ namespace karto
    */
   class LocalizedRangeScan : public LaserRangeScan
   {
-    friend class boost::serialization::access;
   public:
     // @cond EXCLUDE
     KARTO_Object(LocalizedRangeScan)
@@ -5311,41 +5190,6 @@ namespace karto
     virtual ~LocalizedRangeScan()
     {
     }
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      boost::serialization::base_object<LaserRangeScan>(*this);
-      ar & m_OdometricPose;
-      ar & m_CorrectedPose;
-      ar & m_BarycenterPose;
-      ar & m_PointReadings;
-      ar & m_UnfilteredPointReadings;
-      ar & m_BoundingBox;
-      ar & m_IsDirty;
-    }
-
-    //namespace boost { namespace serialization {
-    // template<class Archive>
-    // inline void save_construct_data(
-    //     Archive & ar, const LocalizedRangeScan * t, const unsigned long int file_version
-    // ){
-    //     // save data required to construct instance
-    //     ar << t->m_Name;
-    //     ar << t->m_Readings;
-    // }
-
-    // template<class Archive>
-    // inline void load_construct_data(
-    //     Archive & ar, LocalizedRangeScan * t, const unsigned long int file_version
-    // ){
-    //     Name m;
-    //     RangeReadingsVector n;
-    //     ar >> m;
-    //     ar >> n;
-    //     ::new(t)LocalizedRangeScan(m,n);
-    // }
-    //} }
 
   private:
     mutable boost::shared_mutex m_Lock;
@@ -5623,14 +5467,6 @@ namespace karto
      * Internal flag used to update point readings, barycenter and bounding box
      */
     kt_bool m_IsDirty;
-    /**
-     * Name for serialization
-     */
-    Name m_Name;
-    /**
-     * Readings for serialization
-     */
-    RangeReadingsVector m_Readings;
   };  // LocalizedRangeScan
 
   /**
@@ -6210,22 +6046,10 @@ namespace karto
    */
   class DatasetInfo : public Object
   {
-    friend class boost::serialization::access;
-
   public:
     // @cond EXCLUDE
     KARTO_Object(DatasetInfo)
     // @endcond
-
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-      boost::serialization::base_object<Object>(*this);
-      ar & *m_pTitle;
-      ar & *m_pAuthor;
-      ar & *m_pDescription;
-      ar & *m_pCopyright;
-    }
 
   public:
     DatasetInfo()
