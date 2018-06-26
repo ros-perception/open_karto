@@ -1222,6 +1222,9 @@ namespace karto
     {
     }
 
+    MapperSensorManager(){
+	}
+
     /**
      * Destructor
      */
@@ -1347,6 +1350,19 @@ namespace karto
 
       return NULL;
     }
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		//ar & boost::serialization::make_nvp("m_Values_1", m_Values[1]);
+		
+		ar & BOOST_SERIALIZATION_NVP(m_ScanManagers);
+		ar & BOOST_SERIALIZATION_NVP(m_RunningBufferMaximumSize);
+		ar & BOOST_SERIALIZATION_NVP(m_RunningBufferMaximumDistance);
+		ar & BOOST_SERIALIZATION_NVP(m_NextScanId);
+		ar & BOOST_SERIALIZATION_NVP(m_Scans);
+	}
 
   private:
     // map from device ID to scan data
@@ -1549,6 +1565,18 @@ namespace karto
      * @param rangeThreshold
      */
     void Initialize(kt_double rangeThreshold);
+
+    /**
+     * Save map to file 
+     * @param filename 
+     */
+    void SaveToFile(const std::string& filename);
+
+    /**
+     * Load map from file 
+     * @param filename 
+     */
+    void LoadFromFile(const std::string& filename);
 
     /**
      * Resets the mapper.

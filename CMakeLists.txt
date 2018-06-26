@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(open_karto)
 set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0") 
 
+set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0")
 find_package(catkin REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED system serialization filesystem thread)
