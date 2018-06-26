@@ -2212,7 +2212,6 @@ namespace karto
   {
 	  printf("Save To File\n");
 	  std::ofstream ofs(filename.c_str());
-	  assert(ofs.good());
 	  boost::archive::xml_oarchive oa(ofs);
 	  //save class state to archive
 	  oa << BOOST_SERIALIZATION_NVP(m_pMapperSensorManager);
@@ -2220,9 +2219,8 @@ namespace karto
 
   void Mapper::LoadFromFile(const std::string& filename) 
   {
-	  printf("Load From File\n");
+    printf("Load From File\n");
 	  std::ifstream ifs(filename.c_str());
-	  assert(ifs.good());
 	  boost::archive::xml_iarchive ia(ifs);
 	  //read class state from archive
 	  ia >> BOOST_SERIALIZATION_NVP(m_pMapperSensorManager);

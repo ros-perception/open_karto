@@ -4970,10 +4970,6 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
      */
     virtual ~SensorData();
 
-    SensorData()
-    {
-    }
-
   public:
     /**
      * Gets sensor data id
@@ -5325,8 +5321,6 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
     LocalizedRangeScan(const Name& rSensorName, const RangeReadingsVector& rReadings)
       : LaserRangeScan(rSensorName, rReadings)
       , m_IsDirty(true)
-      , m_Name(rSensorName)
-      , m_Readings(rReadings)
     {
     }
 
