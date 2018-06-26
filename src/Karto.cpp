@@ -25,22 +25,6 @@
 
 #include "open_karto/Karto.h"
 
-BOOST_CLASS_EXPORT(karto::NonCopyable)
-BOOST_CLASS_EXPORT(karto::Name)
-BOOST_CLASS_EXPORT(karto::Object)
-BOOST_CLASS_EXPORT(karto::Vector2<kt_double>)
-BOOST_CLASS_EXPORT(karto::Pose2)
-BOOST_CLASS_EXPORT(karto::BoundingBox2)
-BOOST_CLASS_EXPORT(karto::SensorData)
-BOOST_CLASS_EXPORT(karto::LaserRangeScan)
-BOOST_CLASS_EXPORT(karto::LocalizedRangeScan)
-BOOST_CLASS_EXPORT(karto::DatasetInfo)
-BOOST_CLASS_EXPORT(karto::ParameterManager)
-//BOOST_CLASS_EXPORT(karto::Parameter)
-BOOST_CLASS_EXPORT(karto::Sensor)
-BOOST_CLASS_EXPORT(karto::CustomData)
-//BOOST_CLASS_EXPORT(karto::SensorData)
-
 namespace karto
 {
 
