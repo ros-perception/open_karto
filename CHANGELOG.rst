@@ -2,6 +2,28 @@
 Changelog for package open_karto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2018-07-11)
+------------------
+* Adds maintainer and branches for melodic
+* Merge pull request `#14 <https://github.com/ros-perception/open_karto/issues/14>`_ from ros-perception/maintainer-add
+  Adding myself as a maintainer for open_karto
+* Adding myself as a maintainer for open_karto
+* Merge pull request `#11 <https://github.com/ros-perception/open_karto/issues/11>`_ from Maidbot/minimum_time_interval
+  Process scan if enough time has elapsed since the previous one
+* Merge pull request `#10 <https://github.com/ros-perception/open_karto/issues/10>`_ from mikepurvis/fix-cpp11
+  Use std::isnan/isinf, for C++11 compatibility.
+* [Mapper] Take time into account in HasMoveEnough
+  The function HasMovedEnough now also returns true if more than MinimumTimeInterval time has elapsed since the previously processed laser scan
+* [Mapper] Add new parameter, MinimumTimeInterval
+* Use std::isnan/isinf, for C++11 compatibility.
+* Merge pull request `#8 <https://github.com/ros-perception/open_karto/issues/8>`_ from mig-em/feature/invalidScans1.1.4
+  Add invalid scan detection for scanmatcher
+* Merge pull request `#9 <https://github.com/ros-perception/open_karto/issues/9>`_ from Maidbot/ignore_min_readings
+  Ignore readings less than the sensor's minimum range
+* [Karto] Also ignore readings less than the minimum range
+* Add invalid scan detection for scanmatcher
+* Contributors: Luc Bettaieb, Michael Ferguson, Mike Purvis, Russell Toris, Spyros Maniatopoulos, mig-em
+
 1.1.4 (2016-03-02)
 ------------------
 * update build status badges
