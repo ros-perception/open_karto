@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SpaSolver.h"
-#include <OpenKarto/Karto.h>
+#include "open_karto/SpaSolver.h"
+#include "open_karto/Karto.h"
 
 SpaSolver::SpaSolver()
 {

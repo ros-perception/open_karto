@@ -1,8 +1,7 @@
-# Open Karto
+# Open Karto (Python)
 
-Catkinized ROS Package of the OpenKarto Library (LGPL3)
+This is an effort to make a python package for open_karto that is pip installable.
 
-# Status
-
- * Devel Job Status: [![Build Status](http://build.ros.org/buildStatus/icon?job=Idev__open_karto__ubuntu_trusty_amd64)](http://build.ros.org/job/Idev__open_karto__ubuntu_trusty_amd64/)
- * AMD64 Debian Job Status: [![Build Status](http://build.ros.org/buildStatus/icon?job=Jbin_uT64__open_karto__ubuntu_trusty_amd64__binary)](http://build.ros.org/job/Jbin_uT64__open_karto__ubuntu_trusty_amd64__binary)
+For now, some external dependencies may need to come from apt, these include:
+- libboost-all
+- libeigen3
