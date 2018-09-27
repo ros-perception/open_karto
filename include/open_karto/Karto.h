@@ -40,12 +40,14 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/type_traits/is_abstract.hpp> 
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
+#include <boost/type_traits/is_abstract.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/serialization/array.hpp>
+#include <boost/version.hpp>
 
 #ifdef USE_POCO
 #include <Poco/Mutex.h>
@@ -382,7 +384,7 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
 			ar & boost::serialization::make_nvp(tag2.c_str(), *it->second);
 			idx++;
 		}
-
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NonCopyable);
 	}
 
 
@@ -732,15 +734,13 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
     /**
      * Serialization: class Object 
      */
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive &ar, const unsigned int version)
-	{
-		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NonCopyable); 
-		ar & BOOST_SERIALIZATION_NVP(m_Name);
-		ar & BOOST_SERIALIZATION_NVP(m_pParameterManager);
-	    //ar & boost::serialization::make_nvp("m_pParameterManager",*m_pParameterManager);
-	}
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive &ar, const unsigned int version)
+    {
+      ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NonCopyable);
+      ar & BOOST_SERIALIZATION_NVP(m_Name);
+    }
 
   private:
     Object(const Object&);
@@ -3568,8 +3568,7 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
 	void serialize(Archive &ar, const unsigned int version)
 	{
 		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Object); 
-		//ar & BOOST_SERIALIZATION_NVP(m_pOffsetPose);
-		ar & boost::serialization::make_nvp("m_pOffsetPose", *m_pOffsetPose);
+		ar & BOOST_SERIALIZATION_NVP(m_pOffsetPose);
 	}
 
   public:
@@ -4941,6 +4940,13 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
   private:
     CustomData(const CustomData&);
     const CustomData& operator=(const CustomData&);
+
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive &ar, const unsigned int version)
+  {
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Object);
+  }
   };
 
   /**
@@ -5091,7 +5097,20 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
     kt_double m_Time;
 
     CustomDataVector m_CustomData;
-  };
+
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive &ar, const unsigned int version)
+  {
+    ar & BOOST_SERIALIZATION_NVP(m_StateId);
+    ar & BOOST_SERIALIZATION_NVP(m_UniqueId);
+    ar & BOOST_SERIALIZATION_NVP(m_SensorName);
+    ar & BOOST_SERIALIZATION_NVP(m_Time);
+    ar & BOOST_SERIALIZATION_NVP(m_CustomData);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Object);
+  }
+};
+
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -5234,6 +5253,20 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
   private:
     kt_double* m_pRangeReadings;
     kt_int32u m_NumberOfRangeReadings;
+
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive &ar, const unsigned int version)
+  {
+    ar & BOOST_SERIALIZATION_NVP(m_NumberOfRangeReadings);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SensorData);
+
+   if (Archive::is_loading::value)
+   {
+     m_pRangeReadings = new kt_double[m_NumberOfRangeReadings];
+   }
+   ar & boost::serialization::make_array<kt_double>(m_pRangeReadings, m_NumberOfRangeReadings);
+  }
   };  // LaserRangeScan
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -5397,6 +5430,11 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
       return m_BarycenterPose;
     }
 
+    inline void SetBarycenterPose(Pose2& bcenter)
+    {
+      m_BarycenterPose = bcenter;
+    }
+
     /**
      * Gets barycenter if the given parameter is true, otherwise returns the scanner pose
      * @param useBarycenter
@@ -5423,6 +5461,11 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
     inline Pose2 GetSensorPose() const
     {
       return GetSensorAt(m_CorrectedPose);
+    }
+
+    inline void SetIsDirty(kt_bool& rIsDirty)
+    {
+        m_IsDirty = rIsDirty;
     }
 
     /**
@@ -5473,6 +5516,11 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
       return m_BoundingBox;
     }
 
+    inline void SetBoundingBox(BoundingBox2& bbox)
+    {
+      m_BoundingBox = bbox;
+    }
+
     /**
      * Get point readings in local coordinates
      */
@@ -5494,6 +5542,18 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
       else
       {
         return m_UnfilteredPointReadings;
+      }
+    }
+
+    inline void SetPointReadings(PointVectorDouble& points, kt_bool setFiltered = false)
+    {
+      if (setFiltered)
+      {
+        m_PointReadings = points;
+      }
+      else
+      {
+        m_UnfilteredPointReadings = points;
       }
     }
 
@@ -5584,6 +5644,7 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
 		ar & BOOST_SERIALIZATION_NVP(m_UnfilteredPointReadings);
 		ar & BOOST_SERIALIZATION_NVP(m_BoundingBox);
 		ar & BOOST_SERIALIZATION_NVP(m_IsDirty);
+		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LaserRangeScan);
 	}
 
 
@@ -5633,7 +5694,6 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
    * Type declaration of LocalizedRangeScan vector
    */
   typedef std::vector<LocalizedRangeScan*> LocalizedRangeScanVector;
-
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -6014,7 +6074,6 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
       kt_double minRange = pScan->GetLaserRangeFinder()->GetMinimumRange();
 
       Vector2<kt_double> scanPosition = pScan->GetSensorPose().GetPosition();
-
       // get scan point readings
       const PointVectorDouble& rPointReadings = pScan->GetPointReadings(false);
 
@@ -6817,10 +6876,14 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NonCopyable)
   // @endcond
 
   /*@}*/
-}  // namespace karto
-//BOOST_CLASS_EXPORT_KEY(karto::NonCopyable);
-//BOOST_CLASS_EXPORT_KEY(karto::Object);
-//BOOST_CLASS_EXPORT_KEY(karto::Sensor);
-//BOOST_CLASS_EXPORT_KEY(karto::Name);
+};  // namespace karto
 
+BOOST_CLASS_EXPORT_KEY(karto::NonCopyable);
+BOOST_CLASS_EXPORT_KEY(karto::Object);
+BOOST_CLASS_EXPORT_KEY(karto::Sensor);
+BOOST_CLASS_EXPORT_KEY(karto::Name);
+BOOST_CLASS_EXPORT_KEY(karto::SensorData);
+BOOST_CLASS_EXPORT_KEY(karto::LocalizedRangeScan);
+BOOST_CLASS_EXPORT_KEY(karto::LaserRangeScan);
+BOOST_CLASS_EXPORT_KEY(karto::CustomData);
 #endif  // OPEN_KARTO_KARTO_H
