@@ -21,6 +21,8 @@
 #include <map>
 #include <vector>
 
+#include <Eigen/Core>
+
 #include <open_karto/Karto.h>
 
 namespace karto
@@ -594,6 +596,11 @@ namespace karto
     kt_bool TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName);
 
     /**
+     * Optimizes scan poses
+     */
+    void CorrectPoses();
+
+    /**
      * Find "nearby" (no further than given distance away) scans through graph links
      * @param pScan
      * @param maxDistance
@@ -686,11 +693,6 @@ namespace karto
                                                      const Name& rSensorName,
                                                      kt_int32u& rStartNum);
 
-    /**
-     * Optimizes scan poses
-     */
-    void CorrectPoses();
-
   private:
     /**
      * Mapper of this graph
@@ -780,7 +782,27 @@ namespace karto
     /**
      * Resets the solver
      */
-    virtual void Clear() {};
+    virtual void Clear(){};
+
+    /**
+     * Get graph stored
+     */
+    virtual void getGraph(std::vector<Eigen::Vector2d>& ag) {};
+
+    /**
+     * Modify a node's pose
+     */
+    virtual void ModifyNode(const int& unique_id, Eigen::Vector3d pose)
+    {
+      std::cout << "ModifyNode method not implemented for this solver type. Manual loop closure unavailable." << std::endl;
+    };
+    /**
+     * Get node's yaw
+     */
+    virtual void GetNodeOrientation(const int& unique_id, double& pose)
+    {
+      std::cout << "GetNodeOrientation method not implemented for this solver type." << std::endl;
+    };
   };  // ScanSolver
 
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -1185,7 +1207,7 @@ namespace karto
   /**
    * Manages the devices for the mapper
    */
-  class KARTO_EXPORT MapperSensorManager  // : public SensorManager
+  class KARTO_EXPORT MapperSensorManager //: public SensorManager
   {
     typedef std::map<Name, ScanManager*> ScanManagerMap;
 
@@ -1199,6 +1221,9 @@ namespace karto
       , m_NextScanId(0)
     {
     }
+
+    MapperSensorManager(){
+	}
 
     /**
      * Destructor
@@ -1325,6 +1350,17 @@ namespace karto
 
       return NULL;
     }
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive &ar, const unsigned int version)
+	{
+		ar & BOOST_SERIALIZATION_NVP(m_ScanManagers);
+		ar & BOOST_SERIALIZATION_NVP(m_RunningBufferMaximumSize);
+		ar & BOOST_SERIALIZATION_NVP(m_RunningBufferMaximumDistance);
+		ar & BOOST_SERIALIZATION_NVP(m_NextScanId);
+		ar & BOOST_SERIALIZATION_NVP(m_Scans);
+	}
 
   private:
     // map from device ID to scan data
@@ -1529,6 +1565,18 @@ namespace karto
     void Initialize(kt_double rangeThreshold);
 
     /**
+     * Save map to file 
+     * @param filename 
+     */
+    void SaveToFile(const std::string& filename);
+
+    /**
+     * Load map from file 
+     * @param filename 
+     */
+    void LoadFromFile(const std::string& filename);
+
+    /**
      * Resets the mapper.
      * Deallocate memory allocated in Initialize()
      */
@@ -1613,6 +1661,11 @@ namespace karto
     inline kt_bool TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName)
     {
       return m_pGraph->TryCloseLoop(pScan, rSensorName);
+    }
+
+    inline void CorrectPoses()
+    {
+      m_pGraph->CorrectPoses();
     }
 
   private:
