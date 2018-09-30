@@ -46,7 +46,7 @@ karto::Dataset* CreateMap(karto::Mapper* pMapper)
   {
     readings.push_back(3.0);
   }
-  
+
   // create localized range scan
   pLocalizedRangeScan = new karto::LocalizedRangeScan(name, readings);
   pLocalizedRangeScan->SetOdometricPose(karto::Pose2(0.0, 0.0, 0.0));
@@ -90,9 +90,6 @@ karto::Dataset* CreateMap(karto::Mapper* pMapper)
   return pDataset;
 }
 
-/**
- * Sample code to demonstrate basic occupancy grid creation and print occupancy grid.
- */
 karto::OccupancyGrid* CreateOccupancyGrid(karto::Mapper* pMapper, kt_double resolution)
 {
   std::cout << "Generating map..." << std::endl;
@@ -103,13 +100,10 @@ karto::OccupancyGrid* CreateOccupancyGrid(karto::Mapper* pMapper, kt_double reso
   return pOccupancyGrid;
 }
 
-/**
- * Sample code to print a basic occupancy grid
- */
 void PrintOccupancyGrid(karto::OccupancyGrid* pOccupancyGrid)
 {
   if (pOccupancyGrid != NULL)
-  {
+    {
     // Output ASCII representation of map
     kt_int32s width = pOccupancyGrid->GetWidth();
     kt_int32s height = pOccupancyGrid->GetHeight();
@@ -149,34 +143,119 @@ void test() {
   if (pMapper != NULL)
     {
       karto::OccupancyGrid* pOccupancyGrid = NULL;
-
-      /////////////////////////////////////
-      // sample code that creates a map from sample device and sample localized range scans
-
       std::cout << "Tutorial 1 ----------------" << std::endl << std::endl;
-
-      // clear mapper
       pMapper->Reset();
-
-      // create map from created dataset
       karto::Dataset* pDataset = CreateMap(pMapper);
-
-      // create occupancy grid at 0.1 resolution and print grid
       pOccupancyGrid = CreateOccupancyGrid(pMapper, 0.1);
       PrintOccupancyGrid(pOccupancyGrid);
       delete pOccupancyGrid;
-
-      // delete mapper
       delete pMapper;
-
       delete pDataset;
     }
 }
 
 namespace py = pybind11;
 
+// karto::LaserRangeFinder* CreateCustomRangeFinder(karto::Name name) {
+//   return karto::LaserRangeFinder::CreateLaserRangeFinder(karto::LaserRangeFinder_Custom, name);
+// }
+
+
+kt_bool ProcessLocalizedRangeScan(karto::Mapper * mapper, karto::LocalizedRangeScan * scan) {
+  return mapper->Process(scan);
+}
+
+void AddRangeFinderToDataset(karto::LaserRangeFinder * rf, karto::Dataset * ds) {
+  ds->Add(rf);
+}
+
+void AddLocalizedRangeScanToDataset(karto::LocalizedRangeScan * rf, karto::Dataset * ds) {
+  ds->Add(rf);
+}
+
+
 PYBIND11_MODULE(openkarto, m) {
-  m.def("test", &test);
+  // m.def("create_custom_rangefinder", &CreateCustomRangeFinder);
+  m.def("process_localized_range_scan", &ProcessLocalizedRangeScan);
+  m.def("add_range_finder_to_dataset", &AddRangeFinderToDataset);
+  m.def("add_localized_range_scan_to_dataset", &AddLocalizedRangeScanToDataset);
+  m.def("create_occupancy_grid", &CreateOccupancyGrid);
+
+  py::class_<karto::Mapper>(m, "Mapper")
+    .def(py::init<>())
+    .def("reset", &karto::Mapper::Reset)
+    .def_property("min_travel_distance", &karto::Mapper::getParamMinimumTravelDistance, &karto::Mapper::setParamMinimumTravelDistance)
+    .def_property("min_travel_heading", &karto::Mapper::getParamMinimumTravelHeading, &karto::Mapper::setParamMinimumTravelHeading)
+  .def("get_processed_scans", &karto::Mapper::GetAllProcessedScans);
+    // .def("process_scan", py::overload_cast<karto::LocalizedRangeScan *>(&karto::Mapper::Process), py::const_);
+
+  py::class_<karto::Dataset>(m, "Dataset")
+    .def(py::init<>())
+    .def("add", &karto::Dataset::Add);
+
+  py::class_<karto::Pose2>(m, "Pose2")
+    .def(py::init<double, double, double>())
+    .def_property("x", &karto::Pose2::GetX, &karto::Pose2::SetX)
+    .def_property("y", &karto::Pose2::GetY, &karto::Pose2::SetY)
+    .def_property("yaw", &karto::Pose2::GetHeading, &karto::Pose2::SetHeading)
+    .def("__repr__", [](const karto::Pose2 &a) {
+        std::stringstream buffer;
+        buffer << "(x: " << a.GetX() << ", y: " << a.GetY() << ", heading: " << a.GetHeading() << ")\n";
+        return buffer.str();
+      })
+    ;
+
+  py::class_<karto::Vector2<kt_double> >(m, "Vec2_d")
+    .def(py::init<double, double>())
+    .def_property("x", &karto::Vector2<kt_double>::GetX, &karto::Vector2<kt_double>::SetX)
+    .def_property("y", &karto::Vector2<kt_double>::GetY, &karto::Vector2<kt_double>::SetY)
+    .def("__repr__", [](const karto::Vector2<kt_double> &a) {
+        std::stringstream buffer;
+        buffer << "(x: " << a.GetX() << ", y:" << a.GetY() << ")\n";
+        return buffer.str();
+      });
+
+  py::class_<karto::Name>(m, "Name")
+    .def(py::init<const std::string &>());
+
+  py::class_<karto::LaserRangeFinder>(m, "LaserRangeFinder")
+    .def(py::init(&karto::LaserRangeFinder::CreateLaserRangeFinder))
+    .def("set_offset_pose", &karto::LaserRangeFinder::SetOffsetPose)
+    .def("set_angular_resolution", &karto::LaserRangeFinder::SetAngularResolution)
+    .def("set_minimum_range", &karto::LaserRangeFinder::SetMinimumRange)
+    .def("set_minimum_angle", &karto::LaserRangeFinder::SetMinimumAngle)
+    .def("set_maximum_range", &karto::LaserRangeFinder::SetMaximumRange)
+    .def("set_maximum_angle", &karto::LaserRangeFinder::SetMaximumAngle)
+    .def("set_angular_resolution", &karto::LaserRangeFinder::SetAngularResolution)
+    .def("set_range_threshold", &karto::LaserRangeFinder::SetRangeThreshold);
+  // TODO min/max angle???
+
+  py::class_<karto::LocalizedRangeScan>(m, "LocalizedRangeScan")
+    .def(py::init<karto::Name, std::vector<kt_double> >())
+    .def("set_odometric_pose", &karto::LocalizedRangeScan::SetOdometricPose)
+    .def("get_odometric_pose", &karto::LocalizedRangeScan::GetOdometricPose)
+    .def("set_corrected_pose", &karto::LocalizedRangeScan::SetCorrectedPose)
+    .def("get_corrected_pose", &karto::LocalizedRangeScan::GetCorrectedPose);
+
+  py::enum_<karto::LaserRangeFinderType>(m, "LaserRangeFinderType")
+    .value("Custom", karto::LaserRangeFinderType::LaserRangeFinder_Custom);
+
+  py::enum_<karto::GridStates>(m, "GridStates")
+    .value("Unknown", karto::GridStates::GridStates_Unknown)
+    .value("Occupied", karto::GridStates::GridStates_Occupied)
+    .value("Free", karto::GridStates::GridStates_Free);
+
+  py::class_<karto::OccupancyGrid>(m, "OccupancyGrid")
+    .def_property_readonly("width", &karto::OccupancyGrid::GetWidth)
+    .def_property_readonly("height", &karto::OccupancyGrid::GetHeight)
+    .def_property_readonly("offset", [](const karto::OccupancyGrid &a){
+        auto offset = (a.GetCoordinateConverter()->GetOffset());
+        return offset;
+      })
+    .def("get_value", [](const karto::OccupancyGrid &a, kt_int32s x, kt_int32s y) {
+        return a.GetValue(karto::Vector2<kt_int32s>(x, y));
+      })
+    ;
 
 #ifdef VERSION_INFO
   m.attr("__version__") = VERSION_INFO;
