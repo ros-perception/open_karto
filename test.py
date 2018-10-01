@@ -65,6 +65,7 @@ def _main():
 
 def main():
     mw = MapperWrapper('laser0', 0.5, -1.0, 1.0)
+    mw2 = MapperWrapper('laser0', 0.5, -1.0, 1.0)
     mw.reset()
     mw.range_finder.set_offset_pose(Pose2(1.0, 0.0, 0.0))
     mw.range_finder.set_angular_resolution(np.deg2rad(0.5))

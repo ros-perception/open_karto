@@ -51,6 +51,10 @@ public:
     return this->rangeFinder;
   }
 
+  karto::Mapper * getMapper() {
+    return this->mapper;
+  }
+
   karto::Name getName() {
     return this->name;
   }
@@ -193,7 +197,8 @@ PYBIND11_MODULE(openkarto, m) {
     .def("get_processed_scans", &MapperWrapper::GetProcessedScans, py::return_value_policy::reference)
     .def("create_occupancy_grid", &MapperWrapper::CreateOccupancyGrid)
     .def_property_readonly("name", &MapperWrapper::getName)
-    .def_property_readonly("range_finder", &MapperWrapper::getRangeFinder);
+    .def_property_readonly("range_finder", &MapperWrapper::getRangeFinder)
+    .def_property_readonly("mapper", &MapperWrapper::getMapper, py::return_value_policy::reference);
 
 #ifdef VERSION_INFO
   m.attr("__version__") = VERSION_INFO;
