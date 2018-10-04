@@ -12,4 +12,4 @@ matrix:
 
 script:
   - $PIP install cibuildwheel==0.10.0
-  - CIBW_BEFORE_BUILD="yum install boost-devel eigen3-devel -y" cibuildwheel --output-dir wheelhouse
+  - CIBW_BEFORE_BUILD="yum install boost-devel eigen3-devel.noarch -y && pip install pybind11" cibuildwheel --output-dir wheelhouse
