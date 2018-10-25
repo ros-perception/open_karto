@@ -12,8 +12,19 @@ matrix:
         - CIBW_SKIP="*-manylinux1_i686"
         - CIBW_ENVIRONMENT_LINUX="COMMIT=$TRAVIS_COMMIT TAG=$TRAVIS_TAG"
         - CIBW_BEFORE="pip install pybind11"
+        - secure: "f/lFNQCnPTSZ/w7xndRa4b9gzM9P+9fI/tGmVBTqrQAk8RRTud3L8ZI6c1eRe0MvFapGVXjQZyrj1fwl7AWdx3O0QFEIpwqWh0JrspZf19Y9Uek1fykCztiNeKGQLem5FVxmiXIiNwN8sn8VgECNjQh5ZsvCE8Nq0lO9RLM+MX5qH/38nSVxi76A4yz/4zt3BCEfJpKg4qfi9G851Hkz/rbf1eBa+E8FHjRQ++FJ2scIoC1zBsHi257MkIA3rdfAW9zC8CyZ2Sibj+bCwGIsL2zyR9DBZVG2l1BFGzZPYSmP0daHhqVG2zUcjADiE/j7vcdkswhAGuAjiqnOxeTEXfCJgiNwP0aSan4l189OuvShRGXtoGcPdOCWS6AFq+24fJkgrsZmYLcw5w2XBhXg4rzHTvcO2q1mRiBh4t1iFeHZvEPYuMb9YgfNJiz3GwYcIiJ/AGkXtSKHRd1swp4Hd4YtvMfFVhGdnrzGMoUMZpj8UaZumBPp8HbQAdHe81M+PaeqHiGtzGGKbO44Q8PGj3WRsh9mLFhl5AbaLTgdAv/LTpwuWJkxAERWIGz911mvT+US6f8GnNnhmgy1ojDk3Res7GjGpydT7PposKXl09Kwtnm/qoUTr/+83cM12HwEx2C0m2vKAlnDBxgrtcglvx00bRvnOQld20sc0S0i+YQ="
+
+install:
+  - $PIP install cibuildwheel==0.10.0
 
 script:
-  - $PIP install cibuildwheel==0.10.0
   - cibuildwheel --output-dir wheelhouse
-  - ls wheelhouse
+
+deploy:
+  provider: script
+  on:
+    tags: true
+    branch: python-devel
+  script: 
+    - $PIP install -U twine
+    - twine upload -u safijari -p $PYPIPASS wheelhouse/*
