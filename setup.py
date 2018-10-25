@@ -2,8 +2,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import sys
 import setuptools
-
-__version__ = '0.0.1'
+import os
 
 
 class get_pybind_include(object):
@@ -92,8 +91,17 @@ class BuildExt(build_ext):
         build_ext.build_extensions(self)
 
 
+commit_var = 'COMMIT'
+tag_name_var = 'TAG'
+
+if commit_var in os.environ and os.environ[commit_var]:
+    __version__ = "0.0.0-" + os.environ[commit_var]
+
+if tag_name_var in os.environ and os.environ[tag_name_var]:
+    __version__ = os.environ[tag_name_var]
+
 setup(
-    name='py_openkarto',
+    name='open_karto',
     version=__version__,
     author='Jariullah Safi',
     author_email='safijari@isu.edu',

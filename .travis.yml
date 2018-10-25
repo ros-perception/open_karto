@@ -1,3 +1,18 @@
+# language: python
+
+# matrix:
+#   include:
+#     - sudo: required
+#       services:
+#         - docker
+#       env: PIP=pip
+#     - os: osx
+#       language: generic
+#       env: PIP=pip2
+
+# script:
+#   - $PIP install cibuildwheel==0.10.0
+#   - CIBW_BEFORE_BUILD="yum install boost-devel eigen3-devel.noarch -y && pip install pybind11" cibuildwheel --output-dir wheelhouse
 language: python
 
 matrix:
@@ -6,10 +21,9 @@ matrix:
       services:
         - docker
       env: PIP=pip
-    - os: osx
-      language: generic
-      env: PIP=pip2
 
 script:
+  - sudo $PIP install cibuildwheel==0.10.0
   - $PIP install cibuildwheel==0.10.0
-  - CIBW_BEFORE_BUILD="yum install boost-devel eigen3-devel.noarch -y && pip install pybind11" cibuildwheel --output-dir wheelhouse
+  - CIBW_MANYLINUX1_X86_64_IMAGE=safijari/manylinux-x64 CIBW_PLATFORM=linux CIBW_SKIP="*-manylinux1_i686" CIBW_ENVIRONMENT_LINUX="COMMIT=$TRAVIS_COMMIT TAG=$TRAVIS_TAG" cibuildwheel --output-dir wheelhouse
+  - ls wheelhouse

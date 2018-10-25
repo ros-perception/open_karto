@@ -107,7 +107,7 @@ void AddLocalizedRangeScanToDataset(karto::LocalizedRangeScan * rf, karto::Datas
 }
 
 
-PYBIND11_MODULE(openkarto, m) {
+PYBIND11_MODULE(open_karto, m) {
   // m.def("create_custom_rangefinder", &CreateCustomRangeFinder);
   m.def("process_localized_range_scan", &ProcessLocalizedRangeScan);
   m.def("add_range_finder_to_dataset", &AddRangeFinderToDataset);
