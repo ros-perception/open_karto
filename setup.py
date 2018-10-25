@@ -90,6 +90,7 @@ class BuildExt(build_ext):
             ext.extra_compile_args = opts
         build_ext.build_extensions(self)
 
+
 __version__ = 'dev'
 
 commit_var = 'COMMIT'
@@ -108,6 +109,7 @@ setup(
     author_email='safijari@isu.edu',
     ext_modules=ext_modules,
     setup_requires=['pybind11>=2.2'],
+    install_requires=['pybind11>=2.2'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
 )
