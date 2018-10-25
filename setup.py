@@ -26,6 +26,7 @@ ext_modules = [
         ['src/PythonInterface.cpp', 'src/Mapper.cpp', 'src/Karto.cpp'],
         include_dirs=[
             'include',
+            'pybind11/include',
             '/usr/include/eigen3/',
             get_pybind_include(),
             get_pybind_include(user=True)
