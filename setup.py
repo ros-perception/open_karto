@@ -90,6 +90,7 @@ class BuildExt(build_ext):
             ext.extra_compile_args = opts
         build_ext.build_extensions(self)
 
+__version__ = 'dev'
 
 commit_var = 'COMMIT'
 tag_name_var = 'TAG'
