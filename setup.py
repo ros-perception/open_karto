@@ -107,7 +107,7 @@ setup(
     author='Jariullah Safi',
     author_email='safijari@isu.edu',
     ext_modules=ext_modules,
-    install_requires=['pybind11>=2.2'],
+    setup_requires=['pybind11>=2.2'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
 )
