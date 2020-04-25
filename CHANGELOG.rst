@@ -2,8 +2,8 @@
 Changelog for package open_karto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.1 (2020-04-24)
+------------------
 * bump version to silence CMP0048
 * Merge pull request `#19 <https://github.com/ros-perception/open_karto/issues/19>`_ from moriarty/patch-1
   Melodic: build status badges Indigo is EOL.
