@@ -2,6 +2,18 @@
 Changelog for package open_karto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* bump version to silence CMP0048
+* Merge pull request `#19 <https://github.com/ros-perception/open_karto/issues/19>`_ from moriarty/patch-1
+  Melodic: build status badges Indigo is EOL.
+* Melodic: build status badges Indigo is EOL.
+* Merge pull request `#18 <https://github.com/ros-perception/open_karto/issues/18>`_ from ms-iot/windows_port
+  [Windows][melodic] Fix Windows build break
+* Changing maintainer email
+* Fix windows build.
+* Contributors: Alex Moriarty, Luc Bettaieb, Michael Ferguson, Sean Yen
+
 1.2.0 (2018-07-11)
 ------------------
 * Adds maintainer and branches for melodic
