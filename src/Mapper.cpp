@@ -42,133 +42,6 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
-  /**
-   * Manages the scan data for a device
-   */
-  class ScanManager
-  {
-  public:
-    /**
-     * Default constructor
-     */
-    ScanManager(kt_int32u runningBufferMaximumSize, kt_double runningBufferMaximumDistance)
-      : m_pLastScan(NULL)
-      , m_RunningBufferMaximumSize(runningBufferMaximumSize)
-      , m_RunningBufferMaximumDistance(runningBufferMaximumDistance)
-    {
-    }
-
-    /**
-     * Destructor
-     */
-    virtual ~ScanManager()
-    {
-      Clear();
-    }
-
-  public:
-    /**
-     * Adds scan to vector of processed scans tagging scan with given unique id
-     * @param pScan
-     */
-    inline void AddScan(LocalizedRangeScan* pScan, kt_int32s uniqueId)
-    {
-      // assign state id to scan
-      pScan->SetStateId(static_cast<kt_int32u>(m_Scans.size()));
-
-      // assign unique id to scan
-      pScan->SetUniqueId(uniqueId);
-
-      // add it to scan buffer
-      m_Scans.push_back(pScan);
-    }
-
-    /**
-     * Gets last scan
-     * @param deviceId
-     * @return last localized range scan
-     */
-    inline LocalizedRangeScan* GetLastScan()
-    {
-      return m_pLastScan;
-    }
-
-    /**
-     * Sets the last scan
-     * @param pScan
-     */
-    inline void SetLastScan(LocalizedRangeScan* pScan)
-    {
-      m_pLastScan = pScan;
-    }
-
-    /**
-     * Gets scans
-     * @return scans
-     */
-    inline LocalizedRangeScanVector& GetScans()
-    {
-      return m_Scans;
-    }
-
-    /**
-     * Gets running scans
-     * @return running scans
-     */
-    inline LocalizedRangeScanVector& GetRunningScans()
-    {
-      return m_RunningScans;
-    }
-
-    /**
-     * Adds scan to vector of running scans
-     * @param pScan
-     */
-    void AddRunningScan(LocalizedRangeScan* pScan)
-    {
-      m_RunningScans.push_back(pScan);
-
-      // vector has at least one element (first line of this function), so this is valid
-      Pose2 frontScanPose = m_RunningScans.front()->GetSensorPose();
-      Pose2 backScanPose = m_RunningScans.back()->GetSensorPose();
-
-      // cap vector size and remove all scans from front of vector that are too far from end of vector
-      kt_double squaredDistance = frontScanPose.GetPosition().SquaredDistance(backScanPose.GetPosition());
-      while (m_RunningScans.size() > m_RunningBufferMaximumSize ||
-             squaredDistance > math::Square(m_RunningBufferMaximumDistance) - KT_TOLERANCE)
-      {
-        // remove front of running scans
-        m_RunningScans.erase(m_RunningScans.begin());
-
-        // recompute stats of running scans
-        frontScanPose = m_RunningScans.front()->GetSensorPose();
-        backScanPose = m_RunningScans.back()->GetSensorPose();
-        squaredDistance = frontScanPose.GetPosition().SquaredDistance(backScanPose.GetPosition());
-      }
-    }
-
-    /**
-     * Deletes data of this buffered device
-     */
-    void Clear()
-    {
-      m_Scans.clear();
-      m_RunningScans.clear();
-    }
-
-  private:
-    LocalizedRangeScanVector m_Scans;
-    LocalizedRangeScanVector m_RunningScans;
-    LocalizedRangeScan* m_pLastScan;
-
-    kt_int32u m_RunningBufferMaximumSize;
-    kt_double m_RunningBufferMaximumDistance;
-  };  // ScanManager
-
-  ////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////////////////
-
   void MapperSensorManager::RegisterSensor(const Name& rSensorName)
   {
     if (GetScanManager(rSensorName) == NULL)
@@ -197,27 +70,6 @@ namespace karto
   }
 
   /**
-   * Gets last scan of given device
-   * @param pLaserRangeFinder
-   * @return last localized range scan of device
-   */
-  inline LocalizedRangeScan* MapperSensorManager::GetLastScan(const Name& rSensorName)
-  {
-    RegisterSensor(rSensorName);
-
-    return GetScanManager(rSensorName)->GetLastScan();
-  }
-
-  /**
-   * Sets the last scan of device of given scan
-   * @param pScan
-   */
-  inline void MapperSensorManager::SetLastScan(LocalizedRangeScan* pScan)
-  {
-    GetScanManager(pScan)->SetLastScan(pScan);
-  }
-
-  /**
    * Adds scan to scan vector of device that recorded scan
    * @param pScan
    */
@@ -226,35 +78,6 @@ namespace karto
     GetScanManager(pScan)->AddScan(pScan, m_NextScanId);
     m_Scans.push_back(pScan);
     m_NextScanId++;
-  }
-
-  /**
-   * Adds scan to running scans of device that recorded scan
-   * @param pScan
-   */
-  inline void MapperSensorManager::AddRunningScan(LocalizedRangeScan* pScan)
-  {
-    GetScanManager(pScan)->AddRunningScan(pScan);
-  }
-
-  /**
-   * Gets scans of device
-   * @param rSensorName
-   * @return scans of device
-   */
-  inline LocalizedRangeScanVector& MapperSensorManager::GetScans(const Name& rSensorName)
-  {
-    return GetScanManager(rSensorName)->GetScans();
-  }
-
-  /**
-   * Gets running scans of device
-   * @param rSensorName
-   * @return running scans of device
-   */
-  inline LocalizedRangeScanVector& MapperSensorManager::GetRunningScans(const Name& rSensorName)
-  {
-    return GetScanManager(rSensorName)->GetRunningScans();
   }
 
   /**
