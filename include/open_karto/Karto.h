@@ -3898,6 +3898,34 @@ namespace karto
           throw Exception(stream.str());
         }
       }
+      else if (m_pType->GetValue() == LaserRangeFinder_Hokuyo_UTM_30LX)
+      {
+        if (math::DoubleEqual(angularResolution, math::DegreesToRadians(0.25)))
+        {
+          m_pAngularResolution->SetValue(math::DegreesToRadians(0.25));
+        }
+        else
+        {
+          std::stringstream stream;
+          stream << "Invalid resolution for Hokuyo_UTM_30LX:  ";
+          stream << angularResolution;
+          throw Exception(stream.str());
+        }
+      }
+      else if (m_pType->GetValue() == LaserRangeFinder_Hokuyo_URG_04LX)
+      {
+        if (math::DoubleEqual(angularResolution, math::DegreesToRadians(0.352)))
+        {
+          m_pAngularResolution->SetValue(math::DegreesToRadians(0.352));
+        }
+        else
+        {
+          std::stringstream stream;
+          stream << "Invalid resolution for Hokuyo_URG_04LX:  ";
+          stream << angularResolution;
+          throw Exception(stream.str());
+        }
+      }
       else
       {
         throw Exception("Can't set angular resolution, please create a LaserRangeFinder of type Custom");
