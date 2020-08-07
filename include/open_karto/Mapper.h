@@ -20,6 +20,7 @@
 
 #include <map>
 #include <vector>
+#include <queue>
 
 #include <open_karto/Karto.h>
 
@@ -534,6 +535,110 @@ namespace karto
      */
     std::vector<Edge<T>*> m_Edges;
   };  // Graph<T>
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+
+  template<typename T>
+  class BreadthFirstTraversal : public GraphTraversal<T>
+  {
+  public:
+    /**
+     * Constructs a breadth-first traverser for the given graph
+     */
+    BreadthFirstTraversal(Graph<T>* pGraph)
+    : GraphTraversal<T>(pGraph)
+    {
+    }
+
+    /**
+     * Destructor
+     */
+    virtual ~BreadthFirstTraversal()
+    {
+    }
+
+  public:
+    /**
+     * Traverse the graph starting with the given vertex; applies the visitor to visited nodes
+     * @param pStartVertex
+     * @param pVisitor
+     * @return visited vertices
+     */
+    virtual std::vector<T*> Traverse(Vertex<T>* pStartVertex, Visitor<T>* pVisitor)
+    {
+      std::queue<Vertex<T>*> toVisit;
+      std::set<Vertex<T>*> seenVertices;
+      std::vector<Vertex<T>*> validVertices;
+
+      toVisit.push(pStartVertex);
+      seenVertices.insert(pStartVertex);
+
+      do
+      {
+        Vertex<T>* pNext = toVisit.front();
+        toVisit.pop();
+
+        if (pVisitor->Visit(pNext))
+        {
+          // vertex is valid, explore neighbors
+          validVertices.push_back(pNext);
+
+          std::vector<Vertex<T>*> adjacentVertices = pNext->GetAdjacentVertices();
+          forEach(typename std::vector<Vertex<T>*>, &adjacentVertices)
+          {
+            Vertex<T>* pAdjacent = *iter;
+
+            // adjacent vertex has not yet been seen, add to queue for processing
+            if (seenVertices.find(pAdjacent) == seenVertices.end())
+            {
+              toVisit.push(pAdjacent);
+              seenVertices.insert(pAdjacent);
+            }
+          }
+        }
+      } while (toVisit.empty() == false);
+
+      std::vector<T*> objects;
+      forEach(typename std::vector<Vertex<T>*>, &validVertices)
+      {
+        objects.push_back((*iter)->GetObject());
+      }
+
+      return objects;
+    }
+  };  // class BreadthFirstTraversal
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+
+  class NearScanVisitor : public Visitor<LocalizedRangeScan>
+  {
+  public:
+    NearScanVisitor(LocalizedRangeScan* pScan, kt_double maxDistance, kt_bool useScanBarycenter)
+      : m_MaxDistanceSquared(math::Square(maxDistance))
+      , m_UseScanBarycenter(useScanBarycenter)
+    {
+      m_CenterPose = pScan->GetReferencePose(m_UseScanBarycenter);
+    }
+
+    virtual kt_bool Visit(Vertex<LocalizedRangeScan>* pVertex)
+    {
+      LocalizedRangeScan* pScan = pVertex->GetObject();
+
+      Pose2 pose = pScan->GetReferencePose(m_UseScanBarycenter);
+
+      kt_double squaredDistance = pose.GetPosition().SquaredDistance(m_CenterPose.GetPosition());
+      return (squaredDistance <= m_MaxDistanceSquared - KT_TOLERANCE);
+    }
+
+  protected:
+    Pose2 m_CenterPose;
+    kt_double m_MaxDistanceSquared;
+    kt_bool m_UseScanBarycenter;
+  };  // NearScanVisitor
 
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
@@ -1180,7 +1285,132 @@ namespace karto
   ////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////
 
-  class ScanManager;
+  /**
+   * Manages the scan data for a device
+   */
+  class ScanManager
+  {
+  public:
+    /**
+     * Default constructor
+     */
+    ScanManager(kt_int32u runningBufferMaximumSize, kt_double runningBufferMaximumDistance)
+      : m_pLastScan(NULL)
+      , m_RunningBufferMaximumSize(runningBufferMaximumSize)
+      , m_RunningBufferMaximumDistance(runningBufferMaximumDistance)
+    {
+    }
+
+    /**
+     * Destructor
+     */
+    virtual ~ScanManager()
+    {
+      Clear();
+    }
+
+  public:
+    /**
+     * Adds scan to vector of processed scans tagging scan with given unique id
+     * @param pScan
+     */
+    inline void AddScan(LocalizedRangeScan* pScan, kt_int32s uniqueId)
+    {
+      // assign state id to scan
+      pScan->SetStateId(static_cast<kt_int32u>(m_Scans.size()));
+
+      // assign unique id to scan
+      pScan->SetUniqueId(uniqueId);
+
+      // add it to scan buffer
+      m_Scans.push_back(pScan);
+    }
+
+    /**
+     * Gets last scan
+     * @param deviceId
+     * @return last localized range scan
+     */
+    inline LocalizedRangeScan* GetLastScan()
+    {
+      return m_pLastScan;
+    }
+
+    /**
+     * Sets the last scan
+     * @param pScan
+     */
+    inline void SetLastScan(LocalizedRangeScan* pScan)
+    {
+      m_pLastScan = pScan;
+    }
+
+    /**
+     * Gets scans
+     * @return scans
+     */
+    inline LocalizedRangeScanVector& GetScans()
+    {
+      return m_Scans;
+    }
+
+    /**
+     * Gets running scans
+     * @return running scans
+     */
+    inline LocalizedRangeScanVector& GetRunningScans()
+    {
+      return m_RunningScans;
+    }
+
+    /**
+     * Adds scan to vector of running scans
+     * @param pScan
+     */
+    void AddRunningScan(LocalizedRangeScan* pScan)
+    {
+      m_RunningScans.push_back(pScan);
+
+      // vector has at least one element (first line of this function), so this is valid
+      Pose2 frontScanPose = m_RunningScans.front()->GetSensorPose();
+      Pose2 backScanPose = m_RunningScans.back()->GetSensorPose();
+
+      // cap vector size and remove all scans from front of vector that are too far from end of vector
+      kt_double squaredDistance = frontScanPose.GetPosition().SquaredDistance(backScanPose.GetPosition());
+      while (m_RunningScans.size() > m_RunningBufferMaximumSize ||
+             squaredDistance > math::Square(m_RunningBufferMaximumDistance) - KT_TOLERANCE)
+      {
+        // remove front of running scans
+        m_RunningScans.erase(m_RunningScans.begin());
+
+        // recompute stats of running scans
+        frontScanPose = m_RunningScans.front()->GetSensorPose();
+        backScanPose = m_RunningScans.back()->GetSensorPose();
+        squaredDistance = frontScanPose.GetPosition().SquaredDistance(backScanPose.GetPosition());
+      }
+    }
+
+    /**
+     * Deletes data of this buffered device
+     */
+    void Clear()
+    {
+      m_Scans.clear();
+      m_RunningScans.clear();
+    }
+
+  private:
+    LocalizedRangeScanVector m_Scans;
+    LocalizedRangeScanVector m_RunningScans;
+    LocalizedRangeScan* m_pLastScan;
+
+    kt_int32u m_RunningBufferMaximumSize;
+    kt_double m_RunningBufferMaximumDistance;
+  };  // ScanManager
+
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * Manages the devices for the mapper
@@ -1244,13 +1474,21 @@ namespace karto
      * @param rSensorName
      * @return last localized range scan of sensor
      */
-    LocalizedRangeScan* GetLastScan(const Name& rSensorName);
+    inline LocalizedRangeScan* GetLastScan(const Name& rSensorName)
+    {
+      RegisterSensor(rSensorName);
+
+      return GetScanManager(rSensorName)->GetLastScan();
+    }
 
     /**
      * Sets the last scan of device of given scan
      * @param pScan
      */
-    inline void SetLastScan(LocalizedRangeScan* pScan);
+    inline void SetLastScan(LocalizedRangeScan* pScan)
+    {
+      GetScanManager(pScan)->SetLastScan(pScan);
+    }
 
     /**
      * Gets the scan with the given unique id
@@ -1274,21 +1512,30 @@ namespace karto
      * Adds scan to running scans of device that recorded scan
      * @param pScan
      */
-    void AddRunningScan(LocalizedRangeScan* pScan);
+    inline void AddRunningScan(LocalizedRangeScan* pScan)
+    {
+      GetScanManager(pScan)->AddRunningScan(pScan);
+    }
 
     /**
      * Gets scans of device
      * @param rSensorName
      * @return scans of device
      */
-    LocalizedRangeScanVector& GetScans(const Name& rSensorName);
+    inline LocalizedRangeScanVector& GetScans(const Name& rSensorName)
+    {
+      return GetScanManager(rSensorName)->GetScans();
+    }
 
     /**
      * Gets running scans of device
      * @param rSensorName
      * @return running scans of device
      */
-    LocalizedRangeScanVector& GetRunningScans(const Name& rSensorName);
+    inline LocalizedRangeScanVector& GetRunningScans(const Name& rSensorName)
+    {
+      return GetScanManager(rSensorName)->GetRunningScans();
+    }
 
     /**
      * Gets all scans of all devices
