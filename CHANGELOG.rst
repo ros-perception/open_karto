@@ -2,6 +2,13 @@
 Changelog for package open_karto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.2 (2020-08-07)
+------------------
+* Move the C++ classes and definitions of inline functions from the Mapper.cpp file to the Mapper.h file (`#22 <https://github.com/ros-perception/open_karto/issues/22>`_)
+* add Hokuyo configuration in `SetAngularResolution` function (`#20 <https://github.com/ros-perception/open_karto/issues/20>`_)
+  Karto has five kinds of lidar parameter configurations (LMS100, LMS200, LMS291, UTM_30LX, URG_04LX), but there are only the first three configurations in the `SetAngularResolution` function, so I added the parameter configuration of UTM_30LX and URG_04LX.
+* Contributors: Jian Wen, Zezhou.Sun
+
 1.2.1 (2020-04-24)
 ------------------
 * bump version to silence CMP0048
