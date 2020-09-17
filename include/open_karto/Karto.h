@@ -5510,8 +5510,8 @@ namespace karto
      */
     LocalizedRangeScanWithPoints(const Name& rSensorName, const RangeReadingsVector& rReadings,
         const PointVectorDouble& rPoints)
-        : m_Points(rPoints),
-          LocalizedRangeScan(rSensorName, rReadings)
+        : LocalizedRangeScan(rSensorName, rReadings),
+          m_Points(rPoints)
     {
     }
 
@@ -5602,6 +5602,11 @@ namespace karto
       : m_pOccupancyGrid(pGrid)
     {
     }
+
+    /**
+     * Destructor
+     */
+    virtual ~CellUpdater() = default;
 
     /**
      * Updates the cell at the given index based on the grid's hits and pass counters
