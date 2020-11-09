@@ -5606,7 +5606,7 @@ namespace karto
     /**
      * Destructor
      */
-    virtual ~CellUpdater() = default;
+    virtual ~CellUpdater() {}
 
     /**
      * Updates the cell at the given index based on the grid's hits and pass counters
