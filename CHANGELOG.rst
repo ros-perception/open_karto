@@ -2,8 +2,8 @@
 Changelog for package open_karto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.3 (2020-11-10)
+------------------
 * update destructor to not use c11 feature (`#26 <https://github.com/ros-perception/open_karto/issues/26>`_)
 * fix parameter passing bug of first link to other robots (`#23 <https://github.com/ros-perception/open_karto/issues/23>`_)
 * Fix -Wdelete-non-virtual-dtor and -Wreorder warnings (`#24 <https://github.com/ros-perception/open_karto/issues/24>`_)
