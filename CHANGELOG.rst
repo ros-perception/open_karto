@@ -2,6 +2,13 @@
 Changelog for package open_karto
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update destructor to not use c11 feature (`#26 <https://github.com/ros-perception/open_karto/issues/26>`_)
+* fix parameter passing bug of first link to other robots (`#23 <https://github.com/ros-perception/open_karto/issues/23>`_)
+* Fix -Wdelete-non-virtual-dtor and -Wreorder warnings (`#24 <https://github.com/ros-perception/open_karto/issues/24>`_)
+* Contributors: Michael Ferguson, Survy Vaish, Zezhou.Sun
+
 1.2.2 (2020-08-07)
 ------------------
 * Move the C++ classes and definitions of inline functions from the Mapper.cpp file to the Mapper.h file (`#22 <https://github.com/ros-perception/open_karto/issues/22>`_)
