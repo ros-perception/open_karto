@@ -28,8 +28,6 @@ if(WIN32)
   endforeach(warning)
 endif()
 
-#include_directories(../source)
-
 ############################################################################
 # tutorial 1
 add_executable(
