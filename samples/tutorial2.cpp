@@ -17,7 +17,7 @@
 
 #include "SpaSolver.h"
 
-#include <OpenKarto/Mapper.h>
+#include <open_karto/Mapper.h>
 
 /**
  * Sample code to demonstrate karto map creation
@@ -148,7 +148,7 @@ void PrintOccupancyGrid(karto::OccupancyGrid* pOccupancyGrid)
   }
 }
 
-int main(int /*argc*/, char /***argv*/)
+int main(int /*argc*/, char **/*argv*/)
 {
   // use try/catch to catch karto exceptions that might be thrown by the karto subsystem. 
   /////////////////////////////////////

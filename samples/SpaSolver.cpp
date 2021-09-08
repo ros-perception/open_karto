@@ -16,7 +16,7 @@
  */
 
 #include "SpaSolver.h"
-#include <OpenKarto/Karto.h>
+#include <open_karto/Karto.h>
 
 SpaSolver::SpaSolver()
 {
@@ -59,7 +59,7 @@ void SpaSolver::AddNode(karto::Vertex<karto::LocalizedRangeScan>* pVertex)
 {
   karto::Pose2 pose = pVertex->GetObject()->GetCorrectedPose();
   Eigen::Vector3d vector(pose.GetX(), pose.GetY(), pose.GetHeading());
-  m_Spa.addNode2d(vector, pVertex->GetObject()->GetUniqueId());
+  m_Spa.addNode(vector, pVertex->GetObject()->GetUniqueId());
 }
 
 void SpaSolver::AddConstraint(karto::Edge<karto::LocalizedRangeScan>* pEdge)
@@ -80,5 +80,5 @@ void SpaSolver::AddConstraint(karto::Edge<karto::LocalizedRangeScan>* pEdge)
   m(1,2) = m(2,1) = precisionMatrix(1,2);
   m(2,2) = precisionMatrix(2,2);
 
-  m_Spa.addConstraint2d(pSource->GetUniqueId(), pTarget->GetUniqueId(), mean, m);
+  m_Spa.addConstraint(pSource->GetUniqueId(), pTarget->GetUniqueId(), mean, m);
 }
