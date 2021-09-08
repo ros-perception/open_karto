@@ -6,7 +6,6 @@ find_package(catkin REQUIRED
     sparse_bundle_adjustment
 )
 find_package(Eigen3 REQUIRED)
-#find_package(CSparse REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread)
 
 catkin_package(
