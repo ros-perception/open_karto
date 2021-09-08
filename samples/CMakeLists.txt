@@ -28,16 +28,14 @@ if(WIN32)
   endforeach(warning)
 endif()
 
-include_directories(../source)
-
 ############################################################################
 # tutorial 1
 add_executable(
-  Karto_Tutorial1 
-  tutorial1.cpp
+  Karto_Tutorial1
+  samples/tutorial1.cpp
 )
 
-target_link_libraries(Karto_Tutorial1 OpenKarto)
+target_link_libraries(Karto_Tutorial1 karto)
 
 if (UNIX)
   target_link_libraries(Karto_Tutorial1 "pthread")
@@ -46,20 +44,16 @@ endif()
 ############################################################################
 # tutorial 2
 
-include_directories(${CSPARSE_DIR}/CSparse/Include)
-include_directories(${SBA_DIR}/sba/include)
-include_directories(${EIGEN_DIR}/eigen)
+include_directories(${EIGEN3_INCLUDE_DIRS})
 
 add_executable(
   Karto_Tutorial2
-  tutorial2.cpp
-  SpaSolver.h
-  SpaSolver.cpp
+  samples/tutorial2.cpp
+  samples/SpaSolver.h
+  samples/SpaSolver.cpp
 )
 
-target_link_libraries(Karto_Tutorial2 OpenKarto)
-target_link_libraries(Karto_Tutorial2 spa2d)
-target_link_libraries(Karto_Tutorial2 csparse)
+target_link_libraries(Karto_Tutorial2 karto ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
 if(PNG_FOUND)
   target_link_libraries(Karto_Tutorial2 ${ZLIB_LIBRARIES})

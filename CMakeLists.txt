@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(open_karto)
 
-find_package(catkin REQUIRED)
-
+find_package(catkin REQUIRED
+  COMPONENTS
+    sparse_bundle_adjustment
+)
+find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread)
 
 catkin_package(
+  CATKIN_DEPENDS
+    sparse_bundle_adjustment
   DEPENDS Boost
   INCLUDE_DIRS
     include
@@ -27,3 +32,5 @@ install(TARGETS karto
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
+
+include(samples/CMakeLists.txt)
