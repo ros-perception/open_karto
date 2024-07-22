@@ -19,6 +19,7 @@
 #define OPEN_KARTO_MAPPER_H
 
 #include <map>
+#include <set>
 #include <vector>
 #include <queue>
 
